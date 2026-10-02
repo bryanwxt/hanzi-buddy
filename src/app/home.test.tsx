@@ -72,6 +72,13 @@ describe('CollectionScreen', () => {
     expect(screen.getByRole('button', { name: '河' })).toBeTruthy();
     expect(document.querySelectorAll('.zika:not(.card--back)')).toHaveLength(1);
   });
+  it('puts the 金卡 filter right after 全部 so it is on screen', async () => {
+    const app = await makeAppData();
+    renderWithApp(<CollectionScreen />, app);
+    await screen.findByText('全部');
+    const chips = [...document.querySelectorAll('.filters button')].map((b) => b.textContent);
+    expect(chips[1]).toContain('金卡');
+  });
   it('keeps earned badges', async () => {
     const app = await makeAppData({ kid: { ...DEFAULT_KID, badgesSeen: ['氵'] } });
     renderWithApp(<CollectionScreen />, app);

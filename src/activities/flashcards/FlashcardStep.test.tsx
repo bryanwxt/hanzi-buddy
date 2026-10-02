@@ -147,3 +147,13 @@ describe('wrong-answer bubble', () => {
     expect(document.querySelector('.pet__bubble')?.textContent).not.toContain('再想想');
   });
 });
+
+describe('close-up keeps what Truffle is wearing', () => {
+  it('shows his power in the close-up', () => {
+    const relearn = { id: `${he.id}:recognise`, wordId: he.id, kind: 'recognise' as const, fsrs: { ...createEmptyCard(new Date()), state: State.Relearning } };
+    const kid = { ...DEFAULT_KID, activePower: 'water', powerTiersSeen: { water: 2 } };
+    render(<FlashcardStep {...base} kid={kid} card={relearn} closeupReady item={review} voice={false} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
+    expect(document.querySelector('.closeup svg.truffle')?.getAttribute('data-power')).toBe('water');
+  });
+});

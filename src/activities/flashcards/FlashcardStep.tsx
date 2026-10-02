@@ -133,7 +133,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, resting, com
           )}
         </div>
       </div>
-      {showCloseup && <Closeup />}
+      {showCloseup && <Closeup kid={kid} />}
       {phase === 'intro' && <BottomBar actionLabel="我记住了！" onAction={() => setPhase('quiz')} />}
       {phase === 'quiz' && <BottomBar actionLabel="继续" disabled onAction={() => {}} />}
       {phase === 'feedback' && result && (

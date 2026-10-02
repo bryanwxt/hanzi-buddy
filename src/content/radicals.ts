@@ -22,7 +22,7 @@ export const RADICALS: Record<string, RadicalMeaning> = {
   '忄': m('心', 'heart', '❤️'), '心': m('心', 'heart', '❤️'),
   '土': m('土', 'earth', '🟫'),
   '火': m('火', 'fire', '🔥'), '灬': m('火', 'fire', '🔥'),
-  '钅': m('金', 'metal', '🔩'),
+  '钅': m('金', 'metal', '🔩'), '金': m('金', 'metal', '🔩'),
   '纟': m('丝', 'thread', '🧵'),
   '宀': m('房', 'roof', '🏠'),
   '目': m('目', 'eye', '👁️'),

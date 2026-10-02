@@ -48,12 +48,12 @@ export function CollectionScreen() {
       </header>
       <div class="filters" role="group" aria-label="筛选">
         <button type="button" class={`chip ${filter === 'all' ? 'is-on' : ''}`} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>全部</button>
+        <button type="button" class={`chip ${filter === 'gold' ? 'is-on' : ''}`} aria-pressed={filter === 'gold'} onClick={() => setFilter('gold')}>✨ 金卡</button>
         {POWERS.map((p) => (
           <button key={p.id} type="button" class={`chip ${filter === p.id ? 'is-on' : ''}`} aria-pressed={filter === p.id} aria-label={`${p.mark} ${p.name}`} onClick={() => setFilter(p.id)}>
             {p.mark} <span class="hanzi">{p.name}</span>
           </button>
         ))}
-        <button type="button" class={`chip ${filter === 'gold' ? 'is-on' : ''}`} aria-pressed={filter === 'gold'} onClick={() => setFilter('gold')}>✨ 金卡</button>
       </div>
       <div class="zika-grid">
         {visible.map((c) =>

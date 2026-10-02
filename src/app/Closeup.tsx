@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
+import { visibleAccessory } from '../fun/costumes';
+import type { KidState } from '../types';
 import { Truffle } from '../ui/truffle/Truffle';
 
 const RAYS = Array.from({ length: 24 }, (_, i) => {
@@ -9,7 +11,7 @@ const RAYS = Array.from({ length: 24 }, (_, i) => {
 }).join(' ');
 
 /** A short full-screen "咦！" close-up of Truffle on a soft green sunburst. Never blocks input. */
-export function Closeup({ ms = 900 }: { ms?: number }) {
+export function Closeup({ kid, ms = 900 }: { kid: KidState; ms?: number }) {
   const [shown, setShown] = useState(true);
   useEffect(() => {
     const t = setTimeout(() => setShown(false), ms);
@@ -22,7 +24,15 @@ export function Closeup({ ms = 900 }: { ms?: number }) {
         <rect width="400" height="400" fill="#fbf6ea" opacity="0.92" />
         <path d={RAYS} fill="#c9efc6" />
       </svg>
-      <Truffle mood="wow" size={360} label={null} />
+      <Truffle
+        mood="wow"
+        size={360}
+        label={null}
+        accessory={visibleAccessory(kid)}
+        outfit={kid.outfit}
+        power={kid.activePower}
+        powerTier={kid.activePower ? (kid.powerTiersSeen[kid.activePower] ?? 0) : 0}
+      />
     </div>
   );
 }

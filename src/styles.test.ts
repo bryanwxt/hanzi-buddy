@@ -22,6 +22,12 @@ describe('ink layer contracts (paint rules jsdom cannot see)', () => {
   });
 });
 
+describe('collection contrast', () => {
+  it('stars on gold cards are ink, not gold-on-gold', () => {
+    expect(css).toMatch(/\.card--gold \.zika__stars \{[^}]*color: var\(--ink\)/);
+  });
+});
+
 describe('no dragon left in what people see', () => {
   it('manifest, theme colour and settings copy', () => {
     const vite = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');

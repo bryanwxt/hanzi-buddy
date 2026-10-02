@@ -105,7 +105,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     // Dated by the session's own day (a session can finish after midnight); one prize per day however fast the taps.
     if (!canOpenChest(kidRef.current, rec.date)) return;
     const { kid: next, result } = openChest(kidRef.current, rec.date, settings.zodiac);
-    await save(next);
+    await save(next).catch(() => {}); // never strand the child on this screen, even if saving fails
     setChest(result);
     playSfx('chest');
     const r = chestRef.current?.getBoundingClientRect();
@@ -115,7 +115,8 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
   const powerUp = async () => {
     const seen = { ...kidRef.current.powerTiersSeen };
     for (const t of seq.newTiers) seen[t.id] = Math.max(seen[t.id] ?? 0, t.tier);
-    await save({ ...kidRef.current, powerTiersSeen: seen, activePower: seq.power!.id });
+    // Never strand the child on this screen: carry on even if saving fails.
+    await save({ ...kidRef.current, powerTiersSeen: seen, activePower: seq.power!.id }).catch(() => {});
     setPowered(true);
     playSfx('levelUp');
     celebrate();

@@ -76,3 +76,52 @@ describe('Celebration power-up', () => {
     await waitFor(() => expect(document.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('water'));
   });
 });
+
+describe('Celebration power-up, several powers at once', () => {
+  it('saves every new tier, shows the highest, and only then offers 继续', async () => {
+    const app = await makeAppData();
+    const fam = powerFamilies(BUILTIN);
+    const known = [...fam.water.slice(0, 3), ...fam.fire.slice(0, 3)];
+    await putWords(app.db, builtinWords(0));
+    await putCards(app.db, known.map((c) => makeCard(`b:${c}`, 'recognise', new Date(2026, 9, 20), true)));
+    await saveKid(app.db, { ...DEFAULT_KID, lastChestDate: '2026-10-02' });
+    renderWithApp(<Celebration rec={finished('2026-10-02', ['flashcards'])} />, app);
+    await screen.findByText('太棒了！');
+    fireEvent.click(screen.getByText('继续'));
+    await screen.findByText('新能力！');
+    expect(document.querySelector('.power-intro')?.textContent).toContain('火');
+    expect(screen.queryByText('继续')).toBeNull();
+    fireEvent(screen.getByRole('button', { name: '按住，变身！' }), new Event('pointerdown', { bubbles: true }));
+    await hold();
+    await waitFor(async () => expect((await getKid(app.db))?.powerTiersSeen).toEqual({ water: 1, fire: 2 }));
+    expect((await getKid(app.db))?.activePower).toBe('fire');
+    await waitFor(() => expect(document.querySelector('.celebrate svg.truffle')?.getAttribute('data-tier')).toBe('2'));
+  });
+  it('never strands the child if saving fails', async () => {
+    const app = await makeAppData();
+    const water = powerFamilies(BUILTIN).water.slice(0, 3);
+    await putWords(app.db, builtinWords(0));
+    await putCards(app.db, water.map((c) => makeCard(`b:${c}`, 'recognise', new Date(2026, 9, 20), true)));
+    await saveKid(app.db, { ...DEFAULT_KID, lastChestDate: '2026-10-02' });
+    renderWithApp(<Celebration rec={finished('2026-10-02', ['flashcards'])} />, app);
+    await screen.findByText('太棒了！');
+    fireEvent.click(screen.getByText('继续'));
+    await screen.findByText('新能力！');
+    app.db.close();
+    fireEvent(screen.getByRole('button', { name: '按住，变身！' }), new Event('pointerdown', { bubbles: true }));
+    await hold();
+    expect(await screen.findByText('回家')).toBeTruthy();
+  });
+});
+
+describe('Celebration chest save failure', () => {
+  it('still lets the child continue if the chest cannot be saved', async () => {
+    const app = await setup('2026-10-02', ['flashcards']);
+    fireEvent.click(screen.getByText('继续'));
+    const chest = await screen.findByRole('button', { name: '按住打开宝箱' });
+    app.db.close();
+    fireEvent(chest, new Event('pointerdown', { bubbles: true }));
+    await hold();
+    expect(await screen.findByText('回家')).toBeTruthy();
+  });
+});
