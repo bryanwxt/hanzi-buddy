@@ -1,0 +1,61 @@
+import { getCharInfo } from '../../content';
+import { RADICALS } from '../../content/radicals';
+import { shuffle, type Rng } from '../../lib/random';
+
+export const MIN_KNOWN = 12;
+export const ROUND_SIZE = 6;
+export const GRID_SIZE = 8;
+
+export interface TapAllQuestion {
+  kind: 'tapAll';
+  component: string;
+  grid: string[];
+  answers: string[];
+}
+
+export interface WhichPartQuestion {
+  kind: 'whichPart';
+  char: string;
+  component: string; // the correct option
+  options: string[];
+}
+
+export type ComponentQuestion = TapAllQuestion | WhichPartQuestion;
+
+export function charHasComponent(char: string, component: string): boolean {
+  const info = getCharInfo(char);
+  return !!info && char !== component && (info.radical === component || info.components.includes(component));
+}
+
+export function buildComponentRound(known: string[], rng: Rng): ComponentQuestion[] | null {
+  const chars = [...new Set(known.filter((c) => getCharInfo(c)))];
+  if (chars.length < MIN_KNOWN) return null;
+
+  const families = Object.keys(RADICALS)
+    .map((component) => ({ component, members: chars.filter((c) => charHasComponent(c, component)) }))
+    .filter((f) => f.members.length >= 2);
+
+  const tapAll: TapAllQuestion[] = shuffle(families, rng).flatMap((f) => {
+    const answers = shuffle(f.members, rng).slice(0, 4);
+    const others = shuffle(chars.filter((c) => c !== f.component && !charHasComponent(c, f.component)), rng).slice(0, GRID_SIZE - answers.length);
+    if (answers.length + others.length < GRID_SIZE) return [];
+    return [{ kind: 'tapAll' as const, component: f.component, answers, grid: shuffle([...answers, ...others], rng) }];
+  });
+
+  const whichPart: WhichPartQuestion[] = shuffle(chars, rng).flatMap((char) => {
+    const parts = getCharInfo(char)!.components.filter((p) => p !== char);
+    const component = parts.find((p) => RADICALS[p]);
+    if (!component || parts.length < 2) return [];
+    const sameMeaning = RADICALS[component]!.zh;
+    const others = parts.filter((p) => p !== component && RADICALS[p]?.zh !== sameMeaning);
+    if (!others.length) return [];
+    return [{ kind: 'whichPart' as const, char, component, options: shuffle([component, ...shuffle(others, rng).slice(0, 2)], rng) }];
+  });
+
+  const out: ComponentQuestion[] = [];
+  for (let i = 0; out.length < ROUND_SIZE && (i < tapAll.length || i < whichPart.length); i++) {
+    if (tapAll[i]) out.push(tapAll[i]!);
+    if (out.length < ROUND_SIZE && whichPart[i]) out.push(whichPart[i]!);
+  }
+  return out.length ? out : null;
+}
