@@ -65,6 +65,7 @@ describe('Celebration power-up', () => {
     await screen.findByText('太棒了！');
     fireEvent.click(screen.getByText('继续'));
     expect(await screen.findByText('新能力！')).toBeTruthy();
+    expect(screen.getByText('按住，变身！')).toBeTruthy();
     expect(document.querySelector('svg.truffle')?.getAttribute('data-tier')).toBe('0');
     fireEvent(screen.getByRole('button', { name: '按住，变身！' }), new Event('pointerdown', { bubbles: true }));
     await hold();

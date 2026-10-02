@@ -8,6 +8,7 @@ import { makeAppData, renderWithApp } from '../test/renderWithApp';
 import { DEFAULT_KID, type SessionPlan } from '../types';
 import { HomeScreen } from './HomeScreen';
 import { CollectionScreen } from './CollectionScreen';
+import { powerFamilies } from '../fun/powers';
 import { Wardrobe } from './Wardrobe';
 
 vi.mock('../audio/speech', () => ({ speak: vi.fn(), primeSpeech: vi.fn() }));
@@ -98,6 +99,19 @@ describe("Truffle's room powers", () => {
     fireEvent.click(rows.find((r) => r.getAttribute('aria-label')!.startsWith('水'))!);
     await waitFor(async () => expect((await getKid(app.db))?.activePower).toBe('water'));
     expect(document.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('water');
+  });
+});
+
+describe("Truffle's room ready-to-unlock hint", () => {
+  it('marks a power the child has earned but not yet unlocked at a celebration', async () => {
+    const app = await makeAppData();
+    const water = powerFamilies(BUILTIN).water.slice(0, 3);
+    await putWords(app.db, builtinWords(0));
+    await putCards(app.db, water.map((c) => makeCard(`b:${c}`, 'recognise', new Date(2026, 9, 20), true)));
+    renderWithApp(<Wardrobe />, app);
+    fireEvent.click(screen.getByRole('tab', { name: '能力' }));
+    await waitFor(() => expect(document.querySelectorAll('.power-row__ready')).toHaveLength(1));
+    expect(screen.getByText('完成练习就解锁')).toBeTruthy();
   });
 });
 

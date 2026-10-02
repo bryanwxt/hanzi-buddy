@@ -54,6 +54,7 @@ export function Wardrobe() {
             {POWERS.map((p) => {
               const pr = progress?.find((x) => x.id === p.id);
               const tier = k.powerTiersSeen[p.id] ?? 0;
+              const ready = (pr?.tier ?? 0) > tier; // earned, unlocked at the next celebration
               return (
                 <button
                   key={p.id}
@@ -65,7 +66,8 @@ export function Wardrobe() {
                   onClick={() => void save({ ...k, activePower: p.id })}
                 >
                   <span class="power-row__mark">{tier > 0 ? p.mark : '🔒'}</span>
-                  <span class="power-row__name hanzi">{p.radicals.join(' ')}</span>
+                  <span class="power-row__name hanzi">{p.radicals[0]}</span>
+                  {ready && <span class="power-row__ready">✨ <Label zh="完成练习就解锁" /></span>}
                   <span class="power-row__pips" aria-hidden="true">{[1, 2, 3].map((t) => <i key={t} class={t <= tier ? 'is-on' : ''} style={t <= tier ? { background: p.color } : undefined} />)}</span>
                   <span class="power-row__count">{pr?.known ?? 0}/{pr?.size ?? 0}</span>
                 </button>

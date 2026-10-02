@@ -5,7 +5,9 @@
 A home-screen iPad app for daily Chinese character practice (P2 → P3), used by the child alone:
 spaced-repetition flashcards, 听写 writing, a components fishing game, and speaking recordings,
 with **Truffle 松露** — the family's grumpy grey-and-white cat — as the mascot: he starts every session
-unimpressed and warms up as the child gets answers right. Parents use the 🔒 PIN-protected area for
+unimpressed and warms up as the child gets answers right.
+Learning a radical family (氵 水, 火, 木, 金, 土, 口, 亻, 讠, 辶, 心, 日) gives Truffle a power in three tiers, and every
+character learned is caught as a card in the 字卡 collection (gold when he can also write it). Parents use the 🔒 PIN-protected area for
 progress, school word lists, recordings, reward goals, settings and backups. All data stays on the iPad.
 
 Design: `docs/superpowers/specs/2026-10-02-hanzi-buddy-design.md`, redesign `docs/superpowers/specs/2026-10-02-ziji-truffle-design.md`

@@ -177,6 +177,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
               bounce={powered}
             />
             {!powered && <HoldButton label="按住，变身！" onComplete={() => void powerUp()} />}
+            {!powered && <p><Label zh="按住，变身！" /></p>}
           </>
         )}
         {phase === 'badges' && (
