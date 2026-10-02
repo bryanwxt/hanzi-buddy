@@ -11,6 +11,11 @@ if (typeof document !== 'undefined') {
   // jsdom has no object URLs.
   URL.createObjectURL ??= () => 'blob:test';
   URL.revokeObjectURL ??= () => {};
+  // jsdom lacks on* pointer handlers, so Preact would listen for "PointerDown" instead of the
+  // real lowercase event; browsers (incl. iPad Safari) have them.
+  for (const name of ['onpointerdown', 'onpointerup', 'onpointercancel', 'onpointerleave', 'onpointermove']) {
+    if (!(name in HTMLElement.prototype)) Object.defineProperty(HTMLElement.prototype, name, { value: null, writable: true, configurable: true });
+  }
   const { cleanup } = await import('@testing-library/preact');
   afterEach(() => cleanup());
 }

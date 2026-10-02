@@ -1,5 +1,5 @@
-import { fireEvent, render } from '@testing-library/preact';
-import { describe, expect, it, vi } from 'vitest';
+import { render } from '@testing-library/preact';
+import { describe, expect, it } from 'vitest';
 import { Chest } from './Chest';
 import { ProgressBar } from './ProgressBar';
 import { Scene } from './Scene';
@@ -28,12 +28,9 @@ describe('ProgressBar', () => {
 });
 
 describe('Chest', () => {
-  it('opens on tap', () => {
-    const onOpen = vi.fn();
-    const { container, rerender } = render(<Chest open={false} onOpen={onOpen} />);
-    fireEvent.click(container.querySelector('button')!);
-    expect(onOpen).toHaveBeenCalled();
-    rerender(<Chest open onOpen={onOpen} />);
+  it('is art only and shows open', () => {
+    const { container } = render(<Chest open />);
     expect(container.querySelector('.chest')!.className).toContain('is-open');
+    expect(container.querySelector('button')).toBeNull();
   });
 });

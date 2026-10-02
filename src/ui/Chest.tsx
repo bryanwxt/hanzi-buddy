@@ -1,6 +1,7 @@
-export function Chest({ open, onOpen }: { open: boolean; onOpen: () => void }) {
+/** The treasure chest art; opening is done with a HoldButton. */
+export function Chest({ open }: { open: boolean }) {
   return (
-    <button type="button" class={`chest ${open ? 'is-open' : ''}`} aria-label="打开宝箱" onClick={onOpen} disabled={open}>
+    <div class={`chest ${open ? 'is-open' : ''}`} aria-hidden="true">
       <svg viewBox="0 0 160 140" width="210" height="184" aria-hidden="true">
         <defs>
           <radialGradient id="chest-glow">
@@ -20,6 +21,6 @@ export function Chest({ open, onOpen }: { open: boolean; onOpen: () => void }) {
           <path d="M30 40 Q80 24 130 40" stroke="rgba(255,255,255,0.35)" stroke-width="4" fill="none" stroke-linecap="round" />
         </g>
       </svg>
-    </button>
+    </div>
   );
 }

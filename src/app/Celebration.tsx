@@ -8,6 +8,7 @@ import { totalStars } from '../stats/stats';
 import { allSessions, getKid, saveKid } from '../store/repo';
 import { DEFAULT_KID, type KidState, type SessionRecord } from '../types';
 import { Chest } from '../ui/Chest';
+import { HoldButton } from '../ui/HoldButton';
 import { celebrate } from '../ui/confetti';
 import { Label } from '../ui/Label';
 import { burst, flyAlong } from '../ui/motion';
@@ -146,9 +147,10 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             <h1><Label zh={chest ? (chest.kind === 'accessory' ? `${kid.petName}有新东西了！` : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
             {chest && <div class="prize">{chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}</div>}
             <div ref={chestRef}>
-              <Chest open={!!chest} onOpen={() => void open()} />
+              <Chest open={!!chest} />
+              <HoldButton label="按住打开宝箱" onComplete={() => void open()} disabled={!!chest} />
             </div>
-            {!chest && <p><Label zh="点一下打开宝箱！" /></p>}
+            {!chest && <p><Label zh="按住，打开宝箱！" /></p>}
           </>
         )}
         {phase === 'evolve' && <h1><Label zh={`${kid.petName}长大了！`} /></h1>}

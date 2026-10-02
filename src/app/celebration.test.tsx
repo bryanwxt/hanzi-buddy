@@ -13,6 +13,8 @@ vi.mock('../ui/motion', () => ({ burst: vi.fn(), flyAlong: vi.fn(async () => {})
 const plan = (steps: StepKind[]): SessionPlan => ({ steps, reviewWordIds: [], newWordIds: [], flashTimeBoxMs: 0, writeCandidates: [], writeCount: 0 });
 const finished = (date: string, steps: StepKind[]) => ({ ...createSessionRecord(plan(steps), date, 0), completed: true, completedSteps: steps });
 
+const hold = () => new Promise((r) => setTimeout(r, 1300));
+
 async function setup(date: string, steps: StepKind[]) {
   const app = await makeAppData();
   await saveKid(app.db, { ...DEFAULT_KID });
@@ -25,10 +27,9 @@ describe('Celebration chest', () => {
   it('gives one prize however fast the chest is tapped', async () => {
     const app = await setup('2026-10-02', ['flashcards']);
     fireEvent.click(screen.getByText('继续'));
-    const chest = await screen.findByRole('button', { name: '打开宝箱' });
-    fireEvent.click(chest);
-    fireEvent.click(chest);
-    fireEvent.click(chest);
+    const chest = await screen.findByRole('button', { name: '按住打开宝箱' });
+    for (let i = 0; i < 3; i++) fireEvent(chest, new Event('pointerdown', { bubbles: true }));
+    await hold();
     await screen.findByText(/有新东西了/);
     await waitFor(async () => expect((await getKid(app.db))?.lastChestDate).toBe('2026-10-02'));
     const kid = await getKid(app.db);
@@ -39,7 +40,8 @@ describe('Celebration chest', () => {
   it("dates the chest by the session's own day when it finishes after midnight", async () => {
     const app = await setup('2026-10-01', ['flashcards']);
     fireEvent.click(screen.getByText('继续'));
-    fireEvent.click(await screen.findByRole('button', { name: '打开宝箱' }));
+    fireEvent(await screen.findByRole('button', { name: '按住打开宝箱' }), new Event('pointerdown', { bubbles: true }));
+    await hold();
     await waitFor(async () => expect((await getKid(app.db))?.lastChestDate).toBe('2026-10-01'));
   });
 
