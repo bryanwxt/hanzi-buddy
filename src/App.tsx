@@ -11,6 +11,7 @@ import { Wardrobe } from './app/Wardrobe';
 import { bootstrap, firstRoute, type Booted } from './bootstrap';
 import { ParentArea } from './parent/ParentArea';
 import { DB_NAME } from './store/db';
+import { withViewTransition } from './ui/motion';
 import { allWords, getKid, getSettings } from './store/repo';
 import { hanChars } from './content';
 import { prefetchStrokes } from './content/strokes';
@@ -46,7 +47,7 @@ export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: str
   if (error) return <ErrorScreen message={error} dbName={dbName} />;
   if (!booted) return <div class="screen loading">🥚</div>;
 
-  const app: AppData = { ...booted, now, go: setRoute, refresh };
+  const app: AppData = { ...booted, now, go: (r) => withViewTransition(() => setRoute(r)), refresh };
   return (
     <AppContext.Provider value={app}>
       <Screen route={route} />
