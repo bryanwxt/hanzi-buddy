@@ -1,0 +1,54 @@
+import { fireEvent, screen, waitFor } from '@testing-library/preact';
+import { describe, expect, it, vi } from 'vitest';
+import { allWords, getSettings, putWords } from '../store/repo';
+import { makeWord } from '../test/fixtures';
+import { makeAppData, renderWithApp } from '../test/renderWithApp';
+import { BackupPanel } from './BackupPanel';
+import { SettingsPanel } from './SettingsPanel';
+import { WordsPanel } from './WordsPanel';
+
+vi.mock('../content/strokes', () => ({ strokeAvailability: vi.fn(async () => 'yes') }));
+vi.mock('../lib/files', () => ({ saveTextFile: vi.fn(async () => {}) }));
+vi.mock('../audio/speech', () => ({ speak: vi.fn(), setSpeechRate: vi.fn() }));
+vi.mock('../audio/sfx', () => ({ setSfxEnabled: vi.fn() }));
+
+import { saveTextFile } from '../lib/files';
+
+describe('WordsPanel', () => {
+  it('previews a pasted list, adds it, and pulls matching built-in words forward', async () => {
+    const app = await makeAppData();
+    await putWords(app.db, [makeWord('大', { rank: 3 })]);
+    renderWithApp(<WordsPanel />, app);
+    fireEvent.input(await screen.findByLabelText('List name'), { target: { value: '听写 7' } });
+    fireEvent.input(screen.getByLabelText('Words'), { target: { value: '朋友\n大\nhello' } });
+    fireEvent.click(screen.getByText('Preview'));
+    expect(screen.getByText(/Skipped \(not 1–4 Chinese characters\): hello/)).toBeTruthy();
+    fireEvent.click(screen.getByText('Add 2 words'));
+    expect(await screen.findByText('Added 1 new word; moved 1 built-in to the front of the queue.')).toBeTruthy();
+    const words = await allWords(app.db);
+    expect(words.find((w) => w.text === '朋友')).toMatchObject({ source: 'parent', listName: '听写 7', writeable: true });
+    expect(words.find((w) => w.text === '大')?.listName).toBe('听写 7');
+  });
+});
+
+describe('SettingsPanel', () => {
+  it('saves settings within sensible limits', async () => {
+    const app = await makeAppData();
+    renderWithApp(<SettingsPanel />, app);
+    fireEvent.change(screen.getByLabelText('New words per day (0–10)'), { target: { value: '15' } });
+    await waitFor(async () => expect((await getSettings(app.db)).newPerDay).toBe(10));
+    fireEvent.click(screen.getByLabelText('Speaking recordings'));
+    await waitFor(async () => expect((await getSettings(app.db)).activities.speaking).toBe(false));
+  });
+});
+
+describe('BackupPanel', () => {
+  it('saves a backup file and records when it happened', async () => {
+    const app = await makeAppData();
+    renderWithApp(<BackupPanel />, app);
+    fireEvent.click(screen.getByText('Save backup file'));
+    expect(await screen.findByText('Backup saved.')).toBeTruthy();
+    expect(saveTextFile).toHaveBeenCalledWith('hanzi-buddy-backup-2026-10-02.json', expect.stringContaining('hanzi-buddy-backup'));
+    expect((await getSettings(app.db)).lastBackupAt).not.toBeNull();
+  });
+});

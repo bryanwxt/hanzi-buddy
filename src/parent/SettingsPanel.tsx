@@ -1,0 +1,84 @@
+import { useState } from 'preact/hooks';
+import { useApp } from '../app/AppContext';
+import { SetupPin } from '../app/SetupPin';
+import { setSfxEnabled } from '../audio/sfx';
+import { setSpeechRate, speak } from '../audio/speech';
+import { updateSettings } from '../store/repo';
+import type { Settings, StepKind } from '../types';
+
+const ACTIVITY_LABELS: Record<StepKind, string> = {
+  flashcards: 'Flashcards (feed the dragon)',
+  writing: '听写 writing',
+  components: 'Components game (fishing)',
+  speaking: 'Speaking recordings',
+};
+
+const clampInt = (value: string, min: number, max: number, fallback: number) => {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+};
+
+export function SettingsPanel() {
+  const { db, settings, refresh, go } = useApp();
+  const [s, setS] = useState(settings);
+  const [changingPin, setChangingPin] = useState(false);
+
+  const save = async (patch: Partial<Settings>) => {
+    const next = await updateSettings(db, patch);
+    setS(next);
+    setSpeechRate(next.speechRate);
+    setSfxEnabled(next.soundEffects);
+    await refresh();
+  };
+
+  if (changingPin) return <SetupPin onDone={() => setChangingPin(false)} />;
+
+  return (
+    <section class="panel">
+      <h2>Settings</h2>
+      <div class="field">
+        <label for="st-min">Session length in minutes (10–40)</label>
+        <input id="st-min" type="number" min={10} max={40} step={5} value={s.sessionMinutes}
+          onChange={(e) => void save({ sessionMinutes: clampInt(e.currentTarget.value, 10, 40, s.sessionMinutes) })} />
+      </div>
+      <div class="field">
+        <label for="st-new">New words per day (0–10)</label>
+        <input id="st-new" type="number" min={0} max={10} value={s.newPerDay}
+          onChange={(e) => void save({ newPerDay: clampInt(e.currentTarget.value, 0, 10, s.newPerDay) })} />
+      </div>
+      <fieldset class="field">
+        <legend>Activities</legend>
+        {(Object.keys(ACTIVITY_LABELS) as StepKind[]).map((k) => (
+          <label key={k}>
+            <input type="checkbox" checked={s.activities[k]} onChange={(e) => void save({ activities: { ...s.activities, [k]: e.currentTarget.checked } })} />{' '}
+            {ACTIVITY_LABELS[k]}
+          </label>
+        ))}
+      </fieldset>
+      <div class="field">
+        <label for="st-rate">Speech speed ({s.speechRate.toFixed(2)})</label>
+        <div class="row" style={{ justifyContent: 'flex-start' }}>
+          <input id="st-rate" type="range" min={0.5} max={1} step={0.05} value={s.speechRate} onChange={(e) => void save({ speechRate: Number(e.currentTarget.value) })} />
+          <button type="button" class="small-btn" onClick={() => speak('你好，我们一起学汉字！')}>🔊 Test</button>
+        </div>
+      </div>
+      <label>
+        <input type="checkbox" checked={s.soundEffects} onChange={(e) => void save({ soundEffects: e.currentTarget.checked })} /> Sound effects
+      </label>
+      <div class="row" style={{ justifyContent: 'flex-start' }}>
+        <div class="field">
+          <label for="st-tr">Target: characters recognised</label>
+          <input id="st-tr" type="number" min={1} value={s.targetRecognise} onChange={(e) => void save({ targetRecognise: clampInt(e.currentTarget.value, 1, 5000, s.targetRecognise) })} />
+        </div>
+        <div class="field">
+          <label for="st-tw">Target: characters written</label>
+          <input id="st-tw" type="number" min={1} value={s.targetWrite} onChange={(e) => void save({ targetWrite: clampInt(e.currentTarget.value, 1, 5000, s.targetWrite) })} />
+        </div>
+      </div>
+      <div class="row" style={{ justifyContent: 'flex-start' }}>
+        <button type="button" class="btn" onClick={() => go({ name: 'placement' })}>Re-run placement check</button>
+        <button type="button" class="btn" onClick={() => setChangingPin(true)}>Change PIN</button>
+      </div>
+    </section>
+  );
+}

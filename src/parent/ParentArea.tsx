@@ -1,15 +1,25 @@
 import { useState } from 'preact/hooks';
 import { useApp } from '../app/AppContext';
+import { BackupPanel } from './BackupPanel';
 import { Credits } from './Credits';
 import { Dashboard } from './Dashboard';
+import { PicturesPanel } from './PicturesPanel';
 import { PinGate } from './PinGate';
+import { RecordingsPanel } from './RecordingsPanel';
 import { RewardsPanel } from './RewardsPanel';
+import { SettingsPanel } from './SettingsPanel';
+import { WordsPanel } from './WordsPanel';
 
 export type ParentTab = 'dashboard' | 'words' | 'recordings' | 'pictures' | 'rewards' | 'settings' | 'backup' | 'credits';
 
 const TABS: [ParentTab, string][] = [
   ['dashboard', 'Overview'],
+  ['words', 'Words'],
+  ['recordings', 'Recordings'],
+  ['pictures', 'Pictures'],
   ['rewards', 'Rewards'],
+  ['settings', 'Settings'],
+  ['backup', 'Backup'],
   ['credits', 'Credits'],
 ];
 
@@ -29,7 +39,12 @@ export function ParentArea() {
         </header>
         <main class="parent__body">
           {tab === 'dashboard' && <Dashboard onNavigate={setTab} />}
+          {tab === 'words' && <WordsPanel />}
+          {tab === 'recordings' && <RecordingsPanel />}
+          {tab === 'pictures' && <PicturesPanel />}
           {tab === 'rewards' && <RewardsPanel />}
+          {tab === 'settings' && <SettingsPanel />}
+          {tab === 'backup' && <BackupPanel />}
           {tab === 'credits' && <Credits />}
         </main>
       </div>
