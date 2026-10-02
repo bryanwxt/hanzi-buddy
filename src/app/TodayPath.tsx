@@ -29,7 +29,7 @@ export function TodayPath({ nodes, started, onStart, pet }: Props) {
         const isCurrent = n.state === 'current';
         const icon = n.state === 'done' ? (n.kind === 'chest' ? '🎉' : <Check size={38} strokeWidth={3.5} />) : ICON[n.kind];
         return (
-          <li key={n.kind} class="path__row" style={`--x:${Math.round(Math.sin(i * 1.15) * 80)}px`}>
+          <li key={n.kind} class="path__row" style={`--x:${Math.round(Math.sin((i * Math.PI) / 2) * 80)}px`}>
             {isCurrent && <div class="path__bubble"><Label zh={verb} /></div>}
             <button
               type="button"

@@ -201,7 +201,7 @@
 .sticker--unknown { background: var(--surface); color: var(--muted); border: 3px dashed var(--line-strong); box-shadow: none; }
 .badges { display: flex; gap: 12px; flex-wrap: wrap; }
 .badge { background: var(--gold); border-radius: 999px; padding: 6px 16px; font-weight: 900; box-shadow: 0 4px 0 var(--gold-edge); color: var(--ink); }
-.wardrobe { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 16px; width: 100%; max-width: 720px; }
+.wardrobe { display: grid; grid-template-columns: repeat(auto-fill, 96px); justify-content: center; gap: 16px; width: 100%; max-width: 720px; }
 .wardrobe button { min-height: 96px; font-size: 48px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--surface); box-shadow: 0 var(--edge) 0 var(--line); }
 .wardrobe button.is-on { border-color: var(--blue); background: var(--blue-soft); box-shadow: 0 var(--edge) 0 var(--blue); }
 
