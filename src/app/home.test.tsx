@@ -137,6 +137,21 @@ describe("Truffle's room outfits", () => {
   });
 });
 
+describe("Truffle's room outfit details", () => {
+  it('shows pinyin on costume names, toggles accessories, and explains a hidden accessory where it is tapped', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], outfit: 'tiger', ownedAccessories: ['👑'], wearing: null } });
+    renderWithApp(<Wardrobe />, app);
+    expect(screen.getByRole('button', { name: '虎' }).querySelector('.label__py')?.textContent).toBe('hǔ');
+    const crown = screen.getByRole('button', { name: '👑' });
+    fireEvent.click(crown);
+    await waitFor(async () => expect((await getKid(app.db))?.wearing).toBe('👑'));
+    expect(crown.getAttribute('aria-pressed')).toBe('true');
+    expect(crown.closest('section')?.textContent).toContain('穿着连体衣时看不到小东西');
+    fireEvent.click(crown);
+    await waitFor(async () => expect((await getKid(app.db))?.wearing).toBeNull());
+  });
+});
+
 describe('HomeScreen word of the day', () => {
   it('shows a known character as the word of the day', async () => {
     const app = await makeAppData();

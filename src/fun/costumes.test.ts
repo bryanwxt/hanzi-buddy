@@ -17,7 +17,7 @@ describe('costumes', () => {
     expect(a.kid.ownedCostumes).toEqual(['tiger']);
     expect(openChest(DEFAULT_KID, '2026-10-02', null).result).toEqual({ kind: 'costume', id: 'dragon' });
     const b = openChest(a.kid, '2026-10-03', 'rabbit');
-    expect(b.result).not.toEqual({ kind: 'costume', id: 'rabbit' });
+    expect(b).toEqual(openChest(a.kid, '2026-10-03', null)); // the zodiac only matters for the very first chest
     expect(canOpenChest(b.kid, '2026-10-03')).toBe(false);
   });
   it('dragon-era installs with accessories still get the zodiac first', () => {
@@ -39,7 +39,16 @@ describe('costumes', () => {
   });
   it('a onesie hides the accessory', () => {
     expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'tiger' })).toBeNull();
-    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'chef' })).toBe('👑');
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'chef' })).toBeNull(); // no hat on a hat
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '🕶️', outfit: 'chef' })).toBe('🕶️');
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: null })).toBe('👑');
     expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'bogus' })).toBe('👑');
+  });
+});
+
+describe('costume input hardening', () => {
+  it('ignores an unknown zodiac or unknown owned ids', () => {
+    expect(openChest(DEFAULT_KID, '2026-10-02', 'bogus' as never).result).toEqual({ kind: 'costume', id: 'dragon' });
+    expect(openChest({ ...DEFAULT_KID, ownedCostumes: ['bogus'] }, '2026-10-02', 'pig').result).toEqual({ kind: 'costume', id: 'pig' });
   });
 });

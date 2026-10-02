@@ -35,9 +35,15 @@ export const COSTUMES: Costume[] = [...ONESIES, ...OUTFITS];
 
 export const costumeById = (id: string | null | undefined): Costume | undefined => COSTUMES.find((c) => c.id === id);
 
-/** A onesie's hood covers the head, so the accessory slot is hidden while one is worn. */
+/** Accessories that sit on the eyes or neck rather than on top of the head. */
+const NOT_ON_HEAD = ['🕶️', '🧣'];
+
+/** A onesie hides the accessory slot; an outfit (each has its own hat) hides head-top accessories — no hat on a hat. */
 export function visibleAccessory(kid: KidState): string | null {
-  return costumeById(kid.outfit)?.kind === 'onesie' ? null : kid.wearing;
+  const c = costumeById(kid.outfit);
+  if (!c || !kid.wearing) return kid.wearing;
+  if (c.kind === 'onesie') return null;
+  return NOT_ON_HEAD.includes(kid.wearing) ? kid.wearing : null;
 }
 
 export type ChestResult = { kind: 'costume'; id: string } | { kind: 'accessory'; item: string } | { kind: 'stars'; amount: number };
@@ -49,8 +55,8 @@ export function canOpenChest(kid: KidState, today: string): boolean {
 
 /** First chest ever: the child's own zodiac onesie. Then a seeded pick from everything not yet owned, then stars. */
 export function openChest(kid: KidState, today: string, zodiac: ZodiacId | null): { kid: KidState; result: ChestResult } {
-  if (kid.ownedCostumes.length === 0) {
-    const id = zodiac ?? 'dragon';
+  if (!kid.ownedCostumes.some((id) => costumeById(id))) {
+    const id = costumeById(zodiac)?.kind === 'onesie' ? zodiac! : 'dragon';
     return { kid: { ...kid, ownedCostumes: [id], lastChestDate: today }, result: { kind: 'costume', id } };
   }
   const pool = [

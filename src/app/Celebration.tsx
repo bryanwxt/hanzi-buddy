@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { playSfx } from '../audio/sfx';
 import { BUILTIN } from '../content';
 import { radicalMeaning } from '../content/radicals';
-import { canOpenChest, costumeById, openChest, type ChestResult } from '../fun/costumes';
+import { canOpenChest, costumeById, openChest, visibleAccessory, type ChestResult } from '../fun/costumes';
 import { newTiers, powerDef, powerFamilies, powerProgress, type PowerId } from '../fun/powers';
 import { newBadges, stickerFamilies } from '../fun/stickers';
 import { totalStars } from '../stats/stats';
@@ -180,7 +180,8 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             </p>
             <Truffle
               mood={powered ? 'cheer' : 'neutral'}
-              accessory={kid.wearing}
+              accessory={visibleAccessory(kid)}
+              outfit={kid.outfit}
               power={seq.power.id}
               powerTier={powered ? seq.power.tier : (kid.powerTiersSeen[seq.power.id] ?? 0)}
               size={220}

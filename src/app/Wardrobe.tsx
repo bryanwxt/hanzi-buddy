@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { BUILTIN } from '../content';
-import { costumeById, ONESIES, OUTFITS } from '../fun/costumes';
+import { costumeById, ONESIES, OUTFITS, visibleAccessory } from '../fun/costumes';
 import { ACCESSORIES } from '../fun/pet';
 import { POWERS, powerFamilies, powerProgress, type PowerProgress } from '../fun/powers';
 import { saveKid } from '../store/repo';
@@ -42,7 +42,6 @@ export function Wardrobe() {
         </div>
         {tab === 'outfits' ? (
           <div class="outfits" role="tabpanel">
-            {costumeById(k.outfit)?.kind === 'onesie' && k.wearing && <p class="outfits__note"><Label zh="穿着连体衣时看不到小东西" /></p>}
             {([['生肖', ONESIES], ['衣服', OUTFITS]] as const).map(([title, list]) => (
               <section key={title}>
                 <h2><Label zh={title} /></h2>
@@ -60,7 +59,7 @@ export function Wardrobe() {
                         onClick={() => void save({ ...k, outfit: k.outfit === c.id ? null : c.id })}
                       >
                         <span class="outfit__swatch" style={{ background: owned ? c.color : undefined }}>{owned ? '' : '🔒'}</span>
-                        <span class="outfit__name hanzi">{c.zh}</span>
+                        <span class="outfit__name"><Label zh={c.zh} /></span>
                       </button>
                     );
                   })}
@@ -69,12 +68,17 @@ export function Wardrobe() {
             ))}
             <section>
               <h2><Label zh="小东西" /></h2>
+              {k.wearing && !visibleAccessory(k) && (
+                <p class="outfits__note">
+                  <Label zh={costumeById(k.outfit)?.kind === 'onesie' ? '穿着连体衣时看不到小东西' : '戴着帽子时看不到这个小东西'} />
+                </p>
+              )}
               <div class="wardrobe">
-                <button type="button" class={k.wearing === null ? 'is-on' : ''} aria-label="不戴" onClick={() => void save({ ...k, wearing: null })}>🚫</button>
+                <button type="button" class={k.wearing === null ? 'is-on' : ''} aria-label="不戴" aria-pressed={k.wearing === null} onClick={() => void save({ ...k, wearing: null })}>🚫</button>
                 {ACCESSORIES.map((a) => {
                   const owned = k.ownedAccessories.includes(a);
                   return (
-                    <button key={a} type="button" class={`${k.wearing === a ? 'is-on' : ''}${owned ? '' : ' is-locked'}`} aria-label={a} disabled={!owned} onClick={() => void save({ ...k, wearing: a })}>{a}</button>
+                    <button key={a} type="button" class={`${k.wearing === a ? 'is-on' : ''}${owned ? '' : ' is-locked'}`} aria-label={a} aria-pressed={k.wearing === a} disabled={!owned} onClick={() => void save({ ...k, wearing: k.wearing === a ? null : a })}>{a}</button>
                   );
                 })}
               </div>
