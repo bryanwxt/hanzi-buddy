@@ -319,6 +319,142 @@ browser with the Web Audio API. No image or audio files are needed.
 - **Nothing is spent:** stars are a running total of completed steps plus
   chest bonuses. Goals are milestones; reaching one doesn't use up stars.
 
+## 5b. Modern look and motion (added 2026-10-02 after the first build)
+
+The first build looked dated:
+
+- hard 3D offset shadows
+- an emoji mascot tinted with a colour filter
+- simple linear keyframe bounces
+- confetti for everything
+
+The parent asked for a full modernization.
+
+### Motion system
+
+- **Shared motion tokens** in CSS:
+  - `--dur-fast` 150ms, `--dur-base` 280ms, `--dur-slow` 520ms
+  - `--ease-out`, plus two spring curves made with CSS `linear()` (supported
+    in iPad Safari 17.2 and later):
+    - `--spring` (gentle overshoot)
+    - `--spring-bouncy` (squash-and-stretch)
+  - If `linear()` isn't supported, fall back to `cubic-bezier`.
+- **Every interactive element** compresses when pressed (scale 0.95) and
+  springs back on release.
+- **Screen transitions:** route changes use the View Transitions API (iPad
+  Safari 18 and later), with a fade-and-rise cross-fade. Without the API, the
+  screen simply swaps.
+- **Staggered entrances** (40ms apart) for answer choices, fish, stickers and
+  stars.
+- **`prefers-reduced-motion`** turns off transitions, particles, the mascot's
+  idle motion and staggering. Content still appears instantly.
+
+### Mascot: a custom vector dragon
+
+The emoji is replaced by one `<Dragon>` SVG component, drawn for this app.
+
+- **Inputs:** `stage` (0–5), `palette` (from the pet colour), `mood`,
+  `accessory`, and `lookAt` (−1 to 1, the horizontal gaze).
+- **Stages:**
+
+  | Stage | Look |
+  |---|---|
+  | 0 | egg with spots and a gentle wobble |
+  | 1 | hatchling peeking out of a cracked shell |
+  | 2 | small round dragon with tiny wings |
+  | 3 | bigger dragon with horns and a tail |
+  | 4 | large dragon with full wings |
+  | 5 | stage 4 with a golden aura and sparkles |
+
+- **Colours:** each pet colour defines body, belly, wing and cheek colours as
+  CSS variables. No `hue-rotate`.
+- **Idle animation:** breathing (a slow scale on the body), blinking at random
+  2.5–5 s intervals, and pupils that follow `lookAt`.
+- **Moods:**
+  - `happy`: a springy hop and squash
+  - `munch`: the jaw opens and chews twice
+  - `comfort`: a slow nod with soft eyes
+  - `cheer`: the wings flap
+- **Speech bubble:** a rounded card with a tail, popping in on a spring.
+- **Accessories** stay as emoji, sitting at a head anchor point that is
+  defined for each stage.
+
+### Rewards and feedback
+
+- **Particle bursts** at the tap point for correct answers and caught fish: 8–12
+  small stars or dots drawn with DOM elements and the Web Animations API, about
+  600ms.
+- **Flying stars:** stars earned at the celebration fly in an arc into the ⭐
+  counter, which bumps as each one lands.
+- **Session progress bar** in the header, replacing the emoji step icons. It
+  fills smoothly, with a checkpoint marker per step that pops when that step
+  completes.
+- **Correct flashcard:** the chosen tile follows a curved path into the
+  dragon's mouth (Web Animations along a computed arc), and the dragon does
+  `munch`.
+- **Treasure chest:** an SVG chest that shakes, then its lid springs open and
+  the prize rises out with a glow.
+- **Confetti** only for a finished session, the pet evolving, a new badge, and
+  a reached reward goal.
+
+### Visual refresh
+
+- **Palette:** a warmer, richer set of tokens with soft layered shadows (a
+  contact shadow plus an ambient shadow) instead of the hard offset shadows.
+  Cards get 24px radii and a subtle inner highlight.
+- **Fonts**, self-hosted so they work offline:
+  - **Characters:** LXGW WenKai (霞鹜文楷, SIL OFL 1.1), a textbook-style 楷体.
+    A build script subsets it to every HSK 3.0 character (about 3,000) plus
+    the UI strings, giving a woff2 file of about 1–1.5 MB. Characters outside
+    the subset fall back to the system font.
+  - **Latin text, numbers and pinyin:** Nunito (SIL OFL), from
+    `@fontsource/nunito`.
+- **Scenes:** each activity has a lightweight SVG background with slow ambient
+  motion:
+
+  | Screen | Scene |
+  |---|---|
+  | Home | meadow and sky with drifting clouds |
+  | Flashcards | sky |
+  | 听写 | warm desk |
+  | Fishing | pond with moving waves |
+  | Speaking | soft stage light |
+  | Celebration | night sky with twinkles |
+
+- **Pinyin labels** keep runs of digits together ("45", not "4 5").
+
+### Content-correctness fix (found during verification)
+
+The game must only teach real meanings. Component meanings come from a
+character's **radical** only, never from any component that happens to appear
+in it. This applies to:
+
+- the intro card's meaning icon
+- membership in sticker families
+- fishing (tap-all) answers
+- which-part questions
+
+So 日 is not part of the 口 "mouth" family, and its intro shows no "mouth"
+label.
+
+### Testing
+
+- **Unit tests:**
+  - the stage-to-parts mapping for the dragon
+  - palette variables for each colour
+  - the blink scheduler (it can be given a fake random source)
+  - particle and arc geometry helpers
+  - the progress-bar fraction
+  - Label digit grouping
+  - the radical-only rule
+- **Component tests:**
+  - Dragon renders each stage
+  - the mood class is applied
+  - the accessory is anchored
+  - the progress bar shows completed checkpoints
+- **Browser pane at 1024×768 and 768×1024:** a visual walk-through of every
+  screen, with screenshots.
+
 ## 6. Parent area
 
 - **PIN gate.** A 4-digit PIN is set on first launch and stored as a SHA-256
