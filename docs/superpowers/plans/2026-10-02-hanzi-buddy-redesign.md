@@ -82,7 +82,7 @@ Modified: game.ts, stickers.ts, FlashcardStep.tsx, ComponentsStep.tsx, WritingSt
 
 ---
 
-### Task R1: Radical-only meanings and pinyin digit grouping
+### Task 1: (R1) Radical-only meanings and pinyin digit grouping
 
 **Files:**
 - Modify: `src/activities/components/game.ts`, `src/fun/stickers.ts`, `src/activities/flashcards/FlashcardStep.tsx` (`Intro` only), `src/ui/Label.tsx`
@@ -240,7 +240,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R2: Fonts and the modern stylesheet
+### Task 2: (R2) Fonts and the modern stylesheet
 
 **Files:**
 - Create: `scripts/font-lib.ts`, `scripts/font-lib.test.ts`, `scripts/build-font.ts`
@@ -812,7 +812,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R3: Motion helpers and screen transitions
+### Task 3: (R3) Motion helpers and screen transitions
 
 **Files:**
 - Create: `src/ui/motion.ts`, `src/ui/motion.test.ts`
@@ -1027,7 +1027,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R4: The vector dragon
+### Task 4: (R4) The vector dragon
 
 **Files:**
 - Create: `src/ui/dragon/parts.ts`, `src/ui/dragon/parts.test.ts`, `src/ui/dragon/Dragon.tsx`, `src/ui/dragon/Dragon.test.tsx`
@@ -1583,7 +1583,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R5: Scenes and the session progress bar
+### Task 5: (R5) Scenes and the session progress bar
 
 **Files:**
 - Create: `src/ui/Scene.tsx`, `src/ui/ProgressBar.tsx`, `src/session/progress.ts`, `src/session/progress.test.ts`, `src/ui/scenery.test.tsx`
@@ -1815,7 +1815,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R6: Juicier activity feedback
+### Task 6: (R6) Juicier activity feedback
 
 **Files:**
 - Modify: `src/activities/flashcards/FlashcardStep.tsx`, `src/activities/components/ComponentsStep.tsx`, `src/activities/writing/WritingStep.tsx`, `src/app/StickerBook.tsx`, `src/app/Wardrobe.tsx`
@@ -2000,7 +2000,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R7: Treasure chest and flying-star celebration
+### Task 7: (R7) Treasure chest and flying-star celebration
 
 **Files:**
 - Create: `src/ui/Chest.tsx`
@@ -2279,7 +2279,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task R8: Visual verification at iPad sizes
+### Task 8: (R8) Visual verification at iPad sizes
 
 **Files:** none planned. Fix any layout issue in the file that owns it, and commit there with a short message.
 
