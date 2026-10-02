@@ -1,11 +1,18 @@
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { playSfx } from '../../audio/sfx';
 import { speak } from '../../audio/speech';
 import { radicalMeaning } from '../../content/radicals';
 import type { KidState } from '../../types';
 import { Label } from '../../ui/Label';
+import { burst } from '../../ui/motion';
 import { Pet } from '../../ui/Pet';
 import type { ComponentQuestion, TapAllQuestion, WhichPartQuestion } from './game';
+
+const splash = (el: Element | null | undefined, count = 8) => {
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  burst(r.left + r.width / 2, r.top + r.height / 2, { count, glyphs: ['💧', '✦', '•'] });
+};
 
 interface Props {
   questions: ComponentQuestion[];
@@ -60,12 +67,16 @@ export function ComponentsStep({ questions, kid, known, onDone }: Props) {
 
 function TapAll({ q, checked, onCheck }: { q: TapAllQuestion; checked: boolean; onCheck: (allRight: boolean) => void }) {
   const [caught, setCaught] = useState<Set<string>>(new Set());
+  const fishRefs = useRef(new Map<string, HTMLButtonElement>());
   const m = radicalMeaning(q.component);
   const toggle = (c: string) => {
     if (checked) return;
     const next = new Set(caught);
     if (next.has(c)) next.delete(c);
-    else next.add(c);
+    else {
+      next.add(c);
+      splash(fishRefs.current.get(c), 6);
+    }
     setCaught(next);
   };
   const state = (c: string) => {
@@ -92,6 +103,9 @@ function TapAll({ q, checked, onCheck }: { q: TapAllQuestion; checked: boolean; 
             aria-label={c}
             aria-pressed={caught.has(c)}
             onClick={() => toggle(c)}
+            ref={(el) => {
+              if (el) fishRefs.current.set(c, el);
+            }}
           >
             <span class="fish__body" aria-hidden="true">🐟</span>
             <span class="fish__char" aria-hidden="true">{c}</span>
@@ -99,7 +113,12 @@ function TapAll({ q, checked, onCheck }: { q: TapAllQuestion; checked: boolean; 
         ))}
       </div>
       {!checked && (
-        <button type="button" class="btn btn--good" disabled={!caught.size} onClick={() => onCheck(allRight)}>
+        <button type="button" class="btn btn--good" disabled={!caught.size}
+          onClick={() => {
+            if (allRight) q.answers.forEach((a) => splash(fishRefs.current.get(a)));
+            onCheck(allRight);
+          }}
+        >
           <Label zh="检查" />
         </button>
       )}
@@ -120,15 +139,16 @@ function WhichPart({ q, checked, onCheck }: { q: WhichPartQuestion; checked: boo
         <span>{m.emoji} {m.zh}</span>
         <Label zh="的意思？" />
       </div>
-      <div class="bubbles">
+      <div class="bubbles stagger">
         {q.options.map((o) => (
           <button
             key={o}
             type="button"
             class={`bubble-opt ${checked ? (o === q.component ? 'is-right' : o === picked ? 'is-oops' : '') : ''}`}
             disabled={checked}
-            onClick={() => {
+            onClick={(e) => {
               setPicked(o);
+              if (o === q.component) splash(e.currentTarget, 10);
               onCheck(o === q.component);
             }}
           >

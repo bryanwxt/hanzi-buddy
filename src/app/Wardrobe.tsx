@@ -35,7 +35,7 @@ export function Wardrobe() {
         {k.ownedAccessories.length === 0 ? (
           <p><Label zh="完成练习就能打开宝箱，得到新东西！" /></p>
         ) : (
-          <div class="wardrobe">
+          <div class="wardrobe stagger">
             <button type="button" class={k.wearing === null ? 'is-on' : ''} aria-label="不戴" onClick={() => void wear(null)}>🚫</button>
             {k.ownedAccessories.map((a) => (
               <button key={a} type="button" class={k.wearing === a ? 'is-on' : ''} aria-label={a} onClick={() => void wear(a)}>{a}</button>

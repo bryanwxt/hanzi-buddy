@@ -6,6 +6,7 @@ import { hanChars } from '../../content';
 import { loadStrokeData } from '../../content/strokes';
 import type { KidState, Word } from '../../types';
 import { Label } from '../../ui/Label';
+import { burst } from '../../ui/motion';
 import { Pet } from '../../ui/Pet';
 import { SpeakButton } from '../../ui/SpeakButton';
 
@@ -61,6 +62,8 @@ export function WritingStep({ word, kid, known, onDone }: Props) {
       onComplete: (summary) => {
         if (cancelled) return;
         playSfx('star');
+        const r = host.current?.getBoundingClientRect();
+        if (r) burst(r.left + r.width / 2, r.top + r.height / 2, { count: summary.totalMistakes === 0 ? 14 : 8 });
         setMisses((m) => m + summary.totalMistakes);
         setCharMisses(summary.totalMistakes);
       },

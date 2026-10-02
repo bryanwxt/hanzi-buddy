@@ -6,6 +6,8 @@ import { FlashcardStep } from './FlashcardStep';
 
 vi.mock('../../audio/speech', () => ({ speak: vi.fn() }));
 vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }));
+vi.mock('../../ui/motion', () => ({ burst: vi.fn(), flyAlong: vi.fn(async () => {}), reducedMotion: () => false }));
+import { burst, flyAlong } from '../../ui/motion';
 
 const pool = builtinWords(0);
 const he = pool.find((w) => w.text === '河')!;
@@ -60,5 +62,27 @@ describe('intro meanings', () => {
     cleanup();
     render(<FlashcardStep {...base} item={{ wordId: he.id, isNew: true, retry: false }} voice={false} onDone={vi.fn()} />);
     expect(document.querySelector('.intro')!.textContent).toContain('💧');
+  });
+});
+
+describe('feedback effects', () => {
+  it('bursts and feeds the tile to the dragon on a correct answer, once', () => {
+    vi.mocked(burst).mockClear();
+    vi.mocked(flyAlong).mockClear();
+    const onDone = vi.fn();
+    render(<FlashcardStep {...base} item={review} voice={false} onDone={onDone} />);
+    const right = screen.getByRole('button', { name: he.pinyin });
+    fireEvent.click(right);
+    fireEvent.click(right);
+    expect(burst).toHaveBeenCalledTimes(1);
+    expect(flyAlong).toHaveBeenCalledWith(right, expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }), expect.anything());
+    fireEvent.click(screen.getByText('下一个'));
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+  it('does not celebrate a wrong answer', () => {
+    vi.mocked(burst).mockClear();
+    render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
+    fireEvent.click([...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!);
+    expect(burst).not.toHaveBeenCalled();
   });
 });

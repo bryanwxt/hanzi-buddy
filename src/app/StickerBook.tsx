@@ -41,7 +41,7 @@ export function StickerBook() {
       </header>
 
       {family ? (
-        <div class="sticker-grid">
+        <div class="sticker-grid stagger">
           {family.chars.map((c) =>
             know.knownChars.has(c) ? (
               <button key={c} type="button" class="sticker" style={tilt(c)} aria-label={c} onClick={() => speak(c)}>{c}</button>
@@ -54,7 +54,7 @@ export function StickerBook() {
         myWords.length === 0 ? (
           <p><Label zh="还没有。" /></p>
         ) : (
-          <div class="sticker-grid">
+          <div class="sticker-grid stagger">
             {myWords.map((w) => (
               <button key={w.id} type="button" class="sticker" style={`${tilt(w.text)};font-size:${w.text.length > 2 ? 28 : 40}px`} aria-label={w.text} onClick={() => speak(w.text)}>
                 {w.text}
@@ -67,7 +67,7 @@ export function StickerBook() {
           <div class="badges">
             {badges.length ? badges.map((b) => <span key={b} class="badge">🏅 {b}</span>) : <Label zh="集齐一个家族就能得到徽章！" />}
           </div>
-          <div class="book">
+          <div class="book stagger">
             {families.map((f) => {
               const p = familyProgress(f, know.knownChars);
               return (

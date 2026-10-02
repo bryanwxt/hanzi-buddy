@@ -5,6 +5,7 @@ import { getCharInfo, hanChars } from '../../content';
 import { radicalMeaning } from '../../content/radicals';
 import { CHEERS, COMFORTS, pickLine } from '../../fun/pet';
 import { mulberry32, shuffle } from '../../lib/random';
+import { burst, flyAlong } from '../../ui/motion';
 import type { CardRecord, FlashItem, KidState, Word } from '../../types';
 import { Label } from '../../ui/Label';
 import { Pet } from '../../ui/Pet';
@@ -44,6 +45,8 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
   const [result, setResult] = useState<{ correct: boolean; responseMs: number } | null>(null);
   const shownAt = useRef(performance.now());
   const quizAt = useRef(performance.now());
+  const petRef = useRef<HTMLDivElement>(null);
+  const optionRefs = useRef(new Map<string, HTMLButtonElement>());
 
   useEffect(() => {
     if (phase === 'intro') speak(word.text);
@@ -59,9 +62,16 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
     setChoice(option);
     setResult({ correct, responseMs: Math.round(performance.now() - quizAt.current) });
     setPhase('feedback');
+    const btn = optionRefs.current.get(option);
     if (correct) {
       playSfx('munch');
       setTimeout(() => playSfx('correct'), 250);
+      if (btn) {
+        const r = btn.getBoundingClientRect();
+        burst(r.left + r.width / 2, r.top + r.height / 2);
+        const p = petRef.current?.getBoundingClientRect();
+        if (p) void flyAlong(btn, { x: p.left + p.width / 2, y: p.top + p.height * 0.6 }, { endScale: 0.2, fade: true });
+      }
     } else {
       playSfx('wrong');
     }
@@ -82,8 +92,8 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
 
   return (
     <div class="flash">
-      <div class="flash__pet">
-        <Pet kid={kid} known={known} mood={mood} bubble={bubble} size={140} />
+      <div class="flash__pet" ref={petRef}>
+        <Pet kid={kid} known={known} mood={mood} bubble={bubble} size={170} lookAt={phase === 'quiz' ? 0.8 : 0} />
       </div>
       <div class="flash__main">
         {phase === 'intro' ? (
@@ -93,9 +103,18 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
             <div class="flash__prompt">
               {quiz.listen ? <SpeakButton text={word.text} big /> : <div class="hanzi hanzi--xl">{word.text}</div>}
             </div>
-            <div class={`choices ${quiz.listen ? 'choices--hanzi' : 'choices--pinyin'}`}>
+            <div class={`choices stagger ${quiz.listen ? 'choices--hanzi' : 'choices--pinyin'}`}>
               {quiz.options.map((o) => (
-                <button key={o} type="button" class={`choice ${optionState(o)}`} disabled={phase === 'feedback'} onClick={() => choose(o)}>
+                <button
+                  key={o}
+                  type="button"
+                  class={`choice ${optionState(o)}`}
+                  disabled={phase === 'feedback'}
+                  onClick={() => choose(o)}
+                  ref={(el) => {
+                    if (el) optionRefs.current.set(o, el);
+                  }}
+                >
                   {o}
                 </button>
               ))}
