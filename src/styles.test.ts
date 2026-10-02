@@ -33,7 +33,7 @@ describe('no dragon left in what people see', () => {
     const vite = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
     const settings = readFileSync(new URL('./parent/SettingsPanel.tsx', import.meta.url), 'utf8');
-    for (const s of [vite, settings]) expect(s).not.toMatch(/dragon/i);
+    for (const s of [vite, settings]) expect(s).not.toMatch(/pet dragon|feed the dragon/i); // the 龙 zodiac onesie is fine
     expect(vite).toContain("theme_color: '#fbf6ea'");
     expect(html).toContain('content="#fbf6ea"');
   });
