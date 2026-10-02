@@ -161,8 +161,10 @@ export interface KidState {
   wearing: string | null;
   bonusStars: number;
   lastChestDate: string | null;
-  lastStageSeen: number;
+  lastStageSeen: number; // dragon era; no longer read
   badgesSeen: string[];
+  activePower: string | null;
+  powerTiersSeen: Record<string, number>;
 }
 
 export const DEFAULT_KID: KidState = {
@@ -174,6 +176,8 @@ export const DEFAULT_KID: KidState = {
   lastChestDate: null,
   lastStageSeen: 0,
   badgesSeen: [],
+  activePower: null,
+  powerTiersSeen: {},
 };
 
 export interface RewardGoal {

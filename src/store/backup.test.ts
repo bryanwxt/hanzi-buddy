@@ -63,3 +63,14 @@ describe('backup', () => {
     expect(dump.stores.settings[0].key).toBe('main');
   });
 });
+
+describe('old backups and new kid fields', () => {
+  it('restores a dragon-era kid and reads it with the new defaults', async () => {
+    const src = await freshDb();
+    await src.put('kid', { petName: '小龙', petColor: 'blue', ownedAccessories: [], wearing: null, bonusStars: 0, lastChestDate: null, lastStageSeen: 1, badgesSeen: [] } as never, 'main');
+    const text = await exportBackup(src, { includeMedia: false, now: 1 });
+    const db = await freshDb();
+    await applyBackup(db, readBackup(text));
+    expect(await getKid(db)).toMatchObject({ petName: '小龙', activePower: null, powerTiersSeen: {} });
+  });
+});

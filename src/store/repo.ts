@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, type CardRecord, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
+import { DEFAULT_KID, DEFAULT_SETTINGS, type CardRecord, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
 import type { AppDb } from './db';
 
 const MAIN = 'main';
@@ -18,8 +18,13 @@ export async function updateSettings(db: AppDb, patch: Partial<Settings>): Promi
   return next;
 }
 
+/** Older records (dragon era, older backups) lack newer fields: fill them with defaults. */
+export function normalizeKid(raw: Partial<KidState> | null | undefined): KidState | null {
+  return raw ? { ...DEFAULT_KID, ...raw } : null;
+}
+
 export async function getKid(db: AppDb): Promise<KidState | null> {
-  return (await db.get('kid', MAIN)) ?? null;
+  return normalizeKid(await db.get('kid', MAIN));
 }
 
 export async function saveKid(db: AppDb, kid: KidState): Promise<void> {
