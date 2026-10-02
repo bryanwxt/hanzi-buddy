@@ -39,3 +39,22 @@ describe('Truffle', () => {
     expect(svg(container).getAttribute('aria-hidden')).toBe('true');
   });
 });
+
+describe('Truffle powers', () => {
+  it('draws a power by tier: mark, then aura, then cape with the power character', () => {
+    const t1 = render(<Truffle power="fire" powerTier={1} />);
+    expect(t1.container.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('fire');
+    expect(t1.container.querySelector('.truffle__power-front')?.textContent).toContain('🔥');
+    expect(t1.container.querySelector('.truffle__power-back')?.innerHTML).toBe('');
+    t1.unmount();
+    const t3 = render(<Truffle power="fire" powerTier={3} />);
+    expect(t3.container.querySelectorAll('.truffle__power-back circle').length).toBe(2);
+    expect(t3.container.querySelector('.truffle__power-back .truffle__cape')).toBeTruthy();
+    expect(t3.container.querySelector('.truffle__power-front .truffle__emblem')?.textContent).toBe('火');
+  });
+  it('draws nothing for tier 0 or no power', () => {
+    const { container } = render(<Truffle power="fire" powerTier={0} />);
+    expect(container.querySelector('.truffle__power-front')).toBeNull();
+    expect(container.querySelector('svg.truffle')?.getAttribute('data-tier')).toBe('0');
+  });
+});

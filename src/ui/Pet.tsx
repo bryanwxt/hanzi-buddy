@@ -22,7 +22,15 @@ export function Pet({ kid, mood = 'sulk', bubble = null, size = 120, lookAt = 0,
           <Label zh={bubble} />
         </div>
       )}
-      <Truffle mood={mood} accessory={kid.wearing} lookAt={lookAt} size={size} bounce={bounce} />
+      <Truffle
+        mood={mood}
+        accessory={kid.wearing}
+        lookAt={lookAt}
+        size={size}
+        bounce={bounce}
+        power={kid.activePower}
+        powerTier={kid.activePower ? (kid.powerTiersSeen[kid.activePower] ?? 0) : 0}
+      />
     </div>
   );
 }

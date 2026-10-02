@@ -51,3 +51,11 @@ describe('Pet bubble', () => {
     expect(container.querySelector('.pet__bubble .label__py')?.textContent).toBe('zài xiǎng xiǎng');
   });
 });
+
+describe('Pet power', () => {
+  it('shows the chosen power at the tier the child has seen', () => {
+    const { container } = render(<Pet kid={{ ...DEFAULT_KID, activePower: 'water', powerTiersSeen: { water: 2 } }} />);
+    expect(container.querySelector('svg.truffle')?.getAttribute('data-tier')).toBe('2');
+    expect(container.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('water');
+  });
+});
