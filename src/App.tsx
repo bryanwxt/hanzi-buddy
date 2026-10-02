@@ -1,3 +1,68 @@
-export function App() {
-  return <h1>汉字小伙伴</h1>;
+import { useCallback, useEffect, useState } from 'preact/hooks';
+import { AppContext, type AppData, type Route } from './app/AppContext';
+import { ErrorScreen } from './app/ErrorScreen';
+import { HomeScreen } from './app/HomeScreen';
+import { PetSetup } from './app/PetSetup';
+import { PlacementScreen } from './app/PlacementScreen';
+import { SessionScreen } from './app/SessionScreen';
+import { SetupPin } from './app/SetupPin';
+import { StickerBook } from './app/StickerBook';
+import { Wardrobe } from './app/Wardrobe';
+import { bootstrap, firstRoute, type Booted } from './bootstrap';
+import { ParentArea } from './parent/ParentArea';
+import { DB_NAME } from './store/db';
+import { getKid, getSettings } from './store/repo';
+
+export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: string; now?: () => Date }) {
+  const [booted, setBooted] = useState<Booted | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [route, setRoute] = useState<Route>({ name: 'home' });
+
+  useEffect(() => {
+    bootstrap(dbName).then(
+      (b) => {
+        setBooted(b);
+        setRoute(firstRoute(b));
+      },
+      (e) => setError(String(e)),
+    );
+  }, [dbName]);
+
+  const db = booted?.db;
+  const refresh = useCallback(async () => {
+    if (!db) return;
+    const [settings, kid] = await Promise.all([getSettings(db), getKid(db)]);
+    setBooted((b) => (b ? { ...b, settings, kid } : b));
+  }, [db]);
+
+  if (error) return <ErrorScreen message={error} dbName={dbName} />;
+  if (!booted) return <div class="screen loading">🥚</div>;
+
+  const app: AppData = { ...booted, now, go: setRoute, refresh };
+  return (
+    <AppContext.Provider value={app}>
+      <Screen route={route} />
+    </AppContext.Provider>
+  );
+}
+
+function Screen({ route }: { route: Route }) {
+  switch (route.name) {
+    case 'setupPin':
+      return <SetupPin />;
+    case 'petSetup':
+      return <PetSetup />;
+    case 'placement':
+      return <PlacementScreen />;
+    case 'session':
+      return <SessionScreen key={String(route.free)} free={route.free} />;
+    case 'parent':
+      return <ParentArea />;
+    case 'stickers':
+      return <StickerBook />;
+    case 'wardrobe':
+      return <Wardrobe />;
+    case 'home':
+      return <HomeScreen />;
+  }
 }
