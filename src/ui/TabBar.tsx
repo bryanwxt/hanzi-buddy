@@ -5,7 +5,7 @@ export type Tab = 'home' | 'stickers' | 'wardrobe' | 'parent';
 
 const TABS: { id: Tab; zh: string; Icon: typeof Home }[] = [
   { id: 'home', zh: '首页', Icon: Home },
-  { id: 'stickers', zh: '贴纸', Icon: Sticker },
+  { id: 'stickers', zh: '字卡', Icon: Sticker },
   { id: 'wardrobe', zh: '松露', Icon: Shirt },
   { id: 'parent', zh: '家长', Icon: Lock },
 ];

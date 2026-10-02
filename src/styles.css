@@ -533,3 +533,23 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 
 .power-intro { font-size: 30px; font-weight: 900; margin: 0; display: flex; align-items: center; gap: 10px; }
 .power-intro .hanzi { font-size: 64px; }
+
+/* 字卡 collection */
+.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+.filters .chip { min-height: 48px; padding: 6px 14px; white-space: nowrap; }
+.filters .chip.is-on { background: var(--green); }
+.zika-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 14px; }
+.zika { position: relative; min-height: 132px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: var(--surface); color: var(--ink); border: var(--panel-border); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); }
+.zika__char { font-size: 52px; line-height: 1.05; }
+.zika__py { font-size: 15px; font-style: italic; color: var(--ink-soft); }
+.zika__foot { display: flex; gap: 6px; font-size: 14px; }
+.zika__stars { color: #d9a400; letter-spacing: 1px; }
+.zika.card--rare { box-shadow: 4px 4px 0 var(--ink), inset 0 0 0 3px #bfe0ff; }
+.zika.card--gold { background: linear-gradient(135deg, #fff1c9, #ffd56a 55%, #fff1c9); }
+.zika.card--back { background: repeating-linear-gradient(45deg, var(--line) 0 6px, var(--surface) 6px 12px); font-size: 34px; color: var(--muted); box-shadow: 4px 4px 0 var(--line-strong); border-color: var(--line-strong); }
+.zika-big { position: fixed; inset: 0; z-index: 40; background: rgba(42, 38, 48, 0.4); display: grid; place-items: center; }
+.zika--big { width: min(80vw, 360px); min-height: 420px; gap: 12px; padding: 24px; animation: pop-in var(--dur-base) var(--spring-bouncy); }
+.zika--big .zika__char { font-size: 150px; }
+.zika--big .zika__py { font-size: 28px; }
+.zika__example { font-size: 32px; display: flex; align-items: center; gap: 8px; }
+.zika-big__close { position: absolute; top: 8px; right: 8px; }

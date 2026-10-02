@@ -1,14 +1,13 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { BUILTIN, builtinWords } from '../content';
-import { stickerFamilies } from '../fun/stickers';
 import { createSessionRecord } from '../session/runner';
 import { getKid, putCards, putWords, saveKid, saveReward, saveSession } from '../store/repo';
 import { makeCard } from '../test/fixtures';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
 import { DEFAULT_KID, type SessionPlan } from '../types';
 import { HomeScreen } from './HomeScreen';
-import { StickerBook } from './StickerBook';
+import { CollectionScreen } from './CollectionScreen';
 import { Wardrobe } from './Wardrobe';
 
 vi.mock('../audio/speech', () => ({ speak: vi.fn(), primeSpeech: vi.fn() }));
@@ -61,23 +60,20 @@ describe('Wardrobe', () => {
   });
 });
 
-describe('StickerBook', () => {
-  it('shows family progress and opens a family page', async () => {
+describe('CollectionScreen', () => {
+  it('counts caught cards and filters by power', async () => {
     const app = await makeAppData();
     await putWords(app.db, builtinWords(0));
-    const water = stickerFamilies(BUILTIN).find((f) => f.component === '氵')!;
-    await putCards(app.db, [makeCard(`b:${water.chars[0]}`, 'recognise', new Date(2026, 9, 20), true)]);
-    renderWithApp(<StickerBook />, app);
-    fireEvent.click(await screen.findByRole('button', { name: `氵 1/${water.chars.length}` }));
-    expect(screen.getByRole('button', { name: water.chars[0] })).toBeTruthy();
-    expect(document.querySelectorAll('.sticker--unknown')).toHaveLength(water.chars.length - 1);
+    await putCards(app.db, [makeCard('b:河', 'recognise', new Date(2026, 9, 20), true)]);
+    renderWithApp(<CollectionScreen />, app);
+    expect(await screen.findByText(`1 / ${BUILTIN.length}`)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /水/ }));
+    expect(screen.getByRole('button', { name: '河' })).toBeTruthy();
+    expect(document.querySelectorAll('.zika:not(.card--back)')).toHaveLength(1);
   });
-});
-
-describe('StickerBook badge shelf', () => {
-  it('keeps a badge the child already earned even after a card lapses', async () => {
+  it('keeps earned badges', async () => {
     const app = await makeAppData({ kid: { ...DEFAULT_KID, badgesSeen: ['氵'] } });
-    renderWithApp(<StickerBook />, app);
+    renderWithApp(<CollectionScreen />, app);
     expect(await screen.findByText('🏅 氵')).toBeTruthy();
   });
 });

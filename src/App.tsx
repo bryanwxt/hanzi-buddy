@@ -6,7 +6,7 @@ import { PetSetup } from './app/PetSetup';
 import { PlacementScreen } from './app/PlacementScreen';
 import { SessionScreen } from './app/SessionScreen';
 import { SetupPin } from './app/SetupPin';
-import { StickerBook } from './app/StickerBook';
+import { CollectionScreen } from './app/CollectionScreen';
 import { Wardrobe } from './app/Wardrobe';
 import { bootstrap, firstRoute, type Booted } from './bootstrap';
 import { ParentArea } from './parent/ParentArea';
@@ -68,7 +68,7 @@ function Screen({ route }: { route: Route }) {
     case 'parent':
       return <ParentArea />;
     case 'stickers':
-      return <StickerBook />;
+      return <CollectionScreen />;
     case 'wardrobe':
       return <Wardrobe />;
     case 'home':
