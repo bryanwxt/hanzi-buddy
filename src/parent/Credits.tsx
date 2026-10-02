@@ -7,6 +7,7 @@ export function Credits() {
         <li>Make Me a Hanzi dictionary (meanings, radicals, components) — GNU LGPL v3 or later.</li>
         <li>Hanzi Writer — MIT License. Stroke data (hanzi-writer-data) — Arphic Public License.</li>
         <li>pinyin-pro, ts-fsrs, Preact — MIT License. idb, canvas-confetti — ISC License.</li>
+        <li>Fonts: LXGW WenKai 霞鹜文楷 and Nunito — SIL Open Font License 1.1.</li>
         <li>Read-aloud passages were written for this app.</li>
       </ul>
     </section>
