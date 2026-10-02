@@ -1,0 +1,50 @@
+let voice: SpeechSynthesisVoice | null = null;
+let rate = 0.8;
+
+const available = () => typeof speechSynthesis !== 'undefined' && !!speechSynthesis;
+
+export function setSpeechRate(r: number): void {
+  rate = r;
+}
+
+export function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  const mainland = voices.filter((v) => /^zh[-_]CN/i.test(v.lang));
+  return (
+    mainland.find((v) => v.localService) ??
+    mainland[0] ??
+    voices.find((v) => /^zh/i.test(v.lang) && !/HK|TW/i.test(v.lang)) ??
+    null
+  );
+}
+
+/** Voices load asynchronously on iPad Safari; wait briefly for them. */
+export async function loadChineseVoice(timeoutMs = 1500): Promise<SpeechSynthesisVoice | null> {
+  if (!available()) return (voice = null);
+  voice = pickVoice(speechSynthesis.getVoices());
+  if (!voice) {
+    voice = await new Promise<SpeechSynthesisVoice | null>((resolve) => {
+      const done = () => resolve(pickVoice(speechSynthesis.getVoices()));
+      speechSynthesis.addEventListener?.('voiceschanged', done, { once: true });
+      setTimeout(done, timeoutMs);
+    });
+  }
+  return voice;
+}
+
+export function speak(text: string): void {
+  if (!available()) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN';
+  u.rate = rate;
+  if (voice) u.voice = voice;
+  speechSynthesis.speak(u);
+}
+
+/** iOS only allows speech after a user gesture; call this from the first tap. */
+export function primeSpeech(): void {
+  if (!available()) return;
+  const u = new SpeechSynthesisUtterance(' ');
+  u.volume = 0;
+  speechSynthesis.speak(u);
+}

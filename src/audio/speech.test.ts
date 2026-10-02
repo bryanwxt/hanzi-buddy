@@ -1,0 +1,33 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { pickVoice, setSpeechRate, speak } from './speech';
+
+const v = (lang: string, localService = true, name = lang) => ({ lang, localService, name }) as SpeechSynthesisVoice;
+
+describe('pickVoice', () => {
+  it('prefers a local mainland Mandarin voice', () => {
+    expect(pickVoice([v('en-US'), v('zh-TW'), v('zh-CN', false, 'net'), v('zh-CN', true, 'Tingting')])?.name).toBe('Tingting');
+  });
+  it('falls back to another zh voice that is not HK/TW, else null', () => {
+    expect(pickVoice([v('zh')])?.lang).toBe('zh');
+    expect(pickVoice([v('zh-HK'), v('en-GB')])).toBeNull();
+  });
+});
+
+describe('speak', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it('speaks Mandarin at the configured rate', () => {
+    const spoken: SpeechSynthesisUtterance[] = [];
+    vi.stubGlobal('speechSynthesis', { cancel: vi.fn(), speak: (u: SpeechSynthesisUtterance) => spoken.push(u), getVoices: () => [] });
+    vi.stubGlobal('SpeechSynthesisUtterance', class {
+      text: string; lang = ''; rate = 1; volume = 1; voice: SpeechSynthesisVoice | null = null;
+      constructor(t: string) { this.text = t; }
+    });
+    setSpeechRate(0.7);
+    speak('河');
+    expect(spoken[0]).toMatchObject({ text: '河', lang: 'zh-CN', rate: 0.7 });
+  });
+  it('does nothing where speech is unavailable', () => {
+    vi.stubGlobal('speechSynthesis', undefined);
+    expect(() => speak('河')).not.toThrow();
+  });
+});
