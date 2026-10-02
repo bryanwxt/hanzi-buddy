@@ -122,6 +122,21 @@ describe("Truffle's room ready-to-unlock hint", () => {
   });
 });
 
+describe("Truffle's room outfits", () => {
+  it('wear a onesie, take it off; locked ones are disabled', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], ownedAccessories: ['👑'], wearing: '👑' } });
+    renderWithApp(<Wardrobe />, app);
+    fireEvent.click(screen.getByRole('button', { name: '虎' }));
+    await waitFor(async () => expect((await getKid(app.db))?.outfit).toBe('tiger'));
+    expect(document.querySelector('svg.truffle')?.getAttribute('data-outfit')).toBe('tiger');
+    expect(document.querySelector('.truffle__accessory')).toBeNull();
+    expect(screen.getByText('穿着连体衣时看不到小东西')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '虎' }));
+    await waitFor(async () => expect((await getKid(app.db))?.outfit).toBeNull());
+    expect((screen.getByRole('button', { name: '龙' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
 describe('HomeScreen word of the day', () => {
   it('shows a known character as the word of the day', async () => {
     const app = await makeAppData();

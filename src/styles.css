@@ -570,3 +570,15 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .power-row { flex-wrap: wrap; }
 .power-row__ready { flex-basis: 100%; font-size: 13px; color: var(--green-ink); text-align: left; }
 .card--gold .zika__stars { color: var(--ink); }
+
+/* Truffle's room: outfits */
+.outfits { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 10px; }
+.outfits h2 { margin: 6px 0; font-size: 22px; text-align: left; }
+.outfits__note { margin: 0; color: var(--ink-soft); font-size: 15px; }
+.outfit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; }
+.outfit { min-height: 84px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: var(--surface); color: var(--ink); border: var(--panel-border); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); }
+.outfit.is-on { background: var(--green-soft); }
+.outfit:disabled { opacity: 0.5; box-shadow: 4px 4px 0 var(--line-strong); border-color: var(--line-strong); }
+.outfit__swatch { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--ink); display: grid; place-items: center; font-size: 16px; background: var(--line); }
+.outfit__name { font-size: 22px; }
+.wardrobe button.is-locked { filter: grayscale(1); opacity: 0.4; }
