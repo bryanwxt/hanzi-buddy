@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { playSfx } from '../audio/sfx';
 import { BUILTIN } from '../content';
 import { radicalMeaning } from '../content/radicals';
-import { canOpenChest, openChest, type ChestResult } from '../fun/pet';
+import { canOpenChest, costumeById, openChest, type ChestResult } from '../fun/costumes';
 import { newTiers, powerDef, powerFamilies, powerProgress, type PowerId } from '../fun/powers';
 import { newBadges, stickerFamilies } from '../fun/stickers';
 import { totalStars } from '../stats/stats';
@@ -30,7 +30,7 @@ interface Sequence {
 }
 
 export function Celebration({ rec }: { rec: SessionRecord }) {
-  const { db, go, refresh } = useApp();
+  const { db, go, refresh, settings } = useApp();
   const kidRef = useRef<KidState>(DEFAULT_KID);
   const counterRef = useRef<HTMLSpanElement>(null);
   const chestRef = useRef<HTMLDivElement>(null);
@@ -104,7 +104,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
   const open = async () => {
     // Dated by the session's own day (a session can finish after midnight); one prize per day however fast the taps.
     if (!canOpenChest(kidRef.current, rec.date)) return;
-    const { kid: next, result } = openChest(kidRef.current, rec.date);
+    const { kid: next, result } = openChest(kidRef.current, rec.date, settings.zodiac);
     await save(next);
     setChest(result);
     playSfx('chest');
@@ -153,8 +153,12 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
         )}
         {phase === 'chest' && (
           <>
-            <h1><Label zh={chest ? (chest.kind === 'accessory' ? '松露有新东西了！' : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
-            {chest && <div class="prize">{chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}</div>}
+            <h1><Label zh={chest ? (chest.kind === 'costume' ? '松露有新衣服了！' : chest.kind === 'accessory' ? '松露有新东西了！' : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
+            {chest && (
+              <div class="prize">
+                {chest.kind === 'costume' ? <Label zh={costumeById(chest.id)?.zh ?? ''} /> : chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}
+              </div>
+            )}
             <div ref={chestRef}>
               <Chest open={!!chest} />
               {!chest && <HoldButton label="按住打开宝箱" onComplete={() => void open()} />}

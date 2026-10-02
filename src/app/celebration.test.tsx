@@ -33,10 +33,12 @@ describe('Celebration chest', () => {
     const chest = await screen.findByRole('button', { name: '按住打开宝箱' });
     for (let i = 0; i < 3; i++) fireEvent(chest, new Event('pointerdown', { bubbles: true }));
     await hold();
-    await screen.findByText('松露有新东西了！');
+    await screen.findByText('松露有新衣服了！'); // first chest: the zodiac onesie (龙 by default)
+    expect(screen.getByText('龙')).toBeTruthy();
     await waitFor(async () => expect((await getKid(app.db))?.lastChestDate).toBe('2026-10-02'));
     const kid = await getKid(app.db);
-    expect(kid?.ownedAccessories).toHaveLength(1);
+    expect(kid?.ownedCostumes).toEqual(['dragon']);
+    expect(kid?.ownedAccessories).toHaveLength(0);
     expect(kid?.bonusStars).toBe(0);
   });
 

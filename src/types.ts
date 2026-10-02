@@ -1,3 +1,4 @@
+import type { ZodiacId } from './fun/costumes';
 import type { Card as FsrsCard, Grade } from 'ts-fsrs';
 
 export type { FsrsCard, Grade };
@@ -137,6 +138,7 @@ export interface Settings {
   targetWrite: number;
   lastBackupAt: number | null;
   placementDone: boolean;
+  zodiac: ZodiacId | null; // the child's 生肖, the first chest's gift
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -150,6 +152,7 @@ export const DEFAULT_SETTINGS: Settings = {
   targetWrite: 150,
   lastBackupAt: null,
   placementDone: false,
+  zodiac: null,
 };
 
 export type PetColor = 'green' | 'blue' | 'purple' | 'red' | 'gold';
@@ -165,6 +168,8 @@ export interface KidState {
   badgesSeen: string[];
   activePower: string | null;
   powerTiersSeen: Record<string, number>;
+  ownedCostumes: string[];
+  outfit: string | null;
 }
 
 export const DEFAULT_KID: KidState = {
@@ -178,6 +183,8 @@ export const DEFAULT_KID: KidState = {
   badgesSeen: [],
   activePower: null,
   powerTiersSeen: {},
+  ownedCostumes: [],
+  outfit: null,
 };
 
 export interface RewardGoal {
