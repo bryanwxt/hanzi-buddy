@@ -16,13 +16,13 @@ describe('widgets', () => {
     expect(screen.getByText('你好')).toBeTruthy();
   });
 
-  it('Pet grows from egg to dragon and always wears its accessory', () => {
+  it('Pet shows the dragon for its stage, with accessory and bubble', () => {
     const kid = { ...DEFAULT_KID, wearing: '🎩' };
     const { rerender } = render(<Pet kid={kid} known={0} />);
-    expect(screen.getByRole('img').textContent).toBe('🥚');
+    expect(screen.getByRole('img', { name: '小龙' }).getAttribute('data-stage')).toBe('0');
     expect(screen.getByText('🎩')).toBeTruthy();
     rerender(<Pet kid={kid} known={80} bubble="加油！" />);
-    expect(screen.getByRole('img').textContent).toBe('🐲');
+    expect(screen.getByRole('img', { name: '小龙' }).getAttribute('data-stage')).toBe('2');
     expect(screen.getByText('加油！')).toBeTruthy();
   });
 

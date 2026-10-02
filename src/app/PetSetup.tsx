@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { PET_COLORS } from '../fun/pet';
 import { saveKid } from '../store/repo';
 import { DEFAULT_KID, type PetColor } from '../types';
+import { Dragon } from '../ui/dragon/Dragon';
 import { Label } from '../ui/Label';
 import { useApp } from './AppContext';
 
@@ -20,29 +21,26 @@ export function PetSetup() {
 
   return (
     <div class="screen">
-      <div class="center">
-        <h1><Label zh="这是你的龙蛋！" /></h1>
-        <div style={{ fontSize: '140px' }}>🥚</div>
-        <p><Label zh="给你的小龙起个名字" /></p>
-        <input class="name-input" aria-label="Pet name" maxLength={6} value={name} onInput={(e) => setName(e.currentTarget.value)} />
-        <p><Label zh="选一个颜色" /></p>
-        <div class="row">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              class={`swatch ${c === color ? 'is-on' : ''}`}
-              aria-label={PET_COLORS[c].zh}
-              aria-pressed={c === color}
-              onClick={() => setColor(c)}
-            >
-              <span style={{ filter: `hue-rotate(${PET_COLORS[c].hue}deg)` }}>🐲</span>
-            </button>
-          ))}
+      <div class="setup">
+        <div class="setup__pet">
+          <Dragon stage={0} color={color} size={240} label={name.trim() || DEFAULT_KID.petName} />
+          <h1><Label zh="这是你的龙蛋！" /></h1>
         </div>
-        <button type="button" class="btn btn--primary btn--big" onClick={() => void done()}>
-          <Label zh="好了！" />
-        </button>
+        <div class="setup__form">
+          <p><Label zh="给你的小龙起个名字" /></p>
+          <input class="name-input" aria-label="Pet name" maxLength={6} value={name} onInput={(e) => setName(e.currentTarget.value)} />
+          <p><Label zh="选一个颜色" /></p>
+          <div class="row stagger">
+            {COLORS.map((c) => (
+              <button key={c} type="button" class={`swatch ${c === color ? 'is-on' : ''}`} aria-label={PET_COLORS[c].zh} aria-pressed={c === color} onClick={() => setColor(c)}>
+                <Dragon stage={2} color={c} size={70} label={null} />
+              </button>
+            ))}
+          </div>
+          <button type="button" class="btn btn--primary btn--big" onClick={() => void done()}>
+            <Label zh="好了！" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
-import { PET_COLORS, petStage, STAGE_LOOKS } from '../fun/pet';
+import { petStage } from '../fun/pet';
 import type { KidState } from '../types';
+import { Dragon, type DragonMood } from './dragon/Dragon';
 
-export type PetMood = 'happy' | 'comfort' | 'munch' | null;
+export type PetMood = DragonMood;
 
 interface Props {
   kid: KidState;
@@ -10,20 +11,26 @@ interface Props {
   bubble?: string | null;
   size?: number;
   stage?: number; // override, e.g. to show the previous stage during evolution
+  lookAt?: number;
 }
 
-export function Pet({ kid, known, mood = null, bubble = null, size = 120, stage }: Props) {
-  const s = stage ?? petStage(known);
-  const look = STAGE_LOOKS[s]!;
+export function Pet({ kid, known, mood = null, bubble = null, size = 120, stage, lookAt = 0 }: Props) {
   return (
-    <div class={`pet ${mood ? `pet--${mood}` : ''} ${look.glow ? 'pet--glow' : ''}`}>
-      {bubble && <div class="pet__bubble">{bubble}</div>}
-      <div style={{ fontSize: `${Math.round(size * look.scale)}px`, position: 'relative' }}>
-        <span class="pet__body" role="img" aria-label={kid.petName} style={{ filter: `hue-rotate(${PET_COLORS[kid.petColor].hue}deg)` }}>
-          {look.emoji}
-        </span>
-        {kid.wearing && <span class="pet__hat">{kid.wearing}</span>}
-      </div>
+    <div class="pet">
+      {bubble && (
+        <div class="pet__bubble" key={bubble}>
+          {bubble}
+        </div>
+      )}
+      <Dragon
+        stage={stage ?? petStage(known)}
+        color={kid.petColor}
+        mood={mood}
+        accessory={kid.wearing}
+        lookAt={lookAt}
+        size={size}
+        label={kid.petName}
+      />
     </div>
   );
 }

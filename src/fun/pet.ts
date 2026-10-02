@@ -3,29 +3,12 @@ import type { KidState, PetColor } from '../types';
 
 export const STAGE_THRESHOLDS = [0, 25, 75, 150, 300, 500] as const;
 
-export interface StageLook {
-  emoji: string;
-  scale: number;
-  glow: boolean;
-  name: string;
-}
-
-export const STAGE_LOOKS: StageLook[] = [
-  { emoji: '🥚', scale: 0.8, glow: false, name: '蛋' },
-  { emoji: '🐣', scale: 0.9, glow: false, name: '小宝宝' },
-  { emoji: '🐲', scale: 0.85, glow: false, name: '小龙' },
-  { emoji: '🐲', scale: 1.1, glow: false, name: '大一点的龙' },
-  { emoji: '🐉', scale: 1.1, glow: false, name: '大龙' },
-  { emoji: '🐉', scale: 1.25, glow: true, name: '金光龙' },
-];
-
-/** Hue rotation applied to the (green) dragon emoji. */
-export const PET_COLORS: Record<PetColor, { zh: string; hue: number }> = {
-  green: { zh: '绿色', hue: 0 },
-  blue: { zh: '蓝色', hue: 100 },
-  purple: { zh: '紫色', hue: 160 },
-  red: { zh: '红色', hue: 230 },
-  gold: { zh: '金色', hue: 300 },
+export const PET_COLORS: Record<PetColor, { zh: string }> = {
+  green: { zh: '绿色' },
+  blue: { zh: '蓝色' },
+  purple: { zh: '紫色' },
+  red: { zh: '红色' },
+  gold: { zh: '金色' },
 };
 
 export const ACCESSORIES = ['🎩', '👑', '🕶️', '🎀', '🧢', '🎓', '⛑️', '🌸', '⭐', '🎈', '🍀', '🦋', '🌈', '🎧', '🧣', '🪁'];
