@@ -18,18 +18,18 @@ const emptyPlan: SessionPlan = { steps: [], reviewWordIds: [], newWordIds: [], f
 const done = (date: string, steps: SessionPlan['steps']) => ({ ...createSessionRecord(emptyPlan, date, 0), completed: true, completedSteps: steps });
 
 describe('HomeScreen', () => {
-  it("shows streak, stars and starts today's practice", async () => {
+  it("shows streak and stars and starts today's path", async () => {
     const app = await makeAppData();
     await saveSession(app.db, done('2026-10-01', ['flashcards', 'writing']));
     renderWithApp(<HomeScreen />, app);
-    expect(await screen.findByText('🔥 1')).toBeTruthy();
-    expect(screen.getByText('⭐ 2')).toBeTruthy();
-    fireEvent.click(screen.getByText('今天的练习'));
+    expect(await screen.findByLabelText('连续 1 天')).toBeTruthy();
+    expect(screen.getByLabelText('2 颗星')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '开始：喂小龙' }));
     expect(app.go).toHaveBeenCalledWith({ name: 'session', free: false });
   });
 
   it('offers free play once today is done and shows the next reward goal', async () => {
-    const app = await makeAppData();
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, lastChestDate: '2026-10-02' } });
     await saveSession(app.db, done('2026-10-02', ['flashcards']));
     await putCards(app.db, [makeCard('b:大', 'recognise', new Date(2026, 9, 5))]);
     await saveReward(app.db, { id: 'g', title: 'Ice cream', emoji: '🍦', metric: 'stars', target: 10, createdAt: 0, claimedAt: null });
@@ -39,6 +39,14 @@ describe('HomeScreen', () => {
     expect(screen.getByText('1 / 10 ⭐')).toBeTruthy();
     fireEvent.click(screen.getByText('再玩一会儿'));
     expect(app.go).toHaveBeenCalledWith({ name: 'session', free: true });
+  });
+
+  it('reopens the session to claim an unopened chest', async () => {
+    const app = await makeAppData();
+    await saveSession(app.db, done('2026-10-02', ['flashcards']));
+    renderWithApp(<HomeScreen />, app);
+    fireEvent.click(await screen.findByRole('button', { name: '继续：宝箱' }));
+    expect(app.go).toHaveBeenCalledWith({ name: 'session', free: false });
   });
 });
 

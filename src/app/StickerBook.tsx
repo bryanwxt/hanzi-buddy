@@ -1,8 +1,10 @@
+import { ChevronLeft } from 'lucide-preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { speak } from '../audio/speech';
 import { BUILTIN } from '../content';
 import { completedBadges, familyProgress, stickerFamilies } from '../fun/stickers';
 import { Label } from '../ui/Label';
+import { TabBar } from '../ui/TabBar';
 import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
@@ -24,13 +26,16 @@ export function StickerBook() {
   const family = families.find((f) => f.component === open);
   const badges = completedBadges(families, know.knownChars);
   const myWords = know.words.filter((w) => w.source === 'parent' && know.knownWordIds.has(w.id));
-  const back = () => (open ? setOpen(null) : go({ name: 'home' }));
 
   return (
     <div class="screen">
       <Scene kind="home" />
       <header class="topbar">
-        <button type="button" class="btn btn--ghost" onClick={back}>← <Label zh={open ? '贴纸本' : '回家'} /></button>
+        {open && (
+          <button type="button" class="icon-btn" aria-label="返回" onClick={() => setOpen(null)}>
+            <ChevronLeft size={34} strokeWidth={3} />
+          </button>
+        )}
         <h1 style={{ margin: 0 }}>
           {family ? (
             <>{family.meaning.emoji} <span class="hanzi">{family.component}</span> <Label zh={`${family.meaning.zh}家族`} /></>
@@ -89,6 +94,7 @@ export function StickerBook() {
           </div>
         </>
       )}
+      <TabBar active="stickers" />
     </div>
   );
 }

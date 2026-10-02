@@ -24,6 +24,6 @@ describe('App', () => {
     fireEvent.click(await screen.findByText('不认识'));
     fireEvent.click(await screen.findByText('开始！'));
     expect(await screen.findByText('今天的练习')).toBeTruthy();
-    expect(screen.getByText('我认识 0 个字')).toBeTruthy();
+    expect(screen.getByText('认识 0 个字')).toBeTruthy();
   });
 });
