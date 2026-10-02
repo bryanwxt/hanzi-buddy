@@ -65,3 +65,12 @@ describe('RewardsPanel', () => {
     await waitFor(async () => expect((await listRewards(app.db))[0]!.claimedAt).not.toBeNull());
   });
 });
+
+describe('RewardsPanel emoji picker', () => {
+  it('marks the chosen emoji as pressed', async () => {
+    const app = await makeAppData();
+    renderWithApp(<RewardsPanel />, app);
+    const first = (await screen.findAllByRole('button', { pressed: true }))[0]!;
+    expect(first.className).toContain('swatch');
+  });
+});

@@ -1,4 +1,5 @@
 import type { KidState } from '../types';
+import { Label } from './Label';
 import { Truffle, type TruffleMood } from './truffle/Truffle';
 
 export type PetMood = TruffleMood;
@@ -18,7 +19,7 @@ export function Pet({ kid, mood = 'sulk', bubble = null, size = 120, lookAt = 0,
     <div class="pet">
       {bubble && (
         <div class="pet__bubble" key={bubble}>
-          {bubble}
+          <Label zh={bubble} />
         </div>
       )}
       <Truffle mood={mood} accessory={kid.wearing} lookAt={lookAt} size={size} bounce={bounce} />

@@ -138,3 +138,12 @@ describe('FlashcardStep listen mode', () => {
     }
   });
 });
+
+describe('wrong-answer bubble', () => {
+  it('says remember it (not think again) once the answer is shown', () => {
+    render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
+    fireEvent.click([...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!);
+    expect(document.querySelector('.pet__bubble')?.textContent).toContain('记住它');
+    expect(document.querySelector('.pet__bubble')?.textContent).not.toContain('再想想');
+  });
+});

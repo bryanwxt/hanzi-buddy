@@ -44,3 +44,10 @@ describe('Label digits', () => {
     expect(container.querySelector('.label__py')?.textContent).toBe('wǒ rèn shi 45 gè zì');
   });
 });
+
+describe('Pet bubble', () => {
+  it('shows pinyin above the bubble words', () => {
+    const { container } = render(<Pet kid={DEFAULT_KID} bubble="再想想" />);
+    expect(container.querySelector('.pet__bubble .label__py')?.textContent).toBe('zài xiǎng xiǎng');
+  });
+});

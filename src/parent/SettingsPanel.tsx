@@ -7,7 +7,7 @@ import { updateSettings } from '../store/repo';
 import type { Settings, StepKind } from '../types';
 
 const ACTIVITY_LABELS: Record<StepKind, string> = {
-  flashcards: 'Flashcards (feed the dragon)',
+  flashcards: 'Flashcards',
   writing: '听写 writing',
   components: 'Components game (fishing)',
   speaking: 'Speaking recordings',

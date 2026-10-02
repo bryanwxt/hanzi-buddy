@@ -92,7 +92,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, resting, com
 
   const reaction = phase === 'feedback' && result ? reactionMood({ correct: result.correct, hard: result.hard, combo: result.correct ? combo + 1 : 0 }) : null;
   const mood: TruffleMood = phase === 'intro' ? 'neutral' : (reaction ?? resting);
-  const REACTION_LINES: Partial<Record<TruffleMood, string>> = { side: '再想想', wow: '咦！好厉害', content: '呼噜～' };
+  const REACTION_LINES: Partial<Record<TruffleMood, string>> = { side: '记住它！', wow: '咦！好厉害', content: '呼噜～' };
   const bubble = phase === 'intro' ? '新字来了！' : phase === 'quiz' ? (quiz.listen ? '我想吃这个字！' : '这个字怎么读？') : (reaction && REACTION_LINES[reaction]) ?? null;
   const showCloseup = phase === 'feedback' && !!result?.correct && result.hard && closeupReady;
   const next = () => {

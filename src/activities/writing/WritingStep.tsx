@@ -7,7 +7,7 @@ import { loadStrokeData } from '../../content/strokes';
 import type { KidState, Word } from '../../types';
 import { BottomBar } from '../../ui/BottomBar';
 import { burst } from '../../ui/motion';
-import { isHardWrite, reactionMood } from '../../fun/mood';
+import { isHardWrite } from '../../fun/mood';
 import { Pet } from '../../ui/Pet';
 import type { TruffleMood } from '../../ui/truffle/Truffle';
 import { SpeakButton } from '../../ui/SpeakButton';
@@ -89,7 +89,7 @@ export function WritingStep({ word, kid, resting, isNew, onDone }: Props) {
           <Pet
             kid={kid}
             size={130}
-            mood={charMisses === null ? resting : (reactionMood({ correct: charMisses <= 3, hard: isHardWrite(isNew, misses), combo: 0 }) ?? 'pleased')}
+            mood={charMisses === null ? resting : charMisses > 3 ? 'neutral' : last && isHardWrite(isNew, misses) ? 'wow' : 'pleased'}
             bubble={charMisses === null ? '写一写！' : null}
           />
           <div class="write__prompt">

@@ -38,3 +38,22 @@ describe('WritingStep', () => {
     expect(onDone).toHaveBeenCalledWith(null);
   });
 });
+
+describe('WritingStep Truffle', () => {
+  const mood = () => document.querySelector('svg.truffle')!.getAttribute('data-mood');
+  it('stays kind after a messy character and only goes wide-eyed when a new word is finished cleanly', () => {
+    quizzes.length = 0;
+    render(<WritingStep word={makeWord('大人', { pinyin: 'dà rén' })} kid={DEFAULT_KID} resting="sulk" isNew onDone={vi.fn()} />);
+    act(() => quizzes.at(-1)!.onComplete({ totalMistakes: 0 }));
+    expect(mood()).not.toBe('wow');
+    fireEvent.click(screen.getByText('下一个字'));
+    act(() => quizzes.at(-1)!.onComplete({ totalMistakes: 0 }));
+    expect(mood()).toBe('wow');
+  });
+  it('never side-eyes a hard character', () => {
+    quizzes.length = 0;
+    render(<WritingStep word={makeWord('大')} kid={DEFAULT_KID} resting="sulk" isNew={false} onDone={vi.fn()} />);
+    act(() => quizzes.at(-1)!.onComplete({ totalMistakes: 6 }));
+    expect(mood()).toBe('neutral');
+  });
+});

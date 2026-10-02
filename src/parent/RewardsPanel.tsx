@@ -55,7 +55,7 @@ export function RewardsPanel() {
         </div>
         <div class="row" style={{ justifyContent: 'flex-start' }}>
           {EMOJIS.map((e) => (
-            <button key={e} type="button" class={`swatch ${e === emoji ? 'is-on' : ''}`} style={{ width: '56px', height: '56px', fontSize: '30px' }} aria-label={e} onClick={() => setEmoji(e)}>
+            <button key={e} type="button" class={`swatch ${e === emoji ? 'is-on' : ''}`} style={{ width: '56px', height: '56px', fontSize: '30px' }} aria-label={e} aria-pressed={e === emoji} onClick={() => setEmoji(e)}>
               {e}
             </button>
           ))}

@@ -12,12 +12,12 @@ export default defineConfig({
       manifest: {
         name: '字己 ZiJi',
         short_name: 'ZiJi',
-        description: 'Daily Chinese character practice with a pet dragon',
+        description: 'Daily Chinese character practice with Truffle 松露, a grumpy cat',
         lang: 'zh-CN',
         display: 'standalone',
         orientation: 'any',
-        background_color: '#fff8ec',
-        theme_color: '#ff9f43',
+        background_color: '#fbf6ea',
+        theme_color: '#fbf6ea',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

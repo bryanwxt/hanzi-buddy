@@ -519,3 +519,14 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .closeup .truffle { position: relative; }
 @keyframes closeup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .truffle--bounce, .closeup { animation: none; } }
+
+/* Review fixes: highlights the ink layer overrode, red-block contrast, reduced-motion hold ring */
+.goal--reached { background: var(--green-soft); }
+.part--radical { color: var(--green-ink); text-decoration: underline 3px var(--green); text-underline-offset: 6px; }
+.swatch { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--surface); border: 2.5px solid var(--line-strong); }
+.swatch.is-on { background: var(--green-soft); border: var(--panel-border); box-shadow: 3px 3px 0 var(--ink); }
+.celebrate--night p, .celebrate--night .label__py { text-shadow: 2px 2px 0 var(--ink); }
+.celebrate--night p { font-size: 26px; font-weight: 900; }
+@media (prefers-reduced-motion: reduce) {
+  .hold.is-holding .hold__ring circle { transition: stroke-dashoffset 1200ms linear !important; }
+}
