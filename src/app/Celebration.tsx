@@ -5,11 +5,15 @@ import { radicalMeaning } from '../content/radicals';
 import { canOpenChest, openChest, petStage, type ChestResult } from '../fun/pet';
 import { newBadges, stickerFamilies } from '../fun/stickers';
 import { localDateKey } from '../lib/date';
-import { getKid, saveKid } from '../store/repo';
+import { totalStars } from '../stats/stats';
+import { allSessions, getKid, saveKid } from '../store/repo';
 import { DEFAULT_KID, type KidState, type SessionRecord } from '../types';
+import { Chest } from '../ui/Chest';
 import { celebrate } from '../ui/confetti';
 import { Label } from '../ui/Label';
+import { burst, flyAlong } from '../ui/motion';
 import { Pet } from '../ui/Pet';
+import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
@@ -21,34 +25,58 @@ interface Sequence {
   fromStage: number;
   badges: string[];
   known: number;
+  starsBefore: number;
 }
 
 export function Celebration({ rec }: { rec: SessionRecord }) {
   const { db, now, go, refresh } = useApp();
   const today = localDateKey(now());
   const kidRef = useRef<KidState>(DEFAULT_KID);
+  const counterRef = useRef<HTMLSpanElement>(null);
+  const chestRef = useRef<HTMLDivElement>(null);
+  const starRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const [kid, setKid] = useState<KidState | null>(null);
   const [seq, setSeq] = useState<Sequence | null>(null);
   const [phase, setPhase] = useState<Phase>('stars');
   const [chest, setChest] = useState<ChestResult | null>(null);
+  const [landed, setLanded] = useState(0);
+  const stars = rec.free ? 0 : rec.completedSteps.length;
 
   useEffect(() => {
     celebrate();
-    playSfx('star');
     void (async () => {
-      const k = (await getKid(db)) ?? DEFAULT_KID;
-      const know = await loadKnowledge(db);
+      const [k, know, sessions] = await Promise.all([getKid(db), loadKnowledge(db), allSessions(db)]);
+      const kidNow = k ?? DEFAULT_KID;
       const stage = petStage(know.known);
-      const badges = newBadges(stickerFamilies(BUILTIN), know.knownChars, k.badgesSeen);
+      const badges = newBadges(stickerFamilies(BUILTIN), know.knownChars, kidNow.badgesSeen);
       const order: Phase[] = ['stars'];
-      if (!rec.free && canOpenChest(k, today)) order.push('chest');
-      if (stage > k.lastStageSeen) order.push('evolve');
+      if (!rec.free && canOpenChest(kidNow, today)) order.push('chest');
+      if (stage > kidNow.lastStageSeen) order.push('evolve');
       if (badges.length) order.push('badges');
-      kidRef.current = k;
-      setKid(k);
-      setSeq({ order, stage, fromStage: k.lastStageSeen, badges, known: know.known });
+      kidRef.current = kidNow;
+      setKid(kidNow);
+      setSeq({ order, stage, fromStage: kidNow.lastStageSeen, badges, known: know.known, starsBefore: totalStars(sessions, kidNow.bonusStars) - stars });
     })();
   }, []);
+
+  // Fly each earned star into the counter, one after another.
+  useEffect(() => {
+    if (!seq) return;
+    let cancelled = false;
+    void (async () => {
+      for (let i = 0; i < stars; i++) {
+        const el = starRefs.current[i];
+        const c = counterRef.current?.getBoundingClientRect();
+        if (el && c) await flyAlong(el, { x: c.left + c.width / 2, y: c.top + c.height / 2 }, { lift: 80, endScale: 0.4, fade: true, duration: 550 });
+        if (cancelled) return;
+        playSfx('star');
+        setLanded((n) => n + 1);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [seq]);
 
   if (!seq || !kid) return <div class="screen loading">⭐</div>;
 
@@ -81,52 +109,67 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     await save(next);
     setChest(result);
     playSfx('chest');
-    celebrate();
+    const r = chestRef.current?.getBoundingClientRect();
+    if (r) burst(r.left + r.width / 2, r.top + r.height * 0.35, { count: 16 });
   };
 
   const isLast = seq.order.indexOf(phase) === seq.order.length - 1;
   const beforeEvolve = seq.order.includes('evolve') && seq.order.indexOf(phase) < seq.order.indexOf('evolve');
-  const stars = rec.completedSteps.length;
 
   return (
     <div class="screen">
-      <div class="celebrate">
+      <Scene kind="night" />
+      {!rec.free && (
+        <header class="topbar">
+          <span class="spacer" />
+          <span key={landed} ref={counterRef} class={`chip ${landed ? 'is-bumping' : ''}`}>⭐ {seq.starsBefore + landed}</span>
+        </header>
+      )}
+      <div class="celebrate celebrate--night">
         {phase === 'stars' && (
           <>
             <h1><Label zh={rec.free ? '练习得很好！' : '太棒了！'} /></h1>
             {!rec.free && (
               <>
-                <div class="stars">
-                  {Array.from({ length: stars }, (_, i) => <span key={i} style={{ animationDelay: `${i * 0.25}s` }}>⭐</span>)}
+                <div class="stars stagger">
+                  {Array.from({ length: stars }, (_, i) => (
+                    <span key={i} ref={(el) => { starRefs.current[i] = el; }}>⭐</span>
+                  ))}
                 </div>
                 <p><Label zh={`你得到了 ${stars} 颗星`} /></p>
               </>
             )}
           </>
         )}
-        {phase === 'chest' && !chest && (
+        {phase === 'chest' && (
           <>
-            <h1><Label zh="宝箱！" /></h1>
-            <button type="button" class="chest" aria-label="打开宝箱" onClick={() => void open()}>🎁</button>
-            <p><Label zh="点一下打开宝箱！" /></p>
-          </>
-        )}
-        {phase === 'chest' && chest && (
-          <>
-            <div class="prize">{chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}</div>
-            <p><Label zh={chest.kind === 'accessory' ? `${kid.petName}有新东西了！` : `多了 ${chest.amount} 颗星！`} /></p>
+            <h1><Label zh={chest ? (chest.kind === 'accessory' ? `${kid.petName}有新东西了！` : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
+            {chest && <div class="prize">{chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}</div>}
+            <div ref={chestRef}>
+              <Chest open={!!chest} onOpen={() => void open()} />
+            </div>
+            {!chest && <p><Label zh="点一下打开宝箱！" /></p>}
           </>
         )}
         {phase === 'evolve' && <h1><Label zh={`${kid.petName}长大了！`} /></h1>}
         {phase === 'badges' && (
           <>
             <h1><Label zh="新徽章！" /></h1>
-            <div class="badges">
+            <div class="badges stagger">
               {seq.badges.map((b) => <span key={b} class="badge">🏅 {b} {radicalMeaning(b)?.emoji}</span>)}
             </div>
           </>
         )}
-        <Pet key={phase} kid={kid} known={seq.known} stage={beforeEvolve ? seq.fromStage : seq.stage} mood="happy" size={phase === 'evolve' ? 200 : 140} />
+        {phase !== 'chest' && (
+          <Pet
+            key={phase}
+            kid={kid}
+            known={seq.known}
+            stage={beforeEvolve ? seq.fromStage : seq.stage}
+            mood={phase === 'evolve' || phase === 'badges' ? 'cheer' : 'happy'}
+            size={phase === 'evolve' ? 230 : 160}
+          />
+        )}
         {(phase !== 'chest' || chest) && (
           <button type="button" class="btn btn--primary btn--big" onClick={() => void advance()}>
             <Label zh={isLast ? '回家' : '继续'} />

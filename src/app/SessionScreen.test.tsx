@@ -37,6 +37,7 @@ describe('SessionScreen', () => {
     await learnCurrentWord();
     await learnCurrentWord();
     expect(await screen.findByText('太棒了！')).toBeTruthy();
+    expect(await screen.findByText('⭐ 1')).toBeTruthy();
     expect(await allCards(app.db)).toHaveLength(2);
     expect((await getSession(app.db, '2026-10-02'))?.completed).toBe(true);
   });
