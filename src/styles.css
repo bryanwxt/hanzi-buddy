@@ -147,7 +147,7 @@ button:focus-visible, input:focus-visible { outline: none; box-shadow: var(--foc
 @keyframes accessory-in { from { transform: translateY(-20px) scale(0.4); opacity: 0; } }
 
 /* Scenes */
-.scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.scene { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .scene--home, .scene--sky { background: linear-gradient(180deg, #bfe3ff 0%, #e8f5ff 55%, #fff7ec 100%); }
 .scene--desk { background: linear-gradient(180deg, #fff7ec 0%, #fdebd3 100%); }
 .scene--pond { background: linear-gradient(180deg, #dff5ff 0%, #b4e5f6 60%, #8ad0ec 100%); }
