@@ -379,6 +379,37 @@ The emoji is replaced by one `<Dragon>` SVG component, drawn for this app.
 - **Accessories** stay as emoji, sitting at a head anchor point that is
   defined for each stage.
 
+### Mascot v2: Duolingo-style redesign (parent request, 2026-10-02)
+
+The Dragon keeps the same props. The parent asked for something closer to
+Duolingo's mascot, so it is redrawn to a stricter character spec:
+
+- **Body:** stages 1–5 use one pear-shaped "blob" body instead of a stacked
+  head and body. Volume comes from a darker lower shade and a soft highlight.
+- **Face:** huge close-set eyes (about 40% of the face) with two highlights,
+  eyebrows, a small muzzle with nostrils, and pink cheeks.
+- **Egg:** gets small closed sleeping eyes.
+- **Moods (`DragonMood`):**
+
+  | Mood | Where it shows | Expression |
+  |---|---|---|
+  | `determined` | waiting on a question | brows angled in |
+  | `happy` | right answer, home screen | ^‿^ closed eyes, open smile |
+  | `munch` | feeding | ^‿^ eyes, chewing |
+  | `comfort` | wrong answer | worried-kind brows, small smile |
+  | `cheer` | celebrating | wings raised, ^‿^ eyes, big open mouth |
+  | `sleepy` | home, after 20 s idle | half-closed eyes and a floating "Zzz"; any tap wakes it |
+  | none | neutral | default face |
+
+- **Motion:**
+  - a crouch before a hop and a squash on landing
+  - the tail wags a beat late (follow-through)
+  - an occasional idle sway, on top of breathing and blinking
+- **Expressions switch by CSS class only.** All the face parts are always
+  drawn, so tests can check the structure.
+- **Future option:** a professionally drawn Rive character could replace
+  `Dragon` behind the same props.
+
 ### Rewards and feedback
 
 - **Particle bursts** at the tap point for correct answers and caught fish: 8–12
