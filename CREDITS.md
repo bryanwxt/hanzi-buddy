@@ -1,6 +1,6 @@
 # Credits
 
-Hanzi Buddy is built on these open resources:
+字己 ZiJi is built on these open resources:
 
 - **HSK 3.0 character and word lists** — [elkmovie/hsk30](https://github.com/elkmovie/hsk30), MIT License, © 2021 Pleco Inc.
   Used for the 600 built-in characters, their levels, the handwriting list, and example words.

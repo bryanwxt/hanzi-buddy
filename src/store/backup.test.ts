@@ -44,7 +44,7 @@ describe('backup', () => {
   });
 
   it('rejects files that are not backups, changing nothing', () => {
-    expect(() => readBackup('not json')).toThrow('This file is not a Hanzi Buddy backup.');
+    expect(() => readBackup('not json')).toThrow('This file is not a 字己 ZiJi backup.');
     expect(() => readBackup('{"hello":1}')).toThrow(BackupError);
     expect(() => readBackup(JSON.stringify({ format: BACKUP_FORMAT, formatVersion: 1, stores: { words: 'x' } }))).toThrow(BackupError);
     expect(() => readBackup(JSON.stringify({ format: BACKUP_FORMAT, formatVersion: 1, stores: { secrets: [] } }))).toThrow(BackupError);

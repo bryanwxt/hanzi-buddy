@@ -434,6 +434,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .setup__form { padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 var(--edge) 0 var(--line); }
 .setup__form p { margin: 0; }
 @media (orientation: portrait) { .setup { grid-template-columns: 1fr; } }
+.brand { margin: 0; font-family: var(--hanzi); font-weight: 400; font-size: 64px; line-height: 1; color: var(--green-edge); letter-spacing: 0.08em; }
+.pun { margin: 4px 0 0; font-family: var(--hanzi); font-weight: 400; font-size: 26px; color: var(--ink-soft); }
+.pun__hl { color: var(--orange-ink); }
 .swatch { width: 84px; height: 84px; border-radius: var(--radius); border: 2px solid var(--line); background: #fff; box-shadow: 0 var(--edge) 0 var(--line); display: flex; align-items: center; justify-content: center; padding: 4px; }
 .swatch.is-on { border-color: var(--blue); background: var(--blue-soft); box-shadow: 0 var(--edge) 0 var(--blue); }
 .name-input { font-size: 34px; text-align: center; padding: 10px 20px; border-radius: var(--radius); border: 2px solid var(--line); width: min(80vw, 300px); background: var(--page); font-weight: 800; }

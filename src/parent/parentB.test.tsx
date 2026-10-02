@@ -54,7 +54,7 @@ describe('BackupPanel', () => {
     renderWithApp(<BackupPanel />, app);
     fireEvent.click(screen.getByText('Save backup file'));
     expect(await screen.findByText('Backup saved.')).toBeTruthy();
-    expect(saveTextFile).toHaveBeenCalledWith('hanzi-buddy-backup-2026-10-02.json', expect.stringContaining('hanzi-buddy-backup'));
+    expect(saveTextFile).toHaveBeenCalledWith('ziji-backup-2026-10-02.json', expect.stringContaining('hanzi-buddy-backup'));
     expect((await getSettings(app.db)).lastBackupAt).not.toBeNull();
   });
 });

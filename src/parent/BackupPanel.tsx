@@ -17,7 +17,7 @@ export function BackupPanel() {
   const doExport = async () => {
     try {
       const text = await exportBackup(db, { includeMedia, now: now().getTime() });
-      await saveTextFile(`hanzi-buddy-backup-${localDateKey(now())}.json`, text);
+      await saveTextFile(`ziji-backup-${localDateKey(now())}.json`, text);
       await updateSettings(db, { lastBackupAt: now().getTime() });
       await refresh();
       setStatus('Backup saved.');

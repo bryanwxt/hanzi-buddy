@@ -15,7 +15,7 @@ export interface HanziDB extends DBSchema {
 
 export type AppDb = IDBPDatabase<HanziDB>;
 
-export const DB_NAME = 'hanzi-buddy';
+export const DB_NAME = 'hanzi-buddy'; // pre-rename name; kept so existing progress survives
 export const DB_VERSION = 1;
 
 /** Stores holding one record per item (everything except the 'main' singletons). */

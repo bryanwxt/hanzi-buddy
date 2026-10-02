@@ -26,6 +26,12 @@ describe('first launch', () => {
     expect((await getSettings(app.db)).pinHash).toBe(await hashPin('1234'));
   });
 
+  it('PetSetup welcomes him to 字己 and spells out the pun, so 自己 stays right at school', async () => {
+    renderWithApp(<PetSetup />, await makeAppData({ kid: null }));
+    expect(screen.getByRole('heading', { name: /字己/ })).toBeTruthy();
+    expect(document.querySelector('.pun')?.textContent).toContain('字己 = 自己学汉字');
+  });
+
   it('PetSetup saves the name and colour', async () => {
     const app = await makeAppData({ kid: null });
     renderWithApp(<PetSetup />, app);

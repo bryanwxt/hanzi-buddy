@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'prompt', // src/pwa.ts applies updates on Home, never mid-session
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: '汉字小伙伴 Hanzi Buddy',
-        short_name: '汉字小伙伴',
+        name: '字己 ZiJi',
+        short_name: 'ZiJi',
         description: 'Daily Chinese character practice with a pet dragon',
         lang: 'zh-CN',
         display: 'standalone',

@@ -5,7 +5,7 @@ import { DB_NAME, DB_VERSION, LIST_STORES, type AppDb, type ListStore } from './
 export const BACKUP_FORMAT = 'hanzi-buddy-backup';
 export const BACKUP_FORMAT_VERSION = 1;
 const MEDIA_STORES: ListStore[] = ['recordings', 'prompts'];
-const NOT_A_BACKUP = 'This file is not a Hanzi Buddy backup.';
+const NOT_A_BACKUP = 'This file is not a 字己 ZiJi backup.';
 
 export interface BackupFile {
   format: typeof BACKUP_FORMAT;
@@ -94,7 +94,7 @@ export function readBackup(text: string): BackupPreview {
     throw new BackupError(NOT_A_BACKUP);
   }
   if (file.formatVersion > BACKUP_FORMAT_VERSION) {
-    throw new BackupError('This backup was made by a newer version of Hanzi Buddy. Update the app, then try again.');
+    throw new BackupError('This backup was made by a newer version of 字己 ZiJi. Update the app, then try again.');
   }
   for (const [name, rows] of Object.entries(file.stores)) {
     if (!(LIST_STORES as readonly string[]).includes(name) || !Array.isArray(rows)) throw new BackupError(NOT_A_BACKUP);

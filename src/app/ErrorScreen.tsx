@@ -6,7 +6,7 @@ export function ErrorScreen({ message, dbName }: { message: string; dbName: stri
   const [status, setStatus] = useState<string | null>(null);
   const save = async () => {
     try {
-      await saveTextFile('hanzi-buddy-emergency-copy.json', await exportRawBackup(dbName));
+      await saveTextFile('ziji-emergency-copy.json', await exportRawBackup(dbName));
       setStatus('Saved.');
     } catch (e) {
       setStatus(`Could not save: ${String(e)}`);

@@ -26,7 +26,7 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          BASE_PATH: /hanzi-buddy/
+          BASE_PATH: /ziji/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -1,4 +1,6 @@
-# 汉字小伙伴 Hanzi Buddy
+# 字己 ZiJi
+
+*字己 = 自己学汉字* — a pun on 自己 (zìjǐ, "by myself"): Chinese-character practice a child does on his own.
 
 A home-screen iPad app for daily Chinese character practice (P2 → P3), used by the child alone:
 spaced-repetition flashcards ("feed the dragon"), 听写 writing, a components fishing game, and speaking recordings,

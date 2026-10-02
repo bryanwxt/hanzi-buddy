@@ -25,8 +25,11 @@ export function PetSetup() {
       <Scene kind="home" />
       <div class="setup">
         <div class="setup__pet">
+          <h1 class="brand">字己</h1>
+          {/* The name is a pun on 自己; spelling it out keeps 自己 right in his school 听写. */}
+          <p class="pun"><b class="pun__hl">字</b>己 = <b class="pun__hl">自</b>己学汉字！</p>
           <Dragon stage={0} color={color} size={240} label={name.trim() || DEFAULT_KID.petName} />
-          <h1><Label zh="这是你的龙蛋！" /></h1>
+          <h2><Label zh="这是你的龙蛋！" /></h2>
         </div>
         <div class="setup__form">
           <p><Label zh="给你的小龙起个名字" /></p>
