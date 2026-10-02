@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { useApp } from '../app/AppContext';
 import { addPrompt, deletePrompt, listPrompts } from '../store/repo';
 import type { PicturePrompt } from '../types';
+import { newId } from '../lib/id';
 
 export function PicturesPanel() {
   const { db, now } = useApp();
@@ -15,7 +16,7 @@ export function PicturesPanel() {
 
   const add = async (files: FileList | null) => {
     for (const file of Array.from(files ?? [])) {
-      await addPrompt(db, { id: crypto.randomUUID(), createdAt: now().getTime(), blob: file, mime: file.type });
+      await addPrompt(db, { id: newId(), createdAt: now().getTime(), blob: file, mime: file.type });
     }
     await reload();
   };

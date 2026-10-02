@@ -3,7 +3,9 @@ import { useApp } from '../app/AppContext';
 import { localDateKey } from '../lib/date';
 import { saveTextFile } from '../lib/files';
 import { applyBackup, BackupError, exportBackup, readBackup, type BackupPreview } from '../store/backup';
-import { updateSettings } from '../store/repo';
+import { getSettings, updateSettings } from '../store/repo';
+import { setSfxEnabled } from '../audio/sfx';
+import { setSpeechRate } from '../audio/speech';
 
 export function BackupPanel() {
   const { db, now, refresh } = useApp();
@@ -35,10 +37,17 @@ export function BackupPanel() {
   };
   const restore = async () => {
     if (!preview) return;
-    await applyBackup(db, preview);
-    setPreview(null);
-    await refresh();
-    setStatus('Backup restored.');
+    try {
+      await applyBackup(db, preview);
+      const settings = await getSettings(db);
+      setSpeechRate(settings.speechRate);
+      setSfxEnabled(settings.soundEffects);
+      setPreview(null);
+      await refresh();
+      setStatus('Backup restored.');
+    } catch (e) {
+      setStatus(`Restore failed: ${String(e)}. Your current data was not changed.`);
+    }
   };
 
   return (

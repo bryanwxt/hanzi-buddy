@@ -43,8 +43,10 @@ export function SpeakingStep({ choice, onSave, onSkip }: Props) {
       setPhase('blocked'); // permission refused or no microphone: never block the session
     }
   };
+  const saving = useRef(false);
   const save = async () => {
-    if (!finished) return;
+    if (!finished || saving.current) return;
+    saving.current = true;
     playSfx('star');
     await onSave(finished);
   };

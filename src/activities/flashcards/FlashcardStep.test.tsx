@@ -113,3 +113,14 @@ describe('feedback sheet', () => {
     expect(document.querySelector('.bottombar--oops')!.textContent).toContain('正确答案');
   });
 });
+
+describe('FlashcardStep listen mode', () => {
+  it('uses read mode when there are fewer than 3 look-alike characters to choose from', () => {
+    const tiny = [he, pool.find((w) => w.text === '大')!];
+    for (let i = 0; i < 5; i++) {
+      cleanup();
+      render(<FlashcardStep {...base} pool={tiny} item={review} voice onDone={vi.fn()} />);
+      expect(document.querySelector('.choices--hanzi')).toBeNull();
+    }
+  });
+});

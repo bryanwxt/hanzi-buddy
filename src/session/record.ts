@@ -1,7 +1,7 @@
 import { localDateKey } from '../lib/date';
 import { newCard, review, toRating } from '../srs/scheduler';
 import type { AppDb } from '../store/db';
-import { addReviewLog, allCards, allWords, getCard, getSession, getSettings, putCards, saveSession } from '../store/repo';
+import { addReviewLog, allCards, allWords, getCard, getSession, getSettings, getWord, putCards, putWords, saveSession } from '../store/repo';
 import type { CardKind, CardRecord, Grade, SessionRecord } from '../types';
 import { buildSessionPlan } from './plan';
 import { createSessionRecord } from './runner';
@@ -30,11 +30,19 @@ export async function recordWriting(db: AppDb, wordId: string, totalMisses: numb
   return card;
 }
 
+export async function markWriteSkipped(db: AppDb, wordId: string, now: Date): Promise<void> {
+  const word = await getWord(db, wordId);
+  if (word) await putWords(db, [{ ...word, writeSkippedAt: now.getTime() }]);
+}
+
 /** Today's session if one exists (finished or not), otherwise a new plan. Earlier days are never resumed. */
 export async function startOrResumeSession(db: AppDb, now: Date): Promise<SessionRecord> {
   const date = localDateKey(now);
   const existing = await getSession(db, date);
-  if (existing) return existing;
+  // An untouched plan is rebuilt, so a parent's settings change applies today rather than tomorrow.
+  if (existing && (existing.completed || existing.activeMs > 0 || existing.stepIndex > 0 || existing.flashIndex > 0 || existing.writeIndex > 0)) {
+    return existing;
+  }
   const [cards, words, settings] = await Promise.all([allCards(db), allWords(db), getSettings(db)]);
   const rec = createSessionRecord(buildSessionPlan({ cards, words, settings, now }), date, now.getTime());
   await saveSession(db, rec);

@@ -4,7 +4,6 @@ import { BUILTIN } from '../content';
 import { radicalMeaning } from '../content/radicals';
 import { canOpenChest, openChest, petStage, type ChestResult } from '../fun/pet';
 import { newBadges, stickerFamilies } from '../fun/stickers';
-import { localDateKey } from '../lib/date';
 import { totalStars } from '../stats/stats';
 import { allSessions, getKid, saveKid } from '../store/repo';
 import { DEFAULT_KID, type KidState, type SessionRecord } from '../types';
@@ -29,8 +28,7 @@ interface Sequence {
 }
 
 export function Celebration({ rec }: { rec: SessionRecord }) {
-  const { db, now, go, refresh } = useApp();
-  const today = localDateKey(now());
+  const { db, go, refresh } = useApp();
   const kidRef = useRef<KidState>(DEFAULT_KID);
   const counterRef = useRef<HTMLSpanElement>(null);
   const chestRef = useRef<HTMLDivElement>(null);
@@ -50,7 +48,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
       const stage = Math.max(petStage(know.known), kidNow.lastStageSeen);
       const badges = newBadges(stickerFamilies(BUILTIN), know.knownChars, kidNow.badgesSeen);
       const order: Phase[] = ['stars'];
-      if (!rec.free && canOpenChest(kidNow, today)) order.push('chest');
+      if (!rec.free && rec.completedSteps.length > 0 && canOpenChest(kidNow, rec.date)) order.push('chest');
       if (stage > kidNow.lastStageSeen) order.push('evolve');
       if (badges.length) order.push('badges');
       kidRef.current = kidNow;
@@ -105,7 +103,9 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     setPhase(nextPhase);
   };
   const open = async () => {
-    const { kid: next, result } = openChest(kidRef.current, today);
+    // Dated by the session's own day (a session can finish after midnight); one prize per day however fast the taps.
+    if (!canOpenChest(kidRef.current, rec.date)) return;
+    const { kid: next, result } = openChest(kidRef.current, rec.date);
     await save(next);
     setChest(result);
     playSfx('chest');

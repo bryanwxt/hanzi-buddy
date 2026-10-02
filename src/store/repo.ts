@@ -28,9 +28,14 @@ export async function saveKid(db: AppDb, kid: KidState): Promise<void> {
 
 export async function seedBuiltinWords(db: AppDb, words: Word[]): Promise<number> {
   const tx = db.transaction('words', 'readwrite');
-  const existing = new Set(await tx.store.getAllKeys());
+  const existing = new Map((await tx.store.getAll()).map((w) => [w.id, w]));
   const missing = words.filter((w) => !existing.has(w.id));
-  await Promise.all([...missing.map((w) => tx.store.put(w)), tx.done]);
+  // Existing installs pick up content fixes; the parent's and child's state on each word is kept.
+  const refreshed = words.flatMap((w) => {
+    const old = existing.get(w.id);
+    return old ? [{ ...w, paused: old.paused, listName: old.listName, listedAt: old.listedAt, createdAt: old.createdAt, writeSkippedAt: old.writeSkippedAt }] : [];
+  });
+  await Promise.all([...[...missing, ...refreshed].map((w) => tx.store.put(w)), tx.done]);
   return missing.length;
 }
 

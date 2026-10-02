@@ -78,3 +78,12 @@ describe('buildFreePlayQueue', () => {
     expect(buildFreePlayQueue(cards, ws, mulberry32(1))).toEqual([{ wordId: 'b:a', isNew: false, retry: true }]);
   });
 });
+
+describe('new writing words', () => {
+  it('puts a word whose strokes failed to load behind the others instead of holding a slot every day', () => {
+    const ws = [makeWord('甲', { id: 'b:a', rank: 1, writeable: true, writeSkippedAt: now.getTime() }), makeWord('乙', { id: 'b:b', rank: 2, writeable: true }), makeWord('丙', { id: 'b:c', rank: 3, writeable: true })];
+    const cards = ws.map((w) => makeCard(w.id, 'recognise', new Date(2026, 9, 20), true));
+    const plan = buildSessionPlan({ cards, words: ws, settings: settings(), now });
+    expect(plan.writeCandidates.map((c) => c.wordId)).toEqual(['b:b', 'b:c']);
+  });
+});

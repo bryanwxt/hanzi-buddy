@@ -105,7 +105,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .link { background: none; border: none; color: var(--blue); font-weight: 800; min-height: 44px; }
 .small-btn { min-height: 44px; padding: 6px 14px; border-radius: 12px; border: 2px solid var(--line); background: #fff; font-weight: 800; box-shadow: 0 3px 0 var(--line); }
 .icon-btn {
-  width: 56px; height: 56px; border-radius: 16px; border: none; background: transparent; color: var(--muted);
+  width: 64px; height: 64px; border-radius: 16px; border: none; background: transparent; color: var(--muted);
   display: inline-flex; align-items: center; justify-content: center; transition: transform var(--dur-fast) var(--ease-out);
 }
 .icon-btn:active { transform: scale(0.92); }

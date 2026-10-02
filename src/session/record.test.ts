@@ -1,9 +1,10 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { Rating } from 'ts-fsrs';
-import { allCards, getSession, logsSince, putWords, saveSession } from '../store/repo';
+import { allCards, allWords, getSession, logsSince, putWords, saveSession, updateSettings } from '../store/repo';
+import { DEFAULT_SETTINGS } from '../types';
 import { freshDb, makeWord } from '../test/fixtures';
-import { recordRecognition, recordWriting, startOrResumeSession } from './record';
+import { markWriteSkipped, recordRecognition, recordWriting, startOrResumeSession } from './record';
 
 const now = new Date(2026, 9, 2, 9);
 
@@ -38,5 +39,32 @@ describe('startOrResumeSession', () => {
     expect(tomorrow.date).toBe('2026-10-03');
     expect(tomorrow.flashIndex).toBe(0);
     expect((await getSession(db, '2026-10-02'))?.flashIndex).toBe(1);
+  });
+});
+
+describe('startOrResumeSession after a settings change', () => {
+  it("rebuilds today's untouched plan so a parent's change applies today", async () => {
+    const db = await freshDb();
+    const now = new Date(2026, 9, 2, 8);
+    expect((await startOrResumeSession(db, now)).plan.steps).toContain('writing');
+    await updateSettings(db, { activities: { ...DEFAULT_SETTINGS.activities, writing: false } });
+    expect((await startOrResumeSession(db, now)).plan.steps).not.toContain('writing');
+  });
+  it('keeps a plan the child has already started', async () => {
+    const db = await freshDb();
+    const now = new Date(2026, 9, 2, 8);
+    const rec = await startOrResumeSession(db, now);
+    await saveSession(db, { ...rec, activeMs: 5000 });
+    await updateSettings(db, { activities: { ...DEFAULT_SETTINGS.activities, writing: false } });
+    expect((await startOrResumeSession(db, now)).plan.steps).toContain('writing');
+  });
+});
+
+describe('markWriteSkipped', () => {
+  it('stamps the word so tomorrow offers other new words to write first', async () => {
+    const db = await freshDb();
+    await putWords(db, [makeWord('龘')]);
+    await markWriteSkipped(db, 'b:龘', now);
+    expect((await allWords(db))[0]?.writeSkippedAt).toBe(now.getTime());
   });
 });

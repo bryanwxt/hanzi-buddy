@@ -35,7 +35,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
   const quiz = useMemo(() => {
     const rng = mulberry32((Date.now() ^ word.text.codePointAt(0)!) >>> 0);
     const lookAlikes = pickCharacterDistractors(word, pool, rng);
-    const listen = voice && lookAlikes.length > 0 && (card?.fsrs.reps ?? 0) % 2 === 0;
+    const listen = voice && lookAlikes.length >= 3 && (card?.fsrs.reps ?? 0) % 2 === 0;
     const answer = listen ? word.text : word.pinyin;
     const wrong = listen ? lookAlikes.map((w) => w.text) : pickPinyinDistractors(word, pool, rng);
     return { listen, answer, options: shuffle([answer, ...wrong], rng), cheer: pickLine(CHEERS, rng), comfort: pickLine(COMFORTS, rng) };

@@ -1,5 +1,6 @@
 import { pinyin } from 'pinyin-pro';
 import type { Word } from '../types';
+import { newId as uuid } from '../lib/id';
 
 export interface ParsedWord {
   text: string;
@@ -52,7 +53,7 @@ export interface ListResult {
  */
 export function makeParentWords(parsed: ParsedWord[], opts: ListOptions): ListResult {
   const byText = new Map(opts.existing.map((w) => [w.text, w]));
-  const newId = opts.newId ?? (() => crypto.randomUUID());
+  const newId = opts.newId ?? (() => uuid());
   const result: ListResult = { added: [], promoted: [], duplicates: [] };
   parsed.forEach((p, i) => {
     const listedAt = opts.now + i;

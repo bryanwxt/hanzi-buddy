@@ -43,6 +43,7 @@ export interface Word {
   paused: boolean;
   createdAt: number;
   examples?: Example[];
+  writeSkippedAt?: number; // last time its strokes failed to load in 听写; such words go to the back of the queue
 }
 
 export type CardKind = 'recognise' | 'write';

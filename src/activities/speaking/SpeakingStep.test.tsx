@@ -37,3 +37,22 @@ describe('SpeakingStep', () => {
     expect(onSkip).toHaveBeenCalled();
   });
 });
+
+describe('SpeakingStep save', () => {
+  it('saves one recording however fast 保存 is tapped', async () => {
+    vi.mocked(startRecording).mockResolvedValue({
+      stop: async () => ({ blob: new Blob(['x']), mime: 'audio/mp4', durationSec: 3 }),
+      cancel: vi.fn(),
+    });
+    let release!: () => void;
+    const onSave = vi.fn(() => new Promise<void>((r) => { release = r; }));
+    render(<SpeakingStep choice={choice} onSave={onSave} onSkip={vi.fn()} />);
+    fireEvent.click(screen.getByText('开始录音'));
+    fireEvent.click(await screen.findByText('停止'));
+    const save = await screen.findByText('保存');
+    fireEvent.click(save);
+    fireEvent.click(save);
+    release();
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  });
+});

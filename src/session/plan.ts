@@ -51,7 +51,7 @@ export function buildSessionPlan({ cards, words, settings, now }: PlanInput): Se
       ...dueOf(write).map((c) => ({ wordId: c.wordId, isNew: false })),
       ...active
         .filter((w) => w.writeable && knownIds.has(w.id) && !hasWrite.has(w.id))
-        .sort(newWordOrder)
+        .sort((a, b) => (a.writeSkippedAt ?? 0) - (b.writeSkippedAt ?? 0) || newWordOrder(a, b))
         .slice(0, MAX_NEW_WRITE)
         .map((w) => ({ wordId: w.id, isNew: true })),
     ],

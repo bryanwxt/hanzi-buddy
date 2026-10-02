@@ -67,3 +67,13 @@ describe('repo', () => {
     expect((await getKid(db))?.petName).toBe('豆豆');
   });
 });
+
+describe('seedBuiltinWords content updates', () => {
+  it('refreshes built-in content on existing installs but keeps the parent and child state', async () => {
+    const db = await freshDb();
+    await putWords(db, [makeWord('兴', { pinyin: 'old', meaning: 'old', paused: true, listedAt: 5, listName: 'Week 1', createdAt: 1 })]);
+    await seedBuiltinWords(db, [makeWord('兴', { pinyin: 'xìng', meaning: 'mood, interest', createdAt: 99 })]);
+    const w = (await allWords(db))[0]!;
+    expect([w.pinyin, w.meaning, w.paused, w.listedAt, w.listName, w.createdAt]).toEqual(['xìng', 'mood, interest', true, 5, 'Week 1', 1]);
+  });
+});

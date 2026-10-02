@@ -13,7 +13,7 @@ import { comboMilestone } from '../fun/pet';
 import { localDateKey } from '../lib/date';
 import { mulberry32 } from '../lib/random';
 import { buildFreePlayQueue } from '../session/plan';
-import { recordRecognition, recordWriting, startOrResumeSession } from '../session/record';
+import { markWriteSkipped, recordRecognition, recordWriting, startOrResumeSession } from '../session/record';
 import {
   addActiveTime, afterFlashAnswer, afterWriteWord, createFreePlayRecord, currentFlashItem, currentStep,
   currentWriteCandidate, finishStep, skipFlashItem,
@@ -25,6 +25,7 @@ import { ProgressBar } from '../ui/ProgressBar';
 import { useApp } from './AppContext';
 import { Celebration } from './Celebration';
 import { loadKnowledge, type Knowledge } from './knowledge';
+import { newId } from '../lib/id';
 
 
 interface Loaded {
@@ -121,13 +122,14 @@ export function SessionScreen({ free }: { free: boolean }) {
   const onWriteDone = (r: WriteResult | null) =>
     once(async () => {
       if (r && !rec.free) await recordWriting(db, writeCandidate!.wordId, r.totalMisses, now());
+      if (!r && writeCandidate!.isNew) await markWriteSkipped(db, writeCandidate!.wordId, now());
       await commit(afterWriteWord(rec, r !== null, r?.elapsedMs ?? 0));
     })();
 
   const onSpeakingSave = async (f: FinishedRecording) => {
     const s = state.speaking!;
     const prompt = s.kind === 'picture' ? { kind: 'picture' as const, promptId: s.prompt.id } : { kind: 'passage' as const, passageId: s.passage.id };
-    await addRecording(db, { id: crypto.randomUUID(), createdAt: now().getTime(), prompt, ...f });
+    await addRecording(db, { id: newId(), createdAt: now().getTime(), prompt, ...f });
     await finishTimedStep();
   };
 

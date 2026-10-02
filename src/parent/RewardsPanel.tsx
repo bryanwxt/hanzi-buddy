@@ -5,6 +5,7 @@ import { goalProgress } from '../fun/rewards';
 import { totalStars } from '../stats/stats';
 import { allSessions, deleteReward, getKid, listRewards, saveReward } from '../store/repo';
 import type { RewardGoal } from '../types';
+import { newId } from '../lib/id';
 
 const EMOJIS = ['🍦', '🧸', '🎮', '📚', '🏊', '🍕', '🎬', '🧩', '🎨', '⚽'];
 
@@ -29,7 +30,7 @@ export function RewardsPanel() {
   const add = async () => {
     const n = Math.round(Number(target));
     if (!title.trim() || !(n >= 1)) return;
-    await saveReward(db, { id: crypto.randomUUID(), title: title.trim(), emoji, metric, target: n, createdAt: now().getTime(), claimedAt: null });
+    await saveReward(db, { id: newId(), title: title.trim(), emoji, metric, target: n, createdAt: now().getTime(), claimedAt: null });
     setTitle('');
     await load();
   };

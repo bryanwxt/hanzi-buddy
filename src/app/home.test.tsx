@@ -82,6 +82,14 @@ describe('StickerBook badge shelf', () => {
   });
 });
 
+describe('Wardrobe', () => {
+  it('shows the grown dragon straight away, never the egg while loading', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, lastStageSeen: 3 } });
+    renderWithApp(<Wardrobe />, app);
+    expect(document.querySelector('svg.dragon')?.getAttribute('data-stage')).toBe('3');
+  });
+});
+
 describe('HomeScreen dragon', () => {
   it('dozes off when left alone and wakes on a tap', async () => {
     const app = await makeAppData();

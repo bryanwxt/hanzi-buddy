@@ -1,6 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
-import { allWords, getSettings, putWords } from '../store/repo';
+import { exportBackup } from '../store/backup';
+import { allWords, getSettings, putWords, updateSettings } from '../store/repo';
+import { setSpeechRate } from '../audio/speech';
+import { setSfxEnabled } from '../audio/sfx';
 import { makeWord } from '../test/fixtures';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
 import { BackupPanel } from './BackupPanel';
@@ -53,6 +56,40 @@ describe('BackupPanel', () => {
     expect(await screen.findByText('Backup saved.')).toBeTruthy();
     expect(saveTextFile).toHaveBeenCalledWith('hanzi-buddy-backup-2026-10-02.json', expect.stringContaining('hanzi-buddy-backup'));
     expect((await getSettings(app.db)).lastBackupAt).not.toBeNull();
+  });
+});
+
+// jsdom's File has no text(); Safari's does.
+const backupFile = (text: string) => Object.assign(new File([text], 'b.json', { type: 'application/json' }), { text: async () => text });
+
+describe('BackupPanel restore', () => {
+  it('re-applies the restored sound settings straight away', async () => {
+    const source = await makeAppData();
+    await updateSettings(source.db, { soundEffects: false, speechRate: 0.6 });
+    const text = await exportBackup(source.db, { includeMedia: false, now: 1 });
+    const app = await makeAppData();
+    renderWithApp(<BackupPanel />, app);
+    const input = document.getElementById('bk-file') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [backupFile(text)] });
+    fireEvent.change(input);
+    fireEvent.click(await screen.findByText('Replace with this backup'));
+    expect(await screen.findByText('Backup restored.')).toBeTruthy();
+    expect(setSfxEnabled).toHaveBeenLastCalledWith(false);
+    expect(setSpeechRate).toHaveBeenLastCalledWith(0.6);
+  });
+
+  it('tells the parent when a restore fails instead of failing silently', async () => {
+    const source = await makeAppData();
+    const text = await exportBackup(source.db, { includeMedia: false, now: 1 });
+    const app = await makeAppData();
+    renderWithApp(<BackupPanel />, app);
+    const input = document.getElementById('bk-file') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [backupFile(text)] });
+    fireEvent.change(input);
+    const button = await screen.findByText('Replace with this backup');
+    app.db.close();
+    fireEvent.click(button);
+    expect(await screen.findByText(/Restore failed/)).toBeTruthy();
   });
 });
 
