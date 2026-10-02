@@ -4,6 +4,7 @@ import { saveKid } from '../store/repo';
 import { DEFAULT_KID, type PetColor } from '../types';
 import { Dragon } from '../ui/dragon/Dragon';
 import { Label } from '../ui/Label';
+import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 
 const COLORS: PetColor[] = ['green', 'blue', 'purple', 'red', 'gold'];
@@ -21,6 +22,7 @@ export function PetSetup() {
 
   return (
     <div class="screen">
+      <Scene kind="home" />
       <div class="setup">
         <div class="setup__pet">
           <Dragon stage={0} color={color} size={240} label={name.trim() || DEFAULT_KID.petName} />

@@ -3,6 +3,7 @@ import { speak } from '../audio/speech';
 import { BUILTIN } from '../content';
 import { completedBadges, familyProgress, stickerFamilies } from '../fun/stickers';
 import { Label } from '../ui/Label';
+import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
 
@@ -27,6 +28,7 @@ export function StickerBook() {
 
   return (
     <div class="screen">
+      <Scene kind="home" />
       <header class="topbar">
         <button type="button" class="btn btn--ghost" onClick={back}>← <Label zh={open ? '贴纸本' : '回家'} /></button>
         <h1 style={{ margin: 0 }}>

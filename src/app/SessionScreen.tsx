@@ -19,11 +19,14 @@ import {
 } from '../session/runner';
 import { addRecording, countRecordings, getKid, listPrompts, saveSession } from '../store/repo';
 import { DEFAULT_KID, type KidState, type SessionRecord, type StepKind } from '../types';
+import { sessionProgress } from '../session/progress';
+import { ProgressBar } from '../ui/ProgressBar';
+import { Scene, type SceneKind } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { Celebration } from './Celebration';
 import { loadKnowledge, type Knowledge } from './knowledge';
 
-const STEP_ICONS: Record<StepKind, string> = { flashcards: '🐲', writing: '✍️', components: '🎣', speaking: '🎤' };
+const SCENES: Record<StepKind, SceneKind> = { flashcards: 'sky', writing: 'desk', components: 'pond', speaking: 'stage' };
 
 interface Loaded {
   rec: SessionRecord;
@@ -131,13 +134,10 @@ export function SessionScreen({ free }: { free: boolean }) {
 
   return (
     <div class="screen">
+      <Scene kind={step ? SCENES[step] : 'sky'} />
       <header class="stepbar">
         <button type="button" class="btn btn--ghost" aria-label="回家" onClick={() => go({ name: 'home' })}>🏠</button>
-        {rec.plan.steps.map((s, i) => (
-          <span key={s} class={`stepbar__step ${i < rec.stepIndex ? 'is-done' : i === rec.stepIndex ? 'is-current' : ''}`}>
-            {STEP_ICONS[s]}
-          </span>
-        ))}
+        <ProgressBar steps={rec.plan.steps} stepIndex={rec.stepIndex} fraction={sessionProgress(rec)} />
         {combo >= 3 && <span class="combo">🔥 {combo}</span>}
       </header>
       {banner && <div class="combo-banner">{banner}</div>}

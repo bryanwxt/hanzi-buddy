@@ -8,6 +8,7 @@ import { DEFAULT_KID, type RewardGoal, type SessionRecord } from '../types';
 import { celebrate } from '../ui/confetti';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
+import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
 
@@ -45,6 +46,7 @@ export function HomeScreen() {
 
   return (
     <div class="screen">
+      <Scene kind="home" />
       <header class="topbar">
         <span class="chip">🔥 {streak(data.sessions, today)}</span>
         <span class="chip">⭐ {stars}</span>

@@ -5,6 +5,7 @@ import { allWords } from '../store/repo';
 import { DEFAULT_KID, type Word } from '../types';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
+import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
@@ -34,6 +35,7 @@ export function PlacementScreen() {
   if (known !== null) {
     return (
       <div class="screen">
+      <Scene kind="home" />
         <div class="center">
           <Pet kid={k} known={known} mood="happy" size={160} />
           <h1><Label zh={`你已经认识 ${known} 个字了！`} /></h1>
@@ -49,6 +51,7 @@ export function PlacementScreen() {
   const current = samples[answers.length];
   return (
     <div class="screen">
+      <Scene kind="home" />
       <div class="center">
         <Pet kid={k} known={0} bubble="你认识这个字吗？" size={100} />
         <div class="hanzi hanzi--xl">{current?.text}</div>

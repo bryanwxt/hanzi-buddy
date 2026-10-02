@@ -3,6 +3,7 @@ import { saveKid } from '../store/repo';
 import { DEFAULT_KID } from '../types';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
+import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
@@ -24,6 +25,7 @@ export function Wardrobe() {
 
   return (
     <div class="screen">
+      <Scene kind="home" />
       <header class="topbar">
         <button type="button" class="btn btn--ghost" onClick={() => go({ name: 'home' })}>← <Label zh="回家" /></button>
       </header>
