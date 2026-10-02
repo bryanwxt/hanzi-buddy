@@ -1,6 +1,7 @@
 import { useId } from 'preact/hooks';
 import { POWERS, type PowerId } from '../../fun/powers';
-import { BODY, FACES, HEAD, accessoryPlacement, type TruffleMood } from './parts';
+import { BODY, FACES, HEAD, HEAD_EARLESS, accessoryPlacement, type TruffleMood } from './parts';
+import { costumeLayer } from './costumes';
 import { powerLayer } from './powers';
 
 export type { TruffleMood } from './parts';
@@ -14,14 +15,16 @@ interface Props {
   bounce?: boolean;
   power?: string | null;
   powerTier?: number;
+  outfit?: string | null;
 }
 
 /** Truffle 松露, drawn in layers; the face layer is swapped per mood. */
-export function Truffle({ mood = 'sulk', accessory = null, size = 160, lookAt = 0, label = '松露', bounce = false, power = null, powerTier = 0 }: Props) {
+export function Truffle({ mood = 'sulk', accessory = null, size = 160, lookAt = 0, label = '松露', bounce = false, power = null, powerTier = 0, outfit = null }: Props) {
   const grain = `truffle-grain-${useId()}`;
   const a11y = label === null ? { 'aria-hidden': 'true' as const } : { role: 'img' as const, 'aria-label': label };
   const tilt = Math.max(-1, Math.min(1, lookAt)) * 4;
   const acc = accessory ? accessoryPlacement(accessory) : null;
+  const wear = costumeLayer(outfit);
   const tier = Math.max(0, Math.min(3, Math.floor(powerTier))) as 0 | 1 | 2 | 3;
   const layer = power && tier > 0 && isPower(power) ? powerLayer(power, tier as 1 | 2 | 3) : null;
   return (
@@ -33,6 +36,7 @@ export function Truffle({ mood = 'sulk', accessory = null, size = 160, lookAt = 
       data-mood={mood}
       data-power={layer ? power! : undefined}
       data-tier={String(layer ? tier : 0)}
+      data-outfit={wear ? outfit! : undefined}
       {...a11y}
     >
       <defs>
@@ -50,10 +54,13 @@ export function Truffle({ mood = 'sulk', accessory = null, size = 160, lookAt = 
       </defs>
       <g filter={`url(#${grain})`}>
         {layer && <g class="truffle__power-back" dangerouslySetInnerHTML={{ __html: layer.back }} />}
+        {wear?.back && <g class="truffle__outfit-back" dangerouslySetInnerHTML={{ __html: wear.back }} />}
         <g class="truffle__body" dangerouslySetInnerHTML={{ __html: BODY }} />
+        {wear && <g class="truffle__outfit-body" dangerouslySetInnerHTML={{ __html: wear.body }} />}
         <g transform={`rotate(${tilt} 160 120)`}>
-          <g class="truffle__head" dangerouslySetInnerHTML={{ __html: HEAD }} />
+          <g class="truffle__head" dangerouslySetInnerHTML={{ __html: wear?.hidesEars ? HEAD_EARLESS : HEAD }} />
           <g class={`truffle__face truffle__face--${mood}`} dangerouslySetInnerHTML={{ __html: FACES[mood] }} />
+          {wear && <g class="truffle__outfit-head" dangerouslySetInnerHTML={{ __html: wear.head }} />}
           {acc && (
             <text class="truffle__accessory" x={acc.x} y={acc.y} font-size={acc.size} text-anchor="middle" dominant-baseline="middle">
               {accessory}

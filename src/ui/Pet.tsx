@@ -1,3 +1,4 @@
+import { visibleAccessory } from '../fun/costumes';
 import type { KidState } from '../types';
 import { Label } from './Label';
 import { Truffle, type TruffleMood } from './truffle/Truffle';
@@ -24,7 +25,8 @@ export function Pet({ kid, mood = 'sulk', bubble = null, size = 120, lookAt = 0,
       )}
       <Truffle
         mood={mood}
-        accessory={kid.wearing}
+        accessory={visibleAccessory(kid)}
+        outfit={kid.outfit}
         lookAt={lookAt}
         size={size}
         bounce={bounce}

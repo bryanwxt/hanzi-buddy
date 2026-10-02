@@ -58,3 +58,31 @@ describe('Truffle powers', () => {
     expect(container.querySelector('svg.truffle')?.getAttribute('data-tier')).toBe('0');
   });
 });
+
+describe('Truffle costumes', () => {
+  it('renders every costume with body and head layers', async () => {
+    const { COSTUMES } = await import('../../fun/costumes');
+    for (const c of COSTUMES) {
+      const { container, unmount } = render(<Truffle outfit={c.id} />);
+      expect(container.querySelector('svg.truffle')?.getAttribute('data-outfit')).toBe(c.id);
+      expect(container.querySelector('.truffle__outfit-body')?.innerHTML.length).toBeGreaterThan(10);
+      expect(container.querySelector('.truffle__outfit-head')?.innerHTML.length).toBeGreaterThan(10);
+      unmount();
+    }
+  });
+  it('ignores unknown outfits', () => {
+    const { container } = render(<Truffle outfit="bogus" />);
+    expect(container.querySelector('.truffle__outfit-body')).toBeNull();
+    expect(container.querySelector('svg.truffle')?.hasAttribute('data-outfit')).toBe(false);
+  });
+});
+
+describe('Truffle onesie hood', () => {
+  it("hides Truffle's own ears under a onesie hood (and only then)", () => {
+    const hooded = render(<Truffle outfit="tiger" />);
+    expect(hooded.container.querySelector('.truffle__head')!.innerHTML).not.toContain('M74 92');
+    hooded.unmount();
+    const chef = render(<Truffle outfit="chef" />);
+    expect(chef.container.querySelector('.truffle__head')!.innerHTML).toContain('M74 92');
+  });
+});

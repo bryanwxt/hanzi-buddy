@@ -59,3 +59,11 @@ describe('Pet power', () => {
     expect(container.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('water');
   });
 });
+
+describe('Pet costume', () => {
+  it('a onesie hides the accessory', () => {
+    const { container } = render(<Pet kid={{ ...DEFAULT_KID, outfit: 'tiger', wearing: '👑' }} />);
+    expect(container.querySelector('svg.truffle')?.getAttribute('data-outfit')).toBe('tiger');
+    expect(container.querySelector('.truffle__accessory')).toBeNull();
+  });
+});
