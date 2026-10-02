@@ -3,6 +3,7 @@ import { useApp } from '../app/AppContext';
 import { SetupPin } from '../app/SetupPin';
 import { setSfxEnabled } from '../audio/sfx';
 import { setSpeechRate, speak } from '../audio/speech';
+import { ONESIES, type ZodiacId } from '../fun/costumes';
 import { updateSettings } from '../store/repo';
 import type { Settings, StepKind } from '../types';
 
@@ -61,6 +62,15 @@ export function SettingsPanel() {
           <input id="st-rate" type="range" min={0.5} max={1} step={0.05} value={s.speechRate} onChange={(e) => void save({ speechRate: Number(e.currentTarget.value) })} />
           <button type="button" class="small-btn" onClick={() => speak('你好，我们一起学汉字！')}>🔊 Test</button>
         </div>
+      </div>
+      <div class="field">
+        <label for="st-zodiac">Zodiac (生肖) — the first treasure chest gives Truffle this onesie</label>
+        <select id="st-zodiac" value={s.zodiac ?? ''} onChange={(e) => void save({ zodiac: (e.currentTarget.value || null) as ZodiacId | null })}>
+          <option value="">Not set (dragon 龙)</option>
+          {ONESIES.map((o) => (
+            <option key={o.id} value={o.id}>{o.id[0]!.toUpperCase() + o.id.slice(1)} {o.zh}</option>
+          ))}
+        </select>
       </div>
       <label>
         <input type="checkbox" checked={s.soundEffects} onChange={(e) => void save({ soundEffects: e.currentTarget.checked })} /> Sound effects

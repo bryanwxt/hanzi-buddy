@@ -37,6 +37,15 @@ describe('WordsPanel', () => {
   });
 });
 
+describe('SettingsPanel zodiac', () => {
+  it("sets the child's zodiac", async () => {
+    const app = await makeAppData();
+    renderWithApp(<SettingsPanel />, app);
+    fireEvent.change(screen.getByLabelText(/Zodiac/), { target: { value: 'tiger' } });
+    await waitFor(async () => expect((await getSettings(app.db)).zodiac).toBe('tiger'));
+  });
+});
+
 describe('SettingsPanel', () => {
   it('saves settings within sensible limits', async () => {
     const app = await makeAppData();
