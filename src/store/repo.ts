@@ -1,0 +1,107 @@
+import { DEFAULT_SETTINGS, type CardRecord, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
+import type { AppDb } from './db';
+
+const MAIN = 'main';
+
+export async function getSettings(db: AppDb): Promise<Settings> {
+  const s = await db.get('settings', MAIN);
+  return { ...DEFAULT_SETTINGS, ...s, activities: { ...DEFAULT_SETTINGS.activities, ...s?.activities } };
+}
+
+export async function saveSettings(db: AppDb, s: Settings): Promise<void> {
+  await db.put('settings', s, MAIN);
+}
+
+export async function updateSettings(db: AppDb, patch: Partial<Settings>): Promise<Settings> {
+  const next = { ...(await getSettings(db)), ...patch };
+  await saveSettings(db, next);
+  return next;
+}
+
+export async function getKid(db: AppDb): Promise<KidState | null> {
+  return (await db.get('kid', MAIN)) ?? null;
+}
+
+export async function saveKid(db: AppDb, kid: KidState): Promise<void> {
+  await db.put('kid', kid, MAIN);
+}
+
+export async function seedBuiltinWords(db: AppDb, words: Word[]): Promise<number> {
+  const tx = db.transaction('words', 'readwrite');
+  const existing = new Set(await tx.store.getAllKeys());
+  const missing = words.filter((w) => !existing.has(w.id));
+  await Promise.all([...missing.map((w) => tx.store.put(w)), tx.done]);
+  return missing.length;
+}
+
+export const allWords = (db: AppDb) => db.getAll('words');
+export const getWord = (db: AppDb, id: string) => db.get('words', id);
+
+export async function putWords(db: AppDb, words: Word[]): Promise<void> {
+  const tx = db.transaction('words', 'readwrite');
+  await Promise.all([...words.map((w) => tx.store.put(w)), tx.done]);
+}
+
+export async function deleteWord(db: AppDb, id: string): Promise<void> {
+  const tx = db.transaction(['words', 'cards'], 'readwrite');
+  await Promise.all([
+    tx.objectStore('words').delete(id),
+    tx.objectStore('cards').delete(`${id}:recognise`),
+    tx.objectStore('cards').delete(`${id}:write`),
+    tx.done,
+  ]);
+}
+
+export const allCards = (db: AppDb) => db.getAll('cards');
+export const getCard = (db: AppDb, id: string) => db.get('cards', id);
+
+export async function putCards(db: AppDb, cards: CardRecord[]): Promise<void> {
+  const tx = db.transaction('cards', 'readwrite');
+  await Promise.all([...cards.map((c) => tx.store.put(c)), tx.done]);
+}
+
+export async function addReviewLog(db: AppDb, log: ReviewLog): Promise<void> {
+  const { id: _id, ...rest } = log;
+  await db.add('reviewLogs', rest as ReviewLog);
+}
+
+export const logsSince = (db: AppDb, sinceMs: number) =>
+  db.getAllFromIndex('reviewLogs', 'byAt', IDBKeyRange.lowerBound(sinceMs));
+
+export const getSession = (db: AppDb, date: string) => db.get('sessions', date);
+export const allSessions = (db: AppDb) => db.getAll('sessions');
+
+export async function saveSession(db: AppDb, rec: SessionRecord): Promise<void> {
+  await db.put('sessions', rec);
+}
+
+export async function addRecording(db: AppDb, r: Recording): Promise<void> {
+  await db.put('recordings', r);
+}
+
+export async function listRecordings(db: AppDb): Promise<Recording[]> {
+  return (await db.getAllFromIndex('recordings', 'byCreatedAt')).reverse();
+}
+
+export const deleteRecording = (db: AppDb, id: string) => db.delete('recordings', id);
+export const countRecordings = (db: AppDb) => db.count('recordings');
+
+export async function addPrompt(db: AppDb, p: PicturePrompt): Promise<void> {
+  await db.put('prompts', p);
+}
+
+export async function listPrompts(db: AppDb): Promise<PicturePrompt[]> {
+  return (await db.getAll('prompts')).sort((a, b) => a.createdAt - b.createdAt);
+}
+
+export const deletePrompt = (db: AppDb, id: string) => db.delete('prompts', id);
+
+export async function listRewards(db: AppDb): Promise<RewardGoal[]> {
+  return (await db.getAll('rewards')).sort((a, b) => a.createdAt - b.createdAt);
+}
+
+export async function saveReward(db: AppDb, g: RewardGoal): Promise<void> {
+  await db.put('rewards', g);
+}
+
+export const deleteReward = (db: AppDb, id: string) => db.delete('rewards', id);
