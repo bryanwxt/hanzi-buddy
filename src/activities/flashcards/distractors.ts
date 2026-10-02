@@ -1,3 +1,4 @@
+import { pinyin } from 'pinyin-pro';
 import { wordComponents } from '../../content';
 import { shuffle, type Rng } from '../../lib/random';
 import type { Word } from '../../types';
@@ -76,7 +77,9 @@ export function pickCharacterDistractors(target: Word, pool: Word[], rng: Rng, n
 }
 
 export function pickPinyinDistractors(target: Word, pool: Word[], rng: Rng, n = 3): string[] {
-  const used = new Set([target.pinyin]);
+  // A polyphonic character's other readings are right too — never offer them as wrong.
+  const readings = Array.from(target.text).length === 1 ? pinyin(target.text, { multiple: true, type: 'array' }) : [];
+  const used = new Set([target.pinyin, ...readings]);
   const out: string[] = [];
   const add = (p: string) => {
     if (out.length < n && p && !used.has(p)) {

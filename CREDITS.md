@@ -11,6 +11,7 @@ Hanzi Buddy is built on these open resources:
 - **hanzi-writer-data** stroke data — Arphic Public License (derived from Make Me a Hanzi graphics / Arphic fonts).
 - **pinyin-pro** — MIT License. **ts-fsrs** — MIT License. **canvas-confetti** — ISC License. **idb** — ISC License. **Preact** — MIT License.
 - **LXGW WenKai (霞鹜文楷)** — [lxgw/LxgwWenKai](https://github.com/lxgw/LxgwWenKai), SIL Open Font License 1.1. Subset to the app's characters as `public/fonts/wenkai.woff2`; licence text in `public/fonts/LXGWWenKai-OFL.txt`.
+- **Lucide icons** — via `lucide-preact`, ISC License (portions derived from Feather, MIT License).
 - **Nunito** — via `@fontsource/nunito`, SIL Open Font License 1.1.
 - Read-aloud passages were written for this project.
 

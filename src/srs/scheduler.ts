@@ -29,6 +29,11 @@ export function isKnown(card: Card): boolean {
   return card.state === State.Review;
 }
 
+/** Known at some point — a lapse into relearning doesn't take earned rewards away. */
+export function isEarned(card: Card): boolean {
+  return card.state === State.Review || card.state === State.Relearning;
+}
+
 /** A card for a character the child already knew at placement: in review, due in 14 days. */
 export function seededKnownCard(now: Date): Card {
   return {

@@ -12,7 +12,7 @@ import { loadKnowledge, type Knowledge } from './knowledge';
 const tilt = (text: string) => `--tilt:${(text.codePointAt(0)! % 7) - 3}deg`;
 
 export function StickerBook() {
-  const { db } = useApp();
+  const { db, kid } = useApp();
   const families = useMemo(() => stickerFamilies(BUILTIN), []);
   const [know, setKnow] = useState<Knowledge | null>(null);
   const [open, setOpen] = useState<string | null>(null); // a family's component, or 'mine'
@@ -24,7 +24,7 @@ export function StickerBook() {
   if (!know) return <div class="screen loading">📒</div>;
 
   const family = families.find((f) => f.component === open);
-  const badges = completedBadges(families, know.knownChars);
+  const badges = [...new Set([...(kid?.badgesSeen ?? []), ...completedBadges(families, know.knownChars)])];
   const myWords = know.words.filter((w) => w.source === 'parent' && know.knownWordIds.has(w.id));
 
   return (

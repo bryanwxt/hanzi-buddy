@@ -1,5 +1,6 @@
 import { Flame, Star } from 'lucide-preact';
 import { useEffect, useState } from 'preact/hooks';
+import { enterSafeScreen } from '../pwa';
 import { primeSpeech } from '../audio/speech';
 import { pathNodes } from '../fun/path';
 import { goalProgress, nextGoal } from '../fun/rewards';
@@ -29,6 +30,8 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   const { db, now, go, kid, settings } = useApp();
   const [data, setData] = useState<HomeData | null>(null);
   const [sleepy, setSleepy] = useState(false);
+
+  useEffect(() => enterSafeScreen(), []);
 
   useEffect(() => {
     void Promise.all([loadKnowledge(db), allSessions(db), listRewards(db)]).then(([know, sessions, goals]) => setData({ know, sessions, goals }));

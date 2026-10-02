@@ -47,7 +47,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     void (async () => {
       const [k, know, sessions] = await Promise.all([getKid(db), loadKnowledge(db), allSessions(db)]);
       const kidNow = k ?? DEFAULT_KID;
-      const stage = petStage(know.known);
+      const stage = Math.max(petStage(know.known), kidNow.lastStageSeen);
       const badges = newBadges(stickerFamilies(BUILTIN), know.knownChars, kidNow.badgesSeen);
       const order: Phase[] = ['stars'];
       if (!rec.free && canOpenChest(kidNow, today)) order.push('chest');

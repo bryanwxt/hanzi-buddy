@@ -47,3 +47,10 @@ describe('Label digits', () => {
     expect(container.querySelector('.label__py')?.textContent).toBe('wǒ rèn shi 45 gè zì');
   });
 });
+
+describe('Pet never shrinks', () => {
+  it('keeps the highest stage the child has seen even if the known count dips', () => {
+    render(<Pet kid={{ ...DEFAULT_KID, lastStageSeen: 2 }} known={10} />);
+    expect(screen.getByRole('img', { name: '小龙' }).getAttribute('data-stage')).toBe('2');
+  });
+});

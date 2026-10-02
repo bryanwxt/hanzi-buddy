@@ -1,6 +1,6 @@
 import { Rating } from 'ts-fsrs';
 import { addDays, endOfLocalDay, localDateKey, parseDateKey } from '../lib/date';
-import { isKnown } from '../srs/scheduler';
+import { isEarned } from '../srs/scheduler';
 import type { CardRecord, ReviewLog, SessionRecord, Word } from '../types';
 
 export interface Knowledge {
@@ -16,7 +16,7 @@ export interface Knowledge {
 
 export function summarize(words: Word[], cards: CardRecord[]): Knowledge {
   const wordsById = new Map(words.map((w) => [w.id, w]));
-  const knownWordIds = new Set(cards.filter((c) => c.kind === 'recognise' && isKnown(c.fsrs)).map((c) => c.wordId));
+  const knownWordIds = new Set(cards.filter((c) => c.kind === 'recognise' && isEarned(c.fsrs)).map((c) => c.wordId));
   const knownChars = new Set<string>();
   for (const id of knownWordIds) {
     const text = wordsById.get(id)?.text;
@@ -30,7 +30,7 @@ export function summarize(words: Word[], cards: CardRecord[]): Knowledge {
     knownWordIds,
     knownChars,
     known: knownWordIds.size,
-    written: cards.filter((c) => c.kind === 'write' && isKnown(c.fsrs)).length,
+    written: cards.filter((c) => c.kind === 'write' && isEarned(c.fsrs)).length,
   };
 }
 

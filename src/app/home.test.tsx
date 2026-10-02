@@ -74,6 +74,14 @@ describe('StickerBook', () => {
   });
 });
 
+describe('StickerBook badge shelf', () => {
+  it('keeps a badge the child already earned even after a card lapses', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, badgesSeen: ['氵'] } });
+    renderWithApp(<StickerBook />, app);
+    expect(await screen.findByText('🏅 氵')).toBeTruthy();
+  });
+});
+
 describe('HomeScreen dragon', () => {
   it('dozes off when left alone and wakes on a tap', async () => {
     const app = await makeAppData();

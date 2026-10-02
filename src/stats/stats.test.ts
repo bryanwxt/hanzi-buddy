@@ -78,3 +78,14 @@ describe('logs and cards', () => {
     expect(dueTomorrow(cards, words, now)).toBe(1);
   });
 });
+
+describe('earned progress never goes backwards', () => {
+  it('still counts a known card that lapsed into relearning', () => {
+    const now = new Date(2026, 9, 2);
+    const relearning = { ...makeCard('b:大', 'recognise', now, true) };
+    relearning.fsrs = { ...relearning.fsrs, state: 3 };
+    const k = summarize([makeWord('大')], [relearning]);
+    expect(k.known).toBe(1);
+    expect(k.knownChars.has('大')).toBe(true);
+  });
+});

@@ -23,7 +23,7 @@ export function Pet({ kid, known, mood = null, bubble = null, size = 120, stage,
         </div>
       )}
       <Dragon
-        stage={stage ?? petStage(known)}
+        stage={stage ?? Math.max(petStage(known), kid.lastStageSeen)}
         color={kid.petColor}
         mood={mood}
         accessory={kid.wearing}

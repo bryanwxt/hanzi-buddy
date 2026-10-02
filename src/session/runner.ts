@@ -2,6 +2,11 @@ import type { FlashItem, SessionPlan, SessionRecord, StepKind } from '../types';
 
 /** A wrong card comes back after this many other cards (or at the end of a short queue). */
 export const RETRY_GAP = 4;
+// Ceilings on the time one card, written word or whole step can count, so an app
+// left open or backgrounded can't use up the time box or inflate the parent's minutes.
+export const MAX_CARD_MS = 60_000;
+export const MAX_WORD_MS = 3 * 60_000;
+export const MAX_STEP_MS = 10 * 60_000;
 
 export function createSessionRecord(plan: SessionPlan, date: string, now: number, free = false): SessionRecord {
   const flashQueue: FlashItem[] = [
@@ -43,10 +48,11 @@ export function finishStep(rec: SessionRecord): SessionRecord {
 }
 
 export function addActiveTime(rec: SessionRecord, ms: number): SessionRecord {
-  return { ...rec, activeMs: rec.activeMs + ms };
+  return { ...rec, activeMs: rec.activeMs + Math.min(ms, MAX_STEP_MS) };
 }
 
-export function afterFlashAnswer(rec: SessionRecord, correct: boolean, elapsedMs: number): SessionRecord {
+export function afterFlashAnswer(rec: SessionRecord, correct: boolean, rawElapsedMs: number): SessionRecord {
+  const elapsedMs = Math.min(rawElapsedMs, MAX_CARD_MS);
   const item = currentFlashItem(rec);
   if (!item) return rec;
   const flashQueue = [...rec.flashQueue];
@@ -70,7 +76,8 @@ export function skipFlashItem(rec: SessionRecord): SessionRecord {
 }
 
 /** done=false means the word was skipped (e.g. no stroke data) and does not count. */
-export function afterWriteWord(rec: SessionRecord, done: boolean, elapsedMs: number): SessionRecord {
+export function afterWriteWord(rec: SessionRecord, done: boolean, rawElapsedMs: number): SessionRecord {
+  const elapsedMs = Math.min(rawElapsedMs, MAX_WORD_MS);
   const next: SessionRecord = {
     ...rec,
     writeIndex: rec.writeIndex + 1,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { RADICALS } from '../../content/radicals';
 import { getCharInfo } from '../../content';
 import { mulberry32 } from '../../lib/random';
-import { buildComponentRound, charHasComponent, type TapAllQuestion, type WhichPartQuestion } from './game';
+import { buildComponentRound, charHasComponent, containsPart, type TapAllQuestion, type WhichPartQuestion } from './game';
 
 const KNOWN = [...'河汉洗汽没喝吃叫吗呢他你们休大人口一二三好妈姐妹'];
 
@@ -49,5 +49,22 @@ describe('radical-only meanings', () => {
     for (const q of round.filter((q): q is WhichPartQuestion => q.kind === 'whichPart')) {
       expect(getCharInfo(q.char)!.radical).toBe(q.component);
     }
+  });
+});
+
+describe('fishing never marks a visibly-matching character wrong', () => {
+  it('keeps characters that contain the asked part out of the wrong-answer fish', () => {
+    const known = [...KNOWN, ...'中日回问号叫吗'];
+    for (let seed = 1; seed <= 60; seed++) {
+      for (const q of buildComponentRound(known, mulberry32(seed)) ?? []) {
+        if (q.kind !== 'tapAll') continue;
+        for (const c of q.grid.filter((g) => !q.answers.includes(g))) expect(containsPart(c, q.component)).toBe(false);
+      }
+    }
+  });
+  it('sees parts one level deep and nested', () => {
+    expect(containsPart('中', '口')).toBe(true);
+    expect(containsPart('问', '口')).toBe(true);
+    expect(containsPart('大', '口')).toBe(false);
   });
 });

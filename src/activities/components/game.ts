@@ -28,6 +28,15 @@ export function charHasComponent(char: string, component: string): boolean {
   return !!info && char !== component && info.radical === component;
 }
 
+/** True when `part` appears anywhere in `char`'s decomposition, nested parts included. */
+export function containsPart(char: string, part: string, seen = new Set<string>()): boolean {
+  if (seen.has(char)) return false;
+  seen.add(char);
+  const info = getCharInfo(char);
+  if (!info) return false;
+  return [info.radical, ...info.components].some((p) => p !== char && (p === part || containsPart(p, part, seen)));
+}
+
 export function buildComponentRound(known: string[], rng: Rng): ComponentQuestion[] | null {
   const chars = [...new Set(known.filter((c) => getCharInfo(c)))];
   if (chars.length < MIN_KNOWN) return null;
@@ -38,7 +47,7 @@ export function buildComponentRound(known: string[], rng: Rng): ComponentQuestio
 
   const tapAll: TapAllQuestion[] = shuffle(families, rng).flatMap((f) => {
     const answers = shuffle(f.members, rng).slice(0, 4);
-    const others = shuffle(chars.filter((c) => c !== f.component && !charHasComponent(c, f.component)), rng).slice(0, GRID_SIZE - answers.length);
+    const others = shuffle(chars.filter((c) => c !== f.component && !containsPart(c, f.component)), rng).slice(0, GRID_SIZE - answers.length);
     if (answers.length + others.length < GRID_SIZE) return [];
     return [{ kind: 'tapAll' as const, component: f.component, answers, grid: shuffle([...answers, ...others], rng) }];
   });

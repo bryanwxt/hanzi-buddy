@@ -5,7 +5,8 @@ import '@fontsource/nunito/900.css';
 import { render } from 'preact';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
+import { initPwa } from './pwa';
 import './styles.css';
 
-registerSW({ immediate: true });
+initPwa(registerSW);
 render(<App />, document.getElementById('app')!);

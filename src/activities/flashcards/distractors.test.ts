@@ -54,3 +54,11 @@ describe('pickPinyinDistractors', () => {
     expect(opts.every((o) => o.split(' ').length === 2 && o !== 'péng you')).toBe(true);
   });
 });
+
+describe('pinyin options are never a real reading', () => {
+  it('skips alternate readings of polyphonic characters', () => {
+    for (const [ch, other] of [['好', 'hào'], ['中', 'zhòng'], ['少', 'shào'], ['看', 'kān'], ['要', 'yāo']] as const) {
+      for (let seed = 1; seed <= 30; seed++) expect(pickPinyinDistractors(w(ch), all, mulberry32(seed))).not.toContain(other);
+    }
+  });
+});
