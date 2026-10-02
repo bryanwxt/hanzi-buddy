@@ -22,9 +22,10 @@ export interface WhichPartQuestion {
 
 export type ComponentQuestion = TapAllQuestion | WhichPartQuestion;
 
+/** True when `component` is `char`'s radical — the only part whose meaning we teach. */
 export function charHasComponent(char: string, component: string): boolean {
   const info = getCharInfo(char);
-  return !!info && char !== component && (info.radical === component || info.components.includes(component));
+  return !!info && char !== component && info.radical === component;
 }
 
 export function buildComponentRound(known: string[], rng: Rng): ComponentQuestion[] | null {
@@ -43,11 +44,12 @@ export function buildComponentRound(known: string[], rng: Rng): ComponentQuestio
   });
 
   const whichPart: WhichPartQuestion[] = shuffle(chars, rng).flatMap((char) => {
-    const parts = getCharInfo(char)!.components.filter((p) => p !== char);
-    const component = parts.find((p) => RADICALS[p]);
-    if (!component || parts.length < 2) return [];
-    const sameMeaning = RADICALS[component]!.zh;
-    const others = parts.filter((p) => p !== component && RADICALS[p]?.zh !== sameMeaning);
+    const info = getCharInfo(char)!;
+    const component = info.radical;
+    const meaning = RADICALS[component];
+    const parts = info.components.filter((p) => p !== char);
+    if (!meaning || component === char || !parts.includes(component)) return [];
+    const others = parts.filter((p) => p !== component && RADICALS[p]?.zh !== meaning.zh);
     if (!others.length) return [];
     return [{ kind: 'whichPart' as const, char, component, options: shuffle([component, ...shuffle(others, rng).slice(0, 2)], rng) }];
   });

@@ -8,16 +8,17 @@ const ch = (char: string, radical: string, components: string[], rank: number): 
 });
 const builtin = [
   ch('河', '氵', ['氵', '可'], 3), ch('汉', '氵', ['氵', '又'], 1), ch('洗', '氵', ['氵', '先'], 2),
-  ch('吃', '口', ['口', '乞'], 4), ch('叫', '口', ['口', '丩'], 5), ch('水', '水', [], 0),
+  ch('吃', '口', ['口', '乞'], 4), ch('叫', '口', ['口', '丩'], 5), ch('喝', '口', ['口', '曷'], 7),
+  ch('日', '日', ['口', '一'], 6), ch('水', '水', [], 0),
 ];
 
 describe('sticker families', () => {
   const families = stickerFamilies(builtin);
-  it('groups characters by component, keeping families of 3 or more, in rank order', () => {
-    expect(families.map((f) => [f.component, f.chars])).toEqual([['氵', ['汉', '洗', '河']]]);
+  it('groups characters by radical, keeping families of 3 or more, in rank order', () => {
+    expect(families.map((f) => [f.component, f.chars])).toEqual([['口', ['吃', '叫', '喝']], ['氵', ['汉', '洗', '河']]]);
   });
   it('tracks progress and completed badges', () => {
-    expect(familyProgress(families[0]!, new Set(['汉', '洗']))).toEqual({ known: 2, total: 3, complete: false });
+    expect(familyProgress(families.find((f) => f.component === '氵')!, new Set(['汉', '洗']))).toEqual({ known: 2, total: 3, complete: false });
     const all = new Set(['汉', '洗', '河']);
     expect(completedBadges(families, all)).toEqual(['氵']);
     expect(newBadges(families, all, [])).toEqual(['氵']);

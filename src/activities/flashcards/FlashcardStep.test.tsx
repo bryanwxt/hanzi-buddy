@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/preact';
+import { cleanup, fireEvent, render, screen } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { builtinWords } from '../../content';
 import { DEFAULT_KID } from '../../types';
@@ -49,5 +49,16 @@ describe('FlashcardStep', () => {
     render(<FlashcardStep {...base} word={target} item={{ ...review, wordId: 'p:x' }} voice onDone={vi.fn()} />);
     expect(document.querySelector('.hanzi--xl')?.textContent).toBe('河马河');
     expect(new Set([...document.querySelectorAll('.choice')].map((b) => b.textContent)).size).toBe(4);
+  });
+});
+
+describe('intro meanings', () => {
+  it('labels only the radical with a meaning', () => {
+    const ri = pool.find((w) => w.text === '日')!;
+    render(<FlashcardStep {...base} word={ri} item={{ wordId: ri.id, isNew: true, retry: false }} voice={false} onDone={vi.fn()} />);
+    expect(document.querySelector('.intro')!.textContent).not.toContain('👄');
+    cleanup();
+    render(<FlashcardStep {...base} item={{ wordId: he.id, isNew: true, retry: false }} voice={false} onDone={vi.fn()} />);
+    expect(document.querySelector('.intro')!.textContent).toContain('💧');
   });
 });

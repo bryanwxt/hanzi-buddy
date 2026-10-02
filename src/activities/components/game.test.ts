@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RADICALS } from '../../content/radicals';
+import { getCharInfo } from '../../content';
 import { mulberry32 } from '../../lib/random';
 import { buildComponentRound, charHasComponent, type TapAllQuestion, type WhichPartQuestion } from './game';
 
@@ -34,6 +35,19 @@ describe('buildComponentRound', () => {
       expect(new Set(q.options).size).toBe(q.options.length);
       expect(q.options.length).toBeGreaterThanOrEqual(2);
       expect(charHasComponent(q.char, q.component)).toBe(true);
+    }
+  });
+});
+
+describe('radical-only meanings', () => {
+  it('does not treat a non-radical part as a meaning', () => {
+    expect(charHasComponent('日', '口')).toBe(false);
+    expect(charHasComponent('吃', '口')).toBe(true);
+  });
+  it('asks which-part questions only about the radical', () => {
+    const round = buildComponentRound(KNOWN, mulberry32(7))!;
+    for (const q of round.filter((q): q is WhichPartQuestion => q.kind === 'whichPart')) {
+      expect(getCharInfo(q.char)!.radical).toBe(q.component);
     }
   });
 });

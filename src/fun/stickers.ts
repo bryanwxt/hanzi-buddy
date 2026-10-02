@@ -15,7 +15,7 @@ export function stickerFamilies(builtin: BuiltinChar[]): StickerFamily[] {
       component,
       meaning,
       chars: builtin
-        .filter((c) => c.char !== component && (c.radical === component || c.components.includes(component)))
+        .filter((c) => c.char !== component && c.radical === component)
         .sort((a, b) => a.rank - b.rank)
         .map((c) => c.char),
     }))

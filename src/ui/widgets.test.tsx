@@ -40,3 +40,10 @@ describe('widgets', () => {
     expect(speak).toHaveBeenCalledWith('河');
   });
 });
+
+describe('Label digits', () => {
+  it('keeps numbers together in the pinyin line', () => {
+    const { container } = render(<Label zh="我认识 45 个字" />);
+    expect(container.querySelector('.label__py')?.textContent).toBe('wǒ rèn shi 45 gè zì');
+  });
+});

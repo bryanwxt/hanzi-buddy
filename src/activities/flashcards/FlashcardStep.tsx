@@ -132,12 +132,13 @@ function Intro({ word, onReady }: { word: Word; onReady: () => void }) {
         <SpeakButton text={word.text} />
         {word.meaning && <div class="meaning">{word.meaning}</div>}
         {hanChars(word.text).map((ch) => {
-          const parts = getCharInfo(ch)?.components ?? [];
-          if (parts.length < 2) return null;
+          const info = getCharInfo(ch);
+          const parts = info?.components ?? [];
+          if (!info || parts.length < 2) return null;
           return (
             <div class="parts" key={ch}>
               {parts.map((p, i) => {
-                const m = radicalMeaning(p);
+                const m = p === info.radical ? radicalMeaning(p) : undefined;
                 return (
                   <span key={p} class={m ? 'part--radical' : ''}>
                     {i > 0 ? '+ ' : ''}
