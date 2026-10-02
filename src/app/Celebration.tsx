@@ -3,6 +3,7 @@ import { playSfx } from '../audio/sfx';
 import { BUILTIN } from '../content';
 import { radicalMeaning } from '../content/radicals';
 import { canOpenChest, openChest, type ChestResult } from '../fun/pet';
+import { newTiers, powerDef, powerFamilies, powerProgress, type PowerId } from '../fun/powers';
 import { newBadges, stickerFamilies } from '../fun/stickers';
 import { totalStars } from '../stats/stats';
 import { allSessions, getKid, saveKid } from '../store/repo';
@@ -14,13 +15,16 @@ import { Label } from '../ui/Label';
 import { burst, flyAlong } from '../ui/motion';
 import { Pet } from '../ui/Pet';
 import { Scene } from '../ui/Scene';
+import { Truffle } from '../ui/truffle/Truffle';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
-type Phase = 'stars' | 'chest' | 'badges';
+type Phase = 'stars' | 'chest' | 'power' | 'badges';
 
 interface Sequence {
   order: Phase[];
+  power: { id: PowerId; tier: number } | null; // the highest newly reached tier (shown)
+  newTiers: { id: PowerId; tier: number }[];
   badges: string[];
   starsBefore: number;
 }
@@ -36,6 +40,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
   const [phase, setPhase] = useState<Phase>('stars');
   const [chest, setChest] = useState<ChestResult | null>(null);
   const [landed, setLanded] = useState(0);
+  const [powered, setPowered] = useState(false);
   const stars = rec.free ? 0 : rec.completedSteps.length;
 
   useEffect(() => {
@@ -46,10 +51,13 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
       const badges = newBadges(stickerFamilies(BUILTIN), know.knownChars, kidNow.badgesSeen);
       const order: Phase[] = ['stars'];
       if (!rec.free && rec.completedSteps.length > 0 && canOpenChest(kidNow, rec.date)) order.push('chest');
+      const fresh = newTiers(powerProgress(powerFamilies(BUILTIN), know.knownChars), kidNow.powerTiersSeen);
+      const power = [...fresh].sort((a, b) => b.tier - a.tier)[0] ?? null;
+      if (power) order.push('power');
       if (badges.length) order.push('badges');
       kidRef.current = kidNow;
       setKid(kidNow);
-      setSeq({ order, badges, starsBefore: totalStars(sessions, kidNow.bonusStars) - stars });
+      setSeq({ order, power, newTiers: fresh, badges, starsBefore: totalStars(sessions, kidNow.bonusStars) - stars });
     })();
   }, []);
 
@@ -104,7 +112,19 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     if (r) burst(r.left + r.width / 2, r.top + r.height * 0.35, { count: 16 });
   };
 
+  const powerUp = async () => {
+    const seen = { ...kidRef.current.powerTiersSeen };
+    for (const t of seq.newTiers) seen[t.id] = Math.max(seen[t.id] ?? 0, t.tier);
+    await save({ ...kidRef.current, powerTiersSeen: seen, activePower: seq.power!.id });
+    setPowered(true);
+    playSfx('levelUp');
+    celebrate();
+  };
+
   const isLast = seq.order.indexOf(phase) === seq.order.length - 1;
+  const def = seq.power ? powerDef(seq.power.id)! : null;
+  const radical = def?.radicals[0];
+  const meaning = radical ? radicalMeaning(radical) : undefined;
 
   return (
     <div class="screen">
@@ -142,6 +162,23 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             {!chest && <p><Label zh="按住，打开宝箱！" /></p>}
           </>
         )}
+        {phase === 'power' && def && seq.power && (
+          <>
+            <h1><Label zh="新能力！" /></h1>
+            <p class="power-intro">
+              <span class="hanzi">{radical}</span> = <Label zh={meaning?.zh ?? def.name} /> {meaning?.emoji}
+            </p>
+            <Truffle
+              mood={powered ? 'cheer' : 'neutral'}
+              accessory={kid.wearing}
+              power={seq.power.id}
+              powerTier={powered ? seq.power.tier : (kid.powerTiersSeen[seq.power.id] ?? 0)}
+              size={220}
+              bounce={powered}
+            />
+            {!powered && <HoldButton label="按住，变身！" onComplete={() => void powerUp()} />}
+          </>
+        )}
         {phase === 'badges' && (
           <>
             <h1><Label zh="新徽章！" /></h1>
@@ -150,7 +187,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             </div>
           </>
         )}
-        {phase !== 'chest' && (
+        {phase !== 'chest' && phase !== 'power' && (
           <Pet
             key={phase}
             kid={kid}
@@ -159,7 +196,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             bounce
           />
         )}
-        {(phase !== 'chest' || chest) && (
+        {(phase === 'chest' ? !!chest : phase === 'power' ? powered : true) && (
           <button type="button" class="btn btn--primary btn--big" onClick={() => void advance()}>
             <Label zh={isLast ? '回家' : '继续'} />
           </button>

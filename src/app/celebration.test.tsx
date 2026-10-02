@@ -1,7 +1,10 @@
 import { fireEvent, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { createSessionRecord } from '../session/runner';
-import { getKid, saveKid } from '../store/repo';
+import { BUILTIN, builtinWords } from '../content';
+import { powerFamilies } from '../fun/powers';
+import { getKid, putCards, putWords, saveKid } from '../store/repo';
+import { makeCard } from '../test/fixtures';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
 import { DEFAULT_KID, type SessionPlan, type StepKind } from '../types';
 import { Celebration } from './Celebration';
@@ -48,5 +51,25 @@ describe('Celebration chest', () => {
   it('gives no chest for a session with no activities in it', async () => {
     await setup('2026-10-02', []);
     expect(screen.getByText('回家')).toBeTruthy();
+  });
+});
+
+describe('Celebration power-up', () => {
+  it('powers Truffle up when a tier is newly reached, and remembers it', async () => {
+    const app = await makeAppData();
+    const water = powerFamilies(BUILTIN).water.slice(0, 3);
+    await putWords(app.db, builtinWords(0));
+    await putCards(app.db, water.map((c) => makeCard(`b:${c}`, 'recognise', new Date(2026, 9, 20), true)));
+    await saveKid(app.db, { ...DEFAULT_KID, lastChestDate: '2026-10-02' });
+    renderWithApp(<Celebration rec={finished('2026-10-02', ['flashcards'])} />, app);
+    await screen.findByText('太棒了！');
+    fireEvent.click(screen.getByText('继续'));
+    expect(await screen.findByText('新能力！')).toBeTruthy();
+    expect(document.querySelector('svg.truffle')?.getAttribute('data-tier')).toBe('0');
+    fireEvent(screen.getByRole('button', { name: '按住，变身！' }), new Event('pointerdown', { bubbles: true }));
+    await hold();
+    await waitFor(async () => expect((await getKid(app.db))?.powerTiersSeen.water).toBe(1));
+    expect((await getKid(app.db))?.activePower).toBe('water');
+    await waitFor(() => expect(document.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('water'));
   });
 });
