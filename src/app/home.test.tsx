@@ -86,6 +86,21 @@ describe('Wardrobe', () => {
   });
 });
 
+describe("Truffle's room powers", () => {
+  it('choose a power the child has unlocked', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, powerTiersSeen: { water: 1 } } });
+    renderWithApp(<Wardrobe />, app);
+    fireEvent.click(screen.getByRole('tab', { name: '能力' }));
+    const rows = await screen.findAllByRole('button', { name: /\d+\/\d+/ });
+    expect(rows).toHaveLength(11);
+    const fire = rows.find((r) => r.getAttribute('aria-label')!.startsWith('火'))!;
+    expect((fire as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(rows.find((r) => r.getAttribute('aria-label')!.startsWith('水'))!);
+    await waitFor(async () => expect((await getKid(app.db))?.activePower).toBe('water'));
+    expect(document.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('water');
+  });
+});
+
 describe('HomeScreen word of the day', () => {
   it('shows a known character as the word of the day', async () => {
     const app = await makeAppData();

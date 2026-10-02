@@ -553,3 +553,17 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .zika--big .zika__py { font-size: 28px; }
 .zika__example { font-size: 32px; display: flex; align-items: center; gap: 8px; }
 .zika-big__close { position: absolute; top: 8px; right: 8px; }
+
+/* Truffle's room */
+.room__tabs { display: flex; gap: 10px; }
+.room__tabs .chip { min-height: 52px; min-width: 110px; font-size: 22px; justify-content: center; }
+.room__tabs .chip.is-on { background: var(--green); }
+.powers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; width: 100%; max-width: 760px; }
+.power-row { min-height: 64px; display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--surface); color: var(--ink); border: var(--panel-border); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); }
+.power-row.is-on { background: var(--green-soft); }
+.power-row:disabled { opacity: 0.55; box-shadow: 4px 4px 0 var(--line-strong); border-color: var(--line-strong); }
+.power-row__mark { font-size: 28px; }
+.power-row__name { font-size: 30px; flex: 1; text-align: left; }
+.power-row__pips { display: flex; gap: 4px; }
+.power-row__pips i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); background: var(--surface); }
+.power-row__count { font-weight: 900; font-size: 16px; min-width: 52px; text-align: right; }
