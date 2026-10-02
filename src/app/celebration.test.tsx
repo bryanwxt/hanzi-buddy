@@ -35,6 +35,7 @@ describe('Celebration chest', () => {
     await hold();
     await screen.findByText('松露有新衣服了！'); // first chest: the zodiac onesie (龙 by default)
     expect(screen.getByText('龙')).toBeTruthy();
+    expect(document.querySelector('.prize svg.truffle')?.getAttribute('data-outfit')).toBe('dragon');
     await waitFor(async () => expect((await getKid(app.db))?.lastChestDate).toBe('2026-10-02'));
     const kid = await getKid(app.db);
     expect(kid?.ownedCostumes).toEqual(['dragon']);

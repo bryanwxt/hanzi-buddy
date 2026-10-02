@@ -7,7 +7,9 @@ spaced-repetition flashcards, 听写 writing, a components fishing game, and spe
 with **Truffle 松露** — the family's grumpy grey-and-white cat — as the mascot: he starts every session
 unimpressed and warms up as the child gets answers right.
 Learning a radical family (氵 水, 火, 木, 金, 土, 口, 亻, 讠, 辶, 心, 日) gives Truffle a power in three tiers, and every
-character learned is caught as a card in the 字卡 collection (gold when he can also write it). Parents use the 🔒 PIN-protected area for
+character learned is caught as a card in the 字卡 collection (gold when he can also write it).
+The daily treasure chest (press and hold to open) dresses Truffle: 12 zodiac 生肖 onesies — the first is the
+child's own zodiac, set in the parent area — plus 8 outfits and 16 accessories. Parents use the 🔒 PIN-protected area for
 progress, school word lists, recordings, reward goals, settings and backups. All data stays on the iPad.
 
 Design: `docs/superpowers/specs/2026-10-02-hanzi-buddy-design.md`, redesign `docs/superpowers/specs/2026-10-02-ziji-truffle-design.md`

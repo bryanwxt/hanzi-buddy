@@ -157,7 +157,12 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             <h1><Label zh={chest ? (chest.kind === 'costume' ? '松露有新衣服了！' : chest.kind === 'accessory' ? '松露有新东西了！' : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
             {chest && (
               <div class="prize">
-                {chest.kind === 'costume' ? <Label zh={costumeById(chest.id)?.zh ?? ''} /> : chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}
+                {chest.kind === 'costume' ? (
+                  <div class="prize__costume">
+                    <Truffle mood="cheer" outfit={chest.id} accessory={null} size={190} bounce />
+                    <Label zh={costumeById(chest.id)?.zh ?? ''} />
+                  </div>
+                ) : chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}
               </div>
             )}
             <div ref={chestRef}>
