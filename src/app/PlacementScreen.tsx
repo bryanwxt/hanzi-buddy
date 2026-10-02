@@ -30,7 +30,7 @@ export function PlacementScreen() {
   };
 
   const k = kid ?? DEFAULT_KID;
-  if (!samples) return <div class="screen loading">🥚</div>;
+  if (!samples) return <div class="screen loading">🐾</div>;
 
   if (known !== null) {
     return (

@@ -17,7 +17,7 @@ const hold = () => new Promise((r) => setTimeout(r, 1300));
 
 async function setup(date: string, steps: StepKind[]) {
   const app = await makeAppData();
-  await saveKid(app.db, { ...DEFAULT_KID });
+  await saveKid(app.db, { ...DEFAULT_KID, petName: '小龙' }); // a dragon-era install
   renderWithApp(<Celebration rec={finished(date, steps)} />, app);
   await screen.findByText('太棒了！');
   return app;
@@ -30,7 +30,7 @@ describe('Celebration chest', () => {
     const chest = await screen.findByRole('button', { name: '按住打开宝箱' });
     for (let i = 0; i < 3; i++) fireEvent(chest, new Event('pointerdown', { bubbles: true }));
     await hold();
-    await screen.findByText(/有新东西了/);
+    await screen.findByText('松露有新东西了！');
     await waitFor(async () => expect((await getKid(app.db))?.lastChestDate).toBe('2026-10-02'));
     const kid = await getKid(app.db);
     expect(kid?.ownedAccessories).toHaveLength(1);

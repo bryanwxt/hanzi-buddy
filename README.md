@@ -3,11 +3,12 @@
 *字己 = 自己学汉字* — a pun on 自己 (zìjǐ, "by myself"): Chinese-character practice a child does on his own.
 
 A home-screen iPad app for daily Chinese character practice (P2 → P3), used by the child alone:
-spaced-repetition flashcards ("feed the dragon"), 听写 writing, a components fishing game, and speaking recordings,
-with a pet dragon that grows as more characters are learned. Parents use the 🔒 PIN-protected area for
+spaced-repetition flashcards, 听写 writing, a components fishing game, and speaking recordings,
+with **Truffle 松露** — the family's grumpy grey-and-white cat — as the mascot: he starts every session
+unimpressed and warms up as the child gets answers right. Parents use the 🔒 PIN-protected area for
 progress, school word lists, recordings, reward goals, settings and backups. All data stays on the iPad.
 
-Design: `docs/superpowers/specs/2026-10-02-hanzi-buddy-design.md` · Plan: `docs/superpowers/plans/2026-10-02-hanzi-buddy.md`
+Design: `docs/superpowers/specs/2026-10-02-hanzi-buddy-design.md`, redesign `docs/superpowers/specs/2026-10-02-ziji-truffle-design.md`
 
 ## Develop
 
@@ -23,7 +24,7 @@ npm run content    # regenerate src/content/builtin.json from HSK 3.0 + Make Me 
 
 1. Open the deployed URL in **Safari** on the iPad.
 2. Tap **Share → Add to Home Screen**. Always open the app from that icon. Home-screen apps keep their data and work offline.
-3. First launch: set the parent PIN, let your child name the dragon, then do the 5-minute placement check together.
+3. First launch: set the parent PIN, let your child wake Truffle, then do the 5-minute placement check together.
 4. For good audio, install a Chinese voice: **Settings → Accessibility → Spoken Content → Voices → Chinese (China mainland)**.
 5. Back up from the parent area every couple of weeks (Backup → Save backup file → Save to Files / iCloud Drive).
 

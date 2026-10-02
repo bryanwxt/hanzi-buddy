@@ -90,7 +90,7 @@ export function SessionScreen({ free }: { free: boolean }) {
     else if (step === 'speaking' && !state.speaking) void commit(finishStep(rec));
   }, [rec]);
 
-  if (!state || !rec) return <div class="screen loading">🥚</div>;
+  if (!state || !rec) return <div class="screen loading">🐾</div>;
   if (rec.completed) return <Celebration rec={rec} />;
   const { know, kid } = state;
   const resting = restingMood(correct);

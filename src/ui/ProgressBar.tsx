@@ -1,6 +1,6 @@
 import type { StepKind } from '../types';
 
-const ICONS: Record<StepKind, string> = { flashcards: '🐲', writing: '✍️', components: '🎣', speaking: '🎤' };
+const ICONS: Record<StepKind, string> = { flashcards: '字', writing: '✍️', components: '🎣', speaking: '🎤' };
 
 export function ProgressBar({ steps, stepIndex, fraction }: { steps: StepKind[]; stepIndex: number; fraction: number }) {
   const pct = Math.round(fraction * 100);

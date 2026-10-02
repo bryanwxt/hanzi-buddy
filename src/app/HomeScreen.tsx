@@ -62,7 +62,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
     if (progress?.reached) celebrate();
   }, [progress?.reached]);
 
-  if (!data) return <div class="screen loading">🥚</div>;
+  if (!data) return <div class="screen loading">🐾</div>;
 
   const today = localDateKey(now());
   const todaySession = data.sessions.find((s) => s.date === today && !s.free);

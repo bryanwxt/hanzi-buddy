@@ -15,7 +15,7 @@ export function ErrorScreen({ message, dbName }: { message: string; dbName: stri
   return (
     <div class="screen parent">
       <div class="center">
-        <div style={{ fontSize: '80px' }}>🥚💤</div>
+        <div style={{ fontSize: '80px' }}>🐱💤</div>
         <h1>Something went wrong opening the app</h1>
         <p>Your child's progress has not been deleted. Please don't remove the app. Save an emergency copy of the data, then try reopening.</p>
         <p><small>{message}</small></p>

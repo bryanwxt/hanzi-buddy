@@ -16,3 +16,7 @@
 - Read-aloud passages were written for this project.
 
 Jun Da's *Modern Chinese Character Frequency List* was considered. On 2026-10-02 it stated no terms of use, so it is not used.
+
+## Mascot
+
+- **Truffle 松露** — original vector art of the family's cat, drawn for this app (no photos are included).

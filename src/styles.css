@@ -449,7 +449,7 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .scene--night .scene__swash { opacity: 0.18; }
 
 /* Panels & pressables */
-.card, .goal, .passage, .helper, .sticker, .family, .wardrobe button, .pinpad button {
+.card, .goal, .passage, .helper, .sticker, .family, .wardrobe button, .pinpad button, .setup__form {
   background: var(--surface); border: var(--panel-border); box-shadow: var(--panel-shadow);
 }
 .card, .goal { border-radius: 16px; }
@@ -503,7 +503,7 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .celebrate--night h1 { text-shadow: 4px 4px 0 var(--ink); }
 
 /* Hold button */
-.hold { position: relative; width: 112px; height: 112px; border-radius: 50%; border: var(--panel-border); background: var(--surface); box-shadow: var(--panel-shadow); display: grid; place-items: center; touch-action: none; }
+.hold { color: var(--ink); position: relative; width: 112px; height: 112px; border-radius: 50%; border: var(--panel-border); background: var(--surface); box-shadow: var(--panel-shadow); display: grid; place-items: center; touch-action: none; }
 .hold__ring { position: absolute; inset: -3px; transform: rotate(-90deg); pointer-events: none; }
 .hold__ring circle { fill: none; stroke: var(--ink); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 327; stroke-dashoffset: 327; transition: stroke-dashoffset 300ms ease-out; }
 .hold.is-holding .hold__ring circle { stroke-dashoffset: 0; transition: stroke-dashoffset 1200ms linear; }

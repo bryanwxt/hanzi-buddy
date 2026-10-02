@@ -133,11 +133,11 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
         )}
         {phase === 'chest' && (
           <>
-            <h1><Label zh={chest ? (chest.kind === 'accessory' ? `${kid.petName}有新东西了！` : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
+            <h1><Label zh={chest ? (chest.kind === 'accessory' ? '松露有新东西了！' : `多了 ${chest.amount} 颗星！`) : '宝箱！'} /></h1>
             {chest && <div class="prize">{chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}</div>}
             <div ref={chestRef}>
               <Chest open={!!chest} />
-              <HoldButton label="按住打开宝箱" onComplete={() => void open()} disabled={!!chest} />
+              {!chest && <HoldButton label="按住打开宝箱" onComplete={() => void open()} />}
             </div>
             {!chest && <p><Label zh="按住，打开宝箱！" /></p>}
           </>

@@ -45,7 +45,7 @@ export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: str
   }, [db]);
 
   if (error) return <ErrorScreen message={error} dbName={dbName} />;
-  if (!booted) return <div class="screen loading">🥚</div>;
+  if (!booted) return <div class="screen loading">🐾</div>;
 
   const app: AppData = { ...booted, now, go: (r) => withViewTransition(() => setRoute(r)), refresh };
   return (
