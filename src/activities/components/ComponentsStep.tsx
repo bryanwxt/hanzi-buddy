@@ -7,6 +7,7 @@ import { BottomBar } from '../../ui/BottomBar';
 import { Label } from '../../ui/Label';
 import { burst } from '../../ui/motion';
 import { Pet } from '../../ui/Pet';
+import type { TruffleMood } from '../../ui/truffle/Truffle';
 import type { ComponentQuestion } from './game';
 
 const splash = (el: Element | null | undefined, count = 8) => {
@@ -18,11 +19,11 @@ const splash = (el: Element | null | undefined, count = 8) => {
 interface Props {
   questions: ComponentQuestion[];
   kid: KidState;
-  known: number;
+  resting: TruffleMood;
   onDone: () => void;
 }
 
-export function ComponentsStep({ questions, kid, known, onDone }: Props) {
+export function ComponentsStep({ questions, kid, resting, onDone }: Props) {
   const [index, setIndex] = useState(0);
   const [checked, setChecked] = useState<boolean | null>(null); // null = not checked yet; true = all right
   const [caught, setCaught] = useState<Set<string>>(new Set());
@@ -82,9 +83,8 @@ export function ComponentsStep({ questions, kid, known, onDone }: Props) {
       <div class="center components">
         <Pet
           kid={kid}
-          known={known}
           size={110}
-          mood={checked === null ? 'determined' : checked ? 'happy' : 'comfort'}
+          mood={checked === null ? resting : checked ? 'pleased' : 'side'}
           bubble={checked === null ? (q.kind === 'tapAll' ? '钓鱼啦！' : '找一找！') : null}
         />
         {q.kind === 'tapAll' ? (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { saveKid } from '../store/repo';
 import { DEFAULT_KID } from '../types';
 import { Label } from '../ui/Label';
@@ -6,16 +6,11 @@ import { TabBar } from '../ui/TabBar';
 import { Pet } from '../ui/Pet';
 import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
-import { loadKnowledge } from './knowledge';
 
 export function Wardrobe() {
   const { db, go, refresh, kid } = useApp();
   const [k, setK] = useState(kid ?? DEFAULT_KID);
-  const [known, setKnown] = useState(0);
 
-  useEffect(() => {
-    void loadKnowledge(db).then((x) => setKnown(x.known));
-  }, []);
 
   const wear = async (item: string | null) => {
     const next = { ...k, wearing: item };
@@ -28,7 +23,7 @@ export function Wardrobe() {
     <div class="screen">
       <Scene kind="home" />
       <div class="center">
-        <Pet kid={k} known={known} size={180} />
+        <Pet kid={k} mood="content" size={180} />
         <h1><Label zh="换装" /></h1>
         {k.ownedAccessories.length === 0 ? (
           <p><Label zh="完成练习就能打开宝箱，得到新东西！" /></p>

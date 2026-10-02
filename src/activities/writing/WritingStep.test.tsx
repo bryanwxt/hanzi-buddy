@@ -23,7 +23,7 @@ describe('WritingStep', () => {
   it('writes each character in turn and reports the total misses', () => {
     quizzes.length = 0;
     const onDone = vi.fn();
-    render(<WritingStep word={makeWord('大人', { pinyin: 'dà rén' })} kid={DEFAULT_KID} known={0} onDone={onDone} />);
+    render(<WritingStep word={makeWord('大人', { pinyin: 'dà rén' })} kid={DEFAULT_KID} resting="sulk" isNew={false} onDone={onDone} />);
     act(() => quizzes.at(-1)!.onComplete({ totalMistakes: 1 }));
     fireEvent.click(screen.getByText('下一个字'));
     act(() => quizzes.at(-1)!.onComplete({ totalMistakes: 2 }));
@@ -33,7 +33,7 @@ describe('WritingStep', () => {
 
   it('skips the word when its stroke data cannot load', () => {
     const onDone = vi.fn();
-    render(<WritingStep word={makeWord('大')} kid={DEFAULT_KID} known={0} onDone={onDone} />);
+    render(<WritingStep word={makeWord('大')} kid={DEFAULT_KID} resting="sulk" isNew={false} onDone={onDone} />);
     act(() => loadError!());
     expect(onDone).toHaveBeenCalledWith(null);
   });

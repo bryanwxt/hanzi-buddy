@@ -1,20 +1,19 @@
-import { petStage } from '../fun/pet';
 import type { KidState } from '../types';
-import { Dragon, type DragonMood } from './dragon/Dragon';
+import { Truffle, type TruffleMood } from './truffle/Truffle';
 
-export type PetMood = DragonMood;
+export type PetMood = TruffleMood;
 
 interface Props {
   kid: KidState;
-  known: number;
   mood?: PetMood;
   bubble?: string | null;
   size?: number;
-  stage?: number; // override, e.g. to show the previous stage during evolution
   lookAt?: number;
+  bounce?: boolean;
 }
 
-export function Pet({ kid, known, mood = null, bubble = null, size = 120, stage, lookAt = 0 }: Props) {
+/** Truffle with an optional speech bubble, wearing the child's chosen accessory. */
+export function Pet({ kid, mood = 'sulk', bubble = null, size = 120, lookAt = 0, bounce = false }: Props) {
   return (
     <div class="pet">
       {bubble && (
@@ -22,15 +21,7 @@ export function Pet({ kid, known, mood = null, bubble = null, size = 120, stage,
           {bubble}
         </div>
       )}
-      <Dragon
-        stage={stage ?? Math.max(petStage(known), kid.lastStageSeen)}
-        color={kid.petColor}
-        mood={mood}
-        accessory={kid.wearing}
-        lookAt={lookAt}
-        size={size}
-        label={kid.petName}
-      />
+      <Truffle mood={mood} accessory={kid.wearing} lookAt={lookAt} size={size} bounce={bounce} />
     </div>
   );
 }

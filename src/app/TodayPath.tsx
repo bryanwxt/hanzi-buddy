@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'preact/hooks';
 import type { PathKind, PathNode } from '../fun/path';
 import { Label } from '../ui/Label';
 
-const ICON: Record<PathKind, string> = { flashcards: '🐲', writing: '✍️', components: '🎣', speaking: '🎤', chest: '🎁' };
-const NAME: Record<PathKind, string> = { flashcards: '喂小龙', writing: '写一写', components: '钓鱼', speaking: '说一说', chest: '宝箱' };
+const ICON: Record<PathKind, string> = { flashcards: '字', writing: '✍️', components: '🎣', speaking: '🎤', chest: '🎁' };
+const NAME: Record<PathKind, string> = { flashcards: '认一认', writing: '写一写', components: '钓鱼', speaking: '说一说', chest: '宝箱' };
 
 interface Props {
   nodes: PathNode[];
@@ -38,7 +38,7 @@ export function TodayPath({ nodes, started, onStart, pet }: Props) {
               aria-current={isCurrent ? 'step' : undefined}
               onClick={isCurrent ? onStart : undefined}
             >
-              <span class="path__icon">{icon}</span>
+              <span class={`path__icon${icon === '字' ? ' path__icon--hanzi' : ''}`}>{icon}</span>
             </button>
             <span class="path__name"><Label zh={NAME[n.kind]} /></span>
             {i === Math.max(0, currentIndex) && <div class="path__pet">{pet}</div>}

@@ -8,12 +8,16 @@ import { mulberry32, shuffle } from '../../lib/random';
 import { BottomBar } from '../../ui/BottomBar';
 import { burst, flyAlong } from '../../ui/motion';
 import type { CardRecord, FlashItem, KidState, Word } from '../../types';
+import { Closeup } from '../../app/Closeup';
+import { isHardRecognition, reactionMood } from '../../fun/mood';
 import { Pet } from '../../ui/Pet';
+import type { TruffleMood } from '../../ui/truffle/Truffle';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { pickCharacterDistractors, pickPinyinDistractors } from './distractors';
 
 export interface FlashResult {
   correct: boolean;
+  hard: boolean;
   responseMs: number;
   elapsedMs: number;
 }
@@ -25,13 +29,15 @@ interface Props {
   card?: CardRecord;
   voice: boolean;
   kid: KidState;
-  known: number;
+  resting: TruffleMood;
+  combo: number; // run of right answers before this card
+  closeupReady: boolean;
   onDone: (result: FlashResult) => void;
 }
 
 type Phase = 'intro' | 'quiz' | 'feedback';
 
-export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDone }: Props) {
+export function FlashcardStep({ item, word, pool, card, voice, kid, resting, combo, closeupReady, onDone }: Props) {
   const quiz = useMemo(() => {
     const rng = mulberry32((Date.now() ^ word.text.codePointAt(0)!) >>> 0);
     const lookAlikes = pickCharacterDistractors(word, pool, rng);
@@ -42,7 +48,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
   }, [word.id]);
   const [phase, setPhase] = useState<Phase>(item.isNew && !item.retry ? 'intro' : 'quiz');
   const [choice, setChoice] = useState<string | null>(null);
-  const [result, setResult] = useState<{ correct: boolean; responseMs: number } | null>(null);
+  const [result, setResult] = useState<{ correct: boolean; hard: boolean; responseMs: number } | null>(null);
   const shownAt = useRef(performance.now());
   const quizAt = useRef(performance.now());
   const petRef = useRef<HTMLDivElement>(null);
@@ -60,7 +66,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
     if (phase !== 'quiz') return;
     const correct = option === quiz.answer;
     setChoice(option);
-    setResult({ correct, responseMs: Math.round(performance.now() - quizAt.current) });
+    setResult({ correct, hard: isHardRecognition(card?.fsrs), responseMs: Math.round(performance.now() - quizAt.current) });
     setPhase('feedback');
     const btn = optionRefs.current.get(option);
     if (correct) {
@@ -84,17 +90,20 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
     return o === choice ? 'is-wrong' : 'is-dim';
   };
 
-  const bubble = phase === 'intro' ? '新字来了！' : phase === 'quiz' ? (quiz.listen ? '我想吃这个字！' : '这个字怎么读？') : null;
+  const reaction = phase === 'feedback' && result ? reactionMood({ correct: result.correct, hard: result.hard, combo: result.correct ? combo + 1 : 0 }) : null;
+  const mood: TruffleMood = phase === 'intro' ? 'neutral' : (reaction ?? resting);
+  const REACTION_LINES: Partial<Record<TruffleMood, string>> = { side: '再想想', wow: '咦！好厉害', content: '呼噜～' };
+  const bubble = phase === 'intro' ? '新字来了！' : phase === 'quiz' ? (quiz.listen ? '我想吃这个字！' : '这个字怎么读？') : (reaction && REACTION_LINES[reaction]) ?? null;
+  const showCloseup = phase === 'feedback' && !!result?.correct && result.hard && closeupReady;
   const next = () => {
     if (result) onDone({ ...result, elapsedMs: Math.round(performance.now() - shownAt.current) });
   };
-  const mood = phase === 'feedback' ? (result!.correct ? 'munch' : 'comfort') : phase === 'quiz' ? 'determined' : 'happy';
 
   return (
     <>
       <div class="flash">
         <div class="flash__pet" ref={petRef}>
-          <Pet kid={kid} known={known} mood={mood} bubble={bubble} size={180} lookAt={phase === 'quiz' ? 0.8 : 0} />
+          <Pet kid={kid} mood={mood} bubble={bubble} size={180} lookAt={phase === 'quiz' ? 0.8 : 0} bounce={phase === 'feedback' && !!result?.correct} />
         </div>
         <div class="flash__main">
           {phase === 'intro' ? (
@@ -124,6 +133,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
           )}
         </div>
       </div>
+      {showCloseup && <Closeup />}
       {phase === 'intro' && <BottomBar actionLabel="我记住了！" onAction={() => setPhase('quiz')} />}
       {phase === 'quiz' && <BottomBar actionLabel="继续" disabled onAction={() => {}} />}
       {phase === 'feedback' && result && (

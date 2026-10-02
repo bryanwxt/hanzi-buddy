@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { builtinWords } from '../../content';
+import { createEmptyCard, State } from 'ts-fsrs';
 import { DEFAULT_KID } from '../../types';
 import { FlashcardStep } from './FlashcardStep';
 
@@ -11,7 +12,7 @@ import { burst, flyAlong } from '../../ui/motion';
 
 const pool = builtinWords(0);
 const he = pool.find((w) => w.text === '河')!;
-const base = { word: he, pool, kid: DEFAULT_KID, known: 0 };
+const base = { word: he, pool, kid: DEFAULT_KID, resting: 'sulk' as const, combo: 0, closeupReady: false };
 const review = { wordId: he.id, isNew: false, retry: false };
 
 describe('FlashcardStep', () => {
@@ -26,7 +27,7 @@ describe('FlashcardStep', () => {
     render(<FlashcardStep {...base} item={review} voice={false} onDone={onDone} />);
     fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
     fireEvent.click(screen.getByText('继续'));
-    expect(onDone).toHaveBeenCalledWith({ correct: true, responseMs: expect.any(Number), elapsedMs: expect.any(Number) });
+    expect(onDone).toHaveBeenCalledWith({ correct: true, hard: false, responseMs: expect.any(Number), elapsedMs: expect.any(Number) });
   });
 
   it('a wrong answer reveals the right one', () => {
@@ -66,7 +67,7 @@ describe('intro meanings', () => {
 });
 
 describe('feedback effects', () => {
-  it('bursts and feeds the tile to the dragon on a correct answer, once', () => {
+  it('bursts and feeds the tile to Truffle on a correct answer, once', () => {
     vi.mocked(burst).mockClear();
     vi.mocked(flyAlong).mockClear();
     const onDone = vi.fn();
@@ -87,17 +88,30 @@ describe('feedback effects', () => {
   });
 });
 
-describe('dragon expressions', () => {
-  const dragonClass = () => document.querySelector('svg.dragon')!.getAttribute('class') ?? '';
-  it('looks determined during the quiz, munches when right, and is kind when wrong', () => {
-    const { unmount } = render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
-    expect(dragonClass()).toContain('dragon--determined');
+describe('Truffle reactions', () => {
+  const mood = () => document.querySelector('svg.truffle')!.getAttribute('data-mood');
+  const relearn = () => ({ id: `${he.id}:recognise`, wordId: he.id, kind: 'recognise' as const, fsrs: { ...createEmptyCard(new Date()), state: State.Relearning } });
+  it('rests during the quiz, side-eyes a wrong answer and goes wide-eyed for a hard one', () => {
+    const { unmount } = render(<FlashcardStep {...base} card={relearn()} item={review} voice={false} onDone={vi.fn()} />);
+    expect(mood()).toBe('sulk');
     fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
-    expect(dragonClass()).toContain('dragon--munch');
+    expect(mood()).toBe('wow');
     unmount();
     render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
     fireEvent.click([...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!);
-    expect(dragonClass()).toContain('dragon--comfort');
+    expect(mood()).toBe('side');
+  });
+  it('shows the close-up only when allowed, and reports hard', () => {
+    const onDone = vi.fn();
+    const { unmount } = render(<FlashcardStep {...base} card={relearn()} item={review} voice={false} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
+    expect(document.querySelector('.closeup')).toBeNull();
+    unmount();
+    render(<FlashcardStep {...base} card={relearn()} closeupReady item={review} voice={false} onDone={onDone} />);
+    fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
+    expect(document.querySelector('.closeup')).toBeTruthy();
+    fireEvent.click(screen.getByText('继续'));
+    expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ correct: true, hard: true }));
   });
 });
 

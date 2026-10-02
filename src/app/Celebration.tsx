@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { playSfx } from '../audio/sfx';
 import { BUILTIN } from '../content';
 import { radicalMeaning } from '../content/radicals';
-import { canOpenChest, openChest, petStage, type ChestResult } from '../fun/pet';
+import { canOpenChest, openChest, type ChestResult } from '../fun/pet';
 import { newBadges, stickerFamilies } from '../fun/stickers';
 import { totalStars } from '../stats/stats';
 import { allSessions, getKid, saveKid } from '../store/repo';
@@ -17,14 +17,11 @@ import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
-type Phase = 'stars' | 'chest' | 'evolve' | 'badges';
+type Phase = 'stars' | 'chest' | 'badges';
 
 interface Sequence {
   order: Phase[];
-  stage: number;
-  fromStage: number;
   badges: string[];
-  known: number;
   starsBefore: number;
 }
 
@@ -46,15 +43,13 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     void (async () => {
       const [k, know, sessions] = await Promise.all([getKid(db), loadKnowledge(db), allSessions(db)]);
       const kidNow = k ?? DEFAULT_KID;
-      const stage = Math.max(petStage(know.known), kidNow.lastStageSeen);
       const badges = newBadges(stickerFamilies(BUILTIN), know.knownChars, kidNow.badgesSeen);
       const order: Phase[] = ['stars'];
       if (!rec.free && rec.completedSteps.length > 0 && canOpenChest(kidNow, rec.date)) order.push('chest');
-      if (stage > kidNow.lastStageSeen) order.push('evolve');
       if (badges.length) order.push('badges');
       kidRef.current = kidNow;
       setKid(kidNow);
-      setSeq({ order, stage, fromStage: kidNow.lastStageSeen, badges, known: know.known, starsBefore: totalStars(sessions, kidNow.bonusStars) - stars });
+      setSeq({ order, badges, starsBefore: totalStars(sessions, kidNow.bonusStars) - stars });
     })();
   }, []);
 
@@ -91,11 +86,6 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
       go({ name: 'home' });
       return;
     }
-    if (nextPhase === 'evolve') {
-      playSfx('levelUp');
-      celebrate();
-      await save({ ...kidRef.current, lastStageSeen: seq.stage });
-    }
     if (nextPhase === 'badges') {
       playSfx('levelUp');
       celebrate();
@@ -115,7 +105,6 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
   };
 
   const isLast = seq.order.indexOf(phase) === seq.order.length - 1;
-  const beforeEvolve = seq.order.includes('evolve') && seq.order.indexOf(phase) < seq.order.indexOf('evolve');
 
   return (
     <div class="screen">
@@ -153,7 +142,6 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
             {!chest && <p><Label zh="按住，打开宝箱！" /></p>}
           </>
         )}
-        {phase === 'evolve' && <h1><Label zh={`${kid.petName}长大了！`} /></h1>}
         {phase === 'badges' && (
           <>
             <h1><Label zh="新徽章！" /></h1>
@@ -166,10 +154,9 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
           <Pet
             key={phase}
             kid={kid}
-            known={seq.known}
-            stage={beforeEvolve ? seq.fromStage : seq.stage}
-            mood={phase === 'evolve' || phase === 'badges' ? 'cheer' : 'happy'}
-            size={phase === 'evolve' ? 230 : 160}
+            mood="cheer"
+            size={phase === 'badges' ? 200 : 170}
+            bounce
           />
         )}
         {(phase !== 'chest' || chest) && (

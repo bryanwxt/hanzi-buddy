@@ -37,7 +37,7 @@ export function PlacementScreen() {
       <div class="screen">
       <Scene kind="home" />
         <div class="center">
-          <Pet kid={k} known={known} mood="happy" size={160} />
+          <Pet kid={k} mood="pleased" size={160} />
           <h1><Label zh={`你已经认识 ${known} 个字了！`} /></h1>
           <p><Label zh="我们每天学一点点。" /></p>
           <button type="button" class="btn btn--primary btn--big" onClick={async () => { await refresh(); go({ name: 'home' }); }}>
@@ -53,7 +53,7 @@ export function PlacementScreen() {
     <div class="screen">
       <Scene kind="home" />
       <div class="center">
-        <Pet kid={k} known={0} bubble="你认识这个字吗？" size={100} />
+        <Pet kid={k} mood="neutral" bubble="你认识这个字吗？" size={100} />
         <div class="hanzi hanzi--xl">{current?.text}</div>
         <div class="row">
           <button type="button" class="btn btn--primary btn--big" onClick={() => void answer(true)}><Label zh="认识" /> ✓</button>

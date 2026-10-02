@@ -16,13 +16,10 @@ describe('widgets', () => {
     expect(screen.getByText('你好')).toBeTruthy();
   });
 
-  it('Pet shows the dragon for its stage, with accessory and bubble', () => {
-    const kid = { ...DEFAULT_KID, wearing: '🎩' };
-    const { rerender } = render(<Pet kid={kid} known={0} />);
-    expect(screen.getByRole('img', { name: '小龙' }).getAttribute('data-stage')).toBe('0');
-    expect(screen.getByText('🎩')).toBeTruthy();
-    rerender(<Pet kid={kid} known={80} bubble="加油！" />);
-    expect(screen.getByRole('img', { name: '小龙' }).getAttribute('data-stage')).toBe('2');
+  it("Pet is Truffle wearing the kid's accessory, with a bubble", () => {
+    const { container } = render(<Pet kid={{ ...DEFAULT_KID, wearing: '👑' }} mood="pleased" bubble="加油！" />);
+    expect(screen.getByRole('img', { name: '松露' }).getAttribute('data-mood')).toBe('pleased');
+    expect(container.querySelector('.truffle__accessory')?.textContent).toBe('👑');
     expect(screen.getByText('加油！')).toBeTruthy();
   });
 
@@ -45,12 +42,5 @@ describe('Label digits', () => {
   it('keeps numbers together in the pinyin line', () => {
     const { container } = render(<Label zh="我认识 45 个字" />);
     expect(container.querySelector('.label__py')?.textContent).toBe('wǒ rèn shi 45 gè zì');
-  });
-});
-
-describe('Pet never shrinks', () => {
-  it('keeps the highest stage the child has seen even if the known count dips', () => {
-    render(<Pet kid={{ ...DEFAULT_KID, lastStageSeen: 2 }} known={10} />);
-    expect(screen.getByRole('img', { name: '小龙' }).getAttribute('data-stage')).toBe('2');
   });
 });

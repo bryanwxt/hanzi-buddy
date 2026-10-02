@@ -17,7 +17,7 @@ const questions: ComponentQuestion[] = [
 describe('ComponentsStep', () => {
   it('runs a fishing question, then a which-part question, then finishes', () => {
     const onDone = vi.fn();
-    render(<ComponentsStep questions={questions} kid={DEFAULT_KID} known={20} onDone={onDone} />);
+    render(<ComponentsStep questions={questions} kid={DEFAULT_KID} resting="sulk" onDone={onDone} />);
     fireEvent.click(screen.getByRole('button', { name: '河' }));
     fireEvent.click(screen.getByRole('button', { name: '汉' }));
     fireEvent.click(screen.getByText('检查'));
@@ -29,7 +29,7 @@ describe('ComponentsStep', () => {
   });
 
   it('shows the fish that were missed', () => {
-    render(<ComponentsStep questions={questions} kid={DEFAULT_KID} known={20} onDone={vi.fn()} />);
+    render(<ComponentsStep questions={questions} kid={DEFAULT_KID} resting="sulk" onDone={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: '河' }));
     fireEvent.click(screen.getByText('检查'));
     expect(screen.getByText('看看绿色的！')).toBeTruthy();
@@ -40,7 +40,7 @@ describe('ComponentsStep', () => {
 describe('fishing effects', () => {
   it('splashes when a fish is caught and when the catch is all right', () => {
     vi.mocked(burst).mockClear();
-    render(<ComponentsStep questions={questions} kid={DEFAULT_KID} known={20} onDone={vi.fn()} />);
+    render(<ComponentsStep questions={questions} kid={DEFAULT_KID} resting="sulk" onDone={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: '河' }));
     expect(burst).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: '汉' }));

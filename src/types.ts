@@ -166,7 +166,7 @@ export interface KidState {
 }
 
 export const DEFAULT_KID: KidState = {
-  petName: '小龙',
+  petName: '松露',
   petColor: 'green',
   ownedAccessories: [],
   wearing: null,

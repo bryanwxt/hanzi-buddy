@@ -7,7 +7,9 @@ import { loadStrokeData } from '../../content/strokes';
 import type { KidState, Word } from '../../types';
 import { BottomBar } from '../../ui/BottomBar';
 import { burst } from '../../ui/motion';
+import { isHardWrite, reactionMood } from '../../fun/mood';
 import { Pet } from '../../ui/Pet';
+import type { TruffleMood } from '../../ui/truffle/Truffle';
 import { SpeakButton } from '../../ui/SpeakButton';
 
 export interface WriteResult {
@@ -18,11 +20,12 @@ export interface WriteResult {
 interface Props {
   word: Word;
   kid: KidState;
-  known: number;
+  resting: TruffleMood;
+  isNew: boolean;
   onDone: (result: WriteResult | null) => void;
 }
 
-export function WritingStep({ word, kid, known, onDone }: Props) {
+export function WritingStep({ word, kid, resting, isNew, onDone }: Props) {
   const chars = useMemo(() => hanChars(word.text), [word.id]);
   const [index, setIndex] = useState(0);
   const [misses, setMisses] = useState(0);
@@ -83,7 +86,12 @@ export function WritingStep({ word, kid, known, onDone }: Props) {
     <>
       <div class="write">
         <div class="row write__head">
-          <Pet kid={kid} known={known} size={130} mood={charMisses === null ? 'determined' : 'happy'} bubble={charMisses === null ? '写一写！' : null} />
+          <Pet
+            kid={kid}
+            size={130}
+            mood={charMisses === null ? resting : (reactionMood({ correct: charMisses <= 3, hard: isHardWrite(isNew, misses), combo: 0 }) ?? 'pleased')}
+            bubble={charMisses === null ? '写一写！' : null}
+          />
           <div class="write__prompt">
             <span class="pinyin">{word.pinyin}</span>
             <SpeakButton text={word.text} />

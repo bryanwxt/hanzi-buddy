@@ -36,10 +36,9 @@ describe('first launch', () => {
     const app = await makeAppData({ kid: null });
     renderWithApp(<PetSetup />, app);
     fireEvent.input(screen.getByLabelText('Pet name'), { target: { value: '豆豆' } });
-    fireEvent.click(screen.getByRole('button', { name: '蓝色' }));
     fireEvent.click(screen.getByText('好了！'));
     await waitFor(() => expect(app.go).toHaveBeenCalledWith({ name: 'placement' }));
-    expect(await getKid(app.db)).toMatchObject({ petName: '豆豆', petColor: 'blue' });
+    expect(await getKid(app.db)).toMatchObject({ petName: '豆豆' });
   });
 
   it('Placement seeds everything ranked before the first unknown sample', async () => {

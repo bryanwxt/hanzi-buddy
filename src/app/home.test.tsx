@@ -24,7 +24,7 @@ describe('HomeScreen', () => {
     renderWithApp(<HomeScreen />, app);
     expect(await screen.findByLabelText('连续 1 天')).toBeTruthy();
     expect(screen.getByLabelText('2 颗星')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '开始：喂小龙' }));
+    fireEvent.click(screen.getByRole('button', { name: '开始：认一认' }));
     expect(app.go).toHaveBeenCalledWith({ name: 'session', free: false });
   });
 
@@ -83,21 +83,28 @@ describe('StickerBook badge shelf', () => {
 });
 
 describe('Wardrobe', () => {
-  it('shows the grown dragon straight away, never the egg while loading', async () => {
-    const app = await makeAppData({ kid: { ...DEFAULT_KID, lastStageSeen: 3 } });
+  it('shows Truffle wearing what the child already earned (dragon-era data)', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedAccessories: ['👑'], wearing: '👑', lastStageSeen: 3 } });
     renderWithApp(<Wardrobe />, app);
-    expect(document.querySelector('svg.dragon')?.getAttribute('data-stage')).toBe('3');
+    expect(document.querySelector('svg.truffle .truffle__accessory')?.textContent).toBe('👑');
   });
 });
 
-describe('HomeScreen dragon', () => {
+describe('HomeScreen Truffle', () => {
+  it('shows Truffle sulking before practice, named 松露', async () => {
+    const app = await makeAppData();
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(document.querySelector('svg.truffle')?.getAttribute('data-mood')).toBe('sulk');
+    expect(document.querySelector('.home__who')?.textContent).toContain('松露');
+  });
   it('dozes off when left alone and wakes on a tap', async () => {
     const app = await makeAppData();
     renderWithApp(<HomeScreen sleepAfterMs={150} />, app);
     await screen.findByText('今天的练习');
-    const dragon = () => document.querySelector('svg.dragon')!.getAttribute('class') ?? '';
-    await waitFor(() => expect(dragon()).toContain('dragon--sleepy'));
+    const mood = () => document.querySelector('svg.truffle')!.getAttribute('data-mood');
+    await waitFor(() => expect(mood()).toBe('sleepy'));
     act(() => { window.dispatchEvent(new Event('pointerdown')); });
-    await waitFor(() => expect(dragon()).toContain('dragon--happy'));
+    await waitFor(() => expect(mood()).toBe('sulk'));
   });
 });

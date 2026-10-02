@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_KID } from '../types';
-import { ACCESSORIES, canOpenChest, CHEST_BONUS_STARS, comboMilestone, openChest, petStage } from './pet';
+import { ACCESSORIES, canOpenChest, CHEST_BONUS_STARS, comboMilestone, openChest } from './pet';
 
 describe('pet', () => {
-  it('grows through stages at 25/75/150/300/500 known characters', () => {
-    const counts = [0, 24, 25, 74, 75, 149, 150, 299, 300, 499, 500, 9999];
-    expect(counts.map(petStage)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
-  });
-
   it('opens one chest per day with a deterministic, unowned accessory', () => {
     const a = openChest(DEFAULT_KID, '2026-10-02');
     expect(openChest(DEFAULT_KID, '2026-10-02').result).toEqual(a.result);

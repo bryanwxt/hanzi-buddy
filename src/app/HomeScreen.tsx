@@ -83,7 +83,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         <span class="stat stat--star" aria-label={`${stars} 颗星`}><Star size={24} strokeWidth={2.75} /> {stars}</span>
         <span class="spacer" />
         <span class="home__who">
-          <strong>{k.petName}</strong>
+          <strong>松露</strong>
           <Label zh={`认识 ${data.know.known} 个字`} />
         </span>
       </header>
@@ -119,7 +119,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
           onStart={() => play(false)}
           pet={
             <button type="button" class="pet-button" aria-label="换装" onClick={() => go({ name: 'wardrobe' })}>
-              <Pet kid={k} known={data.know.known} mood={sleepy ? 'sleepy' : 'happy'} size={150} />
+              <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} />
             </button>
           }
         />

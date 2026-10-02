@@ -9,7 +9,9 @@ import { WritingStep, type WriteResult } from '../activities/writing/WritingStep
 import type { FinishedRecording } from '../audio/recorder';
 import { playSfx } from '../audio/sfx';
 import { PASSAGES } from '../content';
+import { CLOSEUP_EVERY, closeupAllowed, restingMood } from '../fun/mood';
 import { comboMilestone } from '../fun/pet';
+import { reducedMotion } from '../ui/motion';
 import { localDateKey } from '../lib/date';
 import { mulberry32 } from '../lib/random';
 import { buildFreePlayQueue } from '../session/plan';
@@ -40,6 +42,8 @@ export function SessionScreen({ free }: { free: boolean }) {
   const { db, now, go, voice } = useApp();
   const [state, setState] = useState<Loaded | null>(null);
   const [combo, setCombo] = useState(0);
+  const [correct, setCorrect] = useState(0); // this sitting only: Truffle warms up from sulk
+  const cardsSinceCloseup = useRef(CLOSEUP_EVERY);
   const [banner, setBanner] = useState<string | null>(null);
   const stepStartedAt = useRef(performance.now());
   const busy = useRef(false);
@@ -89,6 +93,7 @@ export function SessionScreen({ free }: { free: boolean }) {
   if (!state || !rec) return <div class="screen loading">🥚</div>;
   if (rec.completed) return <Celebration rec={rec} />;
   const { know, kid } = state;
+  const resting = restingMood(correct);
 
   const once = (fn: () => Promise<void>) => async () => {
     if (busy.current) return;
@@ -109,6 +114,9 @@ export function SessionScreen({ free }: { free: boolean }) {
         const card = await recordRecognition(db, item.wordId, { correct: r.correct, responseMs: r.responseMs }, now());
         know.cardsById.set(card.id, card);
       }
+      const ready = closeupAllowed(cardsSinceCloseup.current, reducedMotion());
+      cardsSinceCloseup.current = r.correct && r.hard && ready ? 0 : cardsSinceCloseup.current + 1;
+      if (r.correct) setCorrect((n) => n + 1);
       const nextCombo = r.correct ? combo + 1 : 0;
       setCombo(nextCombo);
       if (comboMilestone(nextCombo)) {
@@ -153,15 +161,17 @@ export function SessionScreen({ free }: { free: boolean }) {
           card={know.cardsById.get(`${flashWord.id}:recognise`)}
           voice={voice}
           kid={kid}
-          known={know.known}
+          resting={resting}
+          combo={combo}
+          closeupReady={closeupAllowed(cardsSinceCloseup.current, reducedMotion())}
           onDone={(r) => void onFlashDone(r)}
         />
       )}
       {step === 'writing' && writeWord && !writeWord.paused && (
-        <WritingStep key={rec.writeIndex} word={writeWord} kid={kid} known={know.known} onDone={(r) => void onWriteDone(r)} />
+        <WritingStep key={rec.writeIndex} word={writeWord} kid={kid} resting={resting} isNew={!!writeCandidate?.isNew} onDone={(r) => void onWriteDone(r)} />
       )}
       {step === 'components' && state.round && (
-        <ComponentsStep questions={state.round} kid={kid} known={know.known} onDone={() => void finishTimedStep()} />
+        <ComponentsStep questions={state.round} kid={kid} resting={resting} onDone={() => void finishTimedStep()} />
       )}
       {step === 'speaking' && state.speaking && (
         <SpeakingStep choice={state.speaking} onSave={onSpeakingSave} onSkip={() => void finishTimedStep()} />
