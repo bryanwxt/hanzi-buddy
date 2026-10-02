@@ -1,4 +1,5 @@
 import type { ComponentChildren } from 'preact';
+import { ChevronLeft } from 'lucide-preact';
 import { useState } from 'preact/hooks';
 import { useApp } from '../app/AppContext';
 import { SetupPin } from '../app/SetupPin';
@@ -22,7 +23,7 @@ export function PinGate({ children }: { children: ComponentChildren }) {
   return (
     <div class="screen parent">
       <header class="topbar">
-        <button type="button" class="btn btn--ghost" onClick={() => go({ name: 'home' })}>← Back</button>
+        <button type="button" class="btn btn--ghost" onClick={() => go({ name: 'home' })}><ChevronLeft size={22} strokeWidth={3} /> Back</button>
       </header>
       <div class="center">
         <h1>Parents only</h1>

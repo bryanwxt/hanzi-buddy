@@ -13,6 +13,9 @@ vi.mock('../audio/speech', () => ({ speak: vi.fn(), setSpeechRate: vi.fn() }));
 vi.mock('../audio/sfx', () => ({ setSfxEnabled: vi.fn() }));
 
 import { saveTextFile } from '../lib/files';
+import { ParentArea } from './ParentArea';
+import { hashPin } from '../lib/hash';
+import { DEFAULT_SETTINGS } from '../types';
 
 describe('WordsPanel', () => {
   it('previews a pasted list, adds it, and pulls matching built-in words forward', async () => {
@@ -50,5 +53,15 @@ describe('BackupPanel', () => {
     expect(await screen.findByText('Backup saved.')).toBeTruthy();
     expect(saveTextFile).toHaveBeenCalledWith('hanzi-buddy-backup-2026-10-02.json', expect.stringContaining('hanzi-buddy-backup'));
     expect((await getSettings(app.db)).lastBackupAt).not.toBeNull();
+  });
+});
+
+describe('ParentArea tabs', () => {
+  it('shows icon tabs as a segmented control', async () => {
+    const app = await makeAppData({ settings: { ...DEFAULT_SETTINGS, pinHash: await hashPin('1111') } });
+    renderWithApp(<ParentArea />, app);
+    for (const d of '1111') fireEvent.click(screen.getByRole('button', { name: d }));
+    await screen.findByText('Overview');
+    expect(document.querySelectorAll('.tabs .tab svg').length).toBe(8);
   });
 });

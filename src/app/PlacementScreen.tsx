@@ -56,7 +56,7 @@ export function PlacementScreen() {
         <Pet kid={k} known={0} bubble="你认识这个字吗？" size={100} />
         <div class="hanzi hanzi--xl">{current?.text}</div>
         <div class="row">
-          <button type="button" class="btn btn--good btn--big" onClick={() => void answer(true)}><Label zh="认识" /> ✓</button>
+          <button type="button" class="btn btn--primary btn--big" onClick={() => void answer(true)}><Label zh="认识" /> ✓</button>
           <button type="button" class="btn btn--big" onClick={() => void answer(false)}><Label zh="不认识" /> 🤔</button>
         </div>
         <small>{answers.length + 1} / {samples.length}</small>
