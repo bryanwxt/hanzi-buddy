@@ -1,8 +1,10 @@
 import { Flame, Star } from 'lucide-preact';
 import { useEffect, useState } from 'preact/hooks';
 import { enterSafeScreen } from '../pwa';
-import { primeSpeech } from '../audio/speech';
+import { pinyin } from 'pinyin-pro';
+import { primeSpeech, speak } from '../audio/speech';
 import { pathNodes } from '../fun/path';
+import { wordOfTheDay } from '../fun/wordOfDay';
 import { goalProgress, nextGoal } from '../fun/rewards';
 import { localDateKey } from '../lib/date';
 import { STEP_ORDER } from '../session/plan';
@@ -70,6 +72,11 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   const nodes = pathNodes(steps, todaySession?.completedSteps ?? [], chestOpened, doneToday);
   const hasCards = data.know.cards.some((c) => c.kind === 'recognise');
   const days = streak(data.sessions, today);
+  const wotd = wordOfTheDay({
+    plannedNew: (todaySession?.plan.newWordIds ?? []).map((id) => data.know.wordsById.get(id)?.text ?? ''),
+    knownChars: data.know.knownChars,
+    date: today,
+  });
   const play = (free: boolean) => {
     primeSpeech();
     go({ name: 'session', free });
@@ -111,6 +118,13 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
               <button type="button" class="btn btn--secondary" onClick={() => play(true)}><Label zh="再玩一会儿" /></button>
             )}
           </div>
+        )}
+        {wotd && (
+          <button type="button" class="card wotd" aria-label={`今日一字：${wotd}`} onClick={() => speak(wotd)}>
+            <span class="label-tag">今日一字</span>
+            <span class="wotd__grid" aria-hidden="true">{wotd}</span>
+            <span class="wotd__py" aria-hidden="true">{pinyin(wotd)}</span>
+          </button>
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>
         <TodayPath

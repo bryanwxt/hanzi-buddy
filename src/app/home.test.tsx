@@ -90,6 +90,16 @@ describe('Wardrobe', () => {
   });
 });
 
+describe('HomeScreen word of the day', () => {
+  it('shows a known character as the word of the day', async () => {
+    const app = await makeAppData();
+    await putWords(app.db, builtinWords(0));
+    await putCards(app.db, [makeCard('b:大', 'recognise', new Date(2026, 9, 20), true)]);
+    renderWithApp(<HomeScreen />, app);
+    expect(await screen.findByRole('button', { name: '今日一字：大' })).toBeTruthy();
+  });
+});
+
 describe('HomeScreen Truffle', () => {
   it('shows Truffle sulking before practice, named 松露', async () => {
     const app = await makeAppData();
