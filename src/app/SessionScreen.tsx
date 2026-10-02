@@ -1,0 +1,169 @@
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { ComponentsStep } from '../activities/components/ComponentsStep';
+import { buildComponentRound, type ComponentQuestion } from '../activities/components/game';
+import { FlashcardStep, type FlashResult } from '../activities/flashcards/FlashcardStep';
+import { chooseSpeakingPrompt, eligiblePassages, type SpeakingChoice } from '../activities/speaking/prompts';
+import { SpeakingStep } from '../activities/speaking/SpeakingStep';
+import { WritingStep, type WriteResult } from '../activities/writing/WritingStep';
+import type { FinishedRecording } from '../audio/recorder';
+import { playSfx } from '../audio/sfx';
+import { PASSAGES } from '../content';
+import { comboMilestone } from '../fun/pet';
+import { localDateKey } from '../lib/date';
+import { mulberry32 } from '../lib/random';
+import { buildFreePlayQueue } from '../session/plan';
+import { recordRecognition, recordWriting, startOrResumeSession } from '../session/record';
+import {
+  addActiveTime, afterFlashAnswer, afterWriteWord, createFreePlayRecord, currentFlashItem, currentStep,
+  currentWriteCandidate, finishStep, skipFlashItem,
+} from '../session/runner';
+import { addRecording, countRecordings, getKid, listPrompts, saveSession } from '../store/repo';
+import { DEFAULT_KID, type KidState, type SessionRecord, type StepKind } from '../types';
+import { useApp } from './AppContext';
+import { Celebration } from './Celebration';
+import { loadKnowledge, type Knowledge } from './knowledge';
+
+const STEP_ICONS: Record<StepKind, string> = { flashcards: '🐲', writing: '✍️', components: '🎣', speaking: '🎤' };
+
+interface Loaded {
+  rec: SessionRecord;
+  know: Knowledge;
+  kid: KidState;
+  round: ComponentQuestion[] | null;
+  speaking: SpeakingChoice;
+}
+
+export function SessionScreen({ free }: { free: boolean }) {
+  const { db, now, go, voice } = useApp();
+  const [state, setState] = useState<Loaded | null>(null);
+  const [combo, setCombo] = useState(0);
+  const [banner, setBanner] = useState<string | null>(null);
+  const stepStartedAt = useRef(performance.now());
+  const busy = useRef(false);
+
+  useEffect(() => {
+    void (async () => {
+      const rng = mulberry32(Date.now() >>> 0);
+      const [know, kid, pictures, recordingCount] = await Promise.all([loadKnowledge(db), getKid(db), listPrompts(db), countRecordings(db)]);
+      const today = now();
+      const rec = free
+        ? createFreePlayRecord(buildFreePlayQueue(know.cards, know.words, rng), localDateKey(today), today.getTime())
+        : await startOrResumeSession(db, today);
+      setState({
+        rec,
+        know,
+        kid: kid ?? DEFAULT_KID,
+        round: buildComponentRound([...know.knownChars], rng),
+        speaking: chooseSpeakingPrompt({ pictures, passages: eligiblePassages(PASSAGES, know.knownChars), recordingCount, rng }),
+      });
+    })();
+  }, []);
+
+  const rec = state?.rec ?? null;
+  const step = rec ? currentStep(rec) : null;
+  const flashItem = rec ? currentFlashItem(rec) : null;
+  const flashWord = flashItem ? state!.know.wordsById.get(flashItem.wordId) : undefined;
+  const writeCandidate = rec ? currentWriteCandidate(rec) : null;
+  const writeWord = writeCandidate ? state!.know.wordsById.get(writeCandidate.wordId) : undefined;
+
+  const commit = async (next: SessionRecord) => {
+    if (!next.free) await saveSession(db, next);
+    stepStartedAt.current = performance.now();
+    setState((s) => (s ? { ...s, rec: next } : s));
+  };
+
+  // Anything that cannot run is skipped silently: an empty step, or a word paused/deleted since planning.
+  useEffect(() => {
+    if (!state || !rec) return;
+    if (step === 'flashcards' && !flashItem) void commit(finishStep(rec));
+    else if (step === 'flashcards' && (!flashWord || flashWord.paused)) void commit(skipFlashItem(rec));
+    else if (step === 'writing' && !writeCandidate) void commit(finishStep(rec));
+    else if (step === 'writing' && (!writeWord || writeWord.paused)) void commit(afterWriteWord(rec, false, 0));
+    else if (step === 'components' && !state.round) void commit(finishStep(rec));
+    else if (step === 'speaking' && !state.speaking) void commit(finishStep(rec));
+  }, [rec]);
+
+  if (!state || !rec) return <div class="screen loading">🥚</div>;
+  if (rec.completed) return <Celebration rec={rec} />;
+  const { know, kid } = state;
+
+  const once = (fn: () => Promise<void>) => async () => {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      await fn();
+    } finally {
+      busy.current = false;
+    }
+  };
+
+  const finishTimedStep = once(() => commit(finishStep(addActiveTime(rec, Math.round(performance.now() - stepStartedAt.current)))));
+
+  const onFlashDone = (r: FlashResult) =>
+    once(async () => {
+      const item = flashItem!;
+      if (!item.retry && !rec.free) {
+        const card = await recordRecognition(db, item.wordId, { correct: r.correct, responseMs: r.responseMs }, now());
+        know.cardsById.set(card.id, card);
+      }
+      const nextCombo = r.correct ? combo + 1 : 0;
+      setCombo(nextCombo);
+      if (comboMilestone(nextCombo)) {
+        playSfx('combo');
+        setBanner(`连对 ${nextCombo} 个！🔥`);
+        setTimeout(() => setBanner(null), 1600);
+      }
+      await commit(afterFlashAnswer(rec, r.correct, r.elapsedMs));
+    })();
+
+  const onWriteDone = (r: WriteResult | null) =>
+    once(async () => {
+      if (r && !rec.free) await recordWriting(db, writeCandidate!.wordId, r.totalMisses, now());
+      await commit(afterWriteWord(rec, r !== null, r?.elapsedMs ?? 0));
+    })();
+
+  const onSpeakingSave = async (f: FinishedRecording) => {
+    const s = state.speaking!;
+    const prompt = s.kind === 'picture' ? { kind: 'picture' as const, promptId: s.prompt.id } : { kind: 'passage' as const, passageId: s.passage.id };
+    await addRecording(db, { id: crypto.randomUUID(), createdAt: now().getTime(), prompt, ...f });
+    await finishTimedStep();
+  };
+
+  return (
+    <div class="screen">
+      <header class="stepbar">
+        <button type="button" class="btn btn--ghost" aria-label="回家" onClick={() => go({ name: 'home' })}>🏠</button>
+        {rec.plan.steps.map((s, i) => (
+          <span key={s} class={`stepbar__step ${i < rec.stepIndex ? 'is-done' : i === rec.stepIndex ? 'is-current' : ''}`}>
+            {STEP_ICONS[s]}
+          </span>
+        ))}
+        {combo >= 3 && <span class="combo">🔥 {combo}</span>}
+      </header>
+      {banner && <div class="combo-banner">{banner}</div>}
+
+      {step === 'flashcards' && flashItem && flashWord && !flashWord.paused && (
+        <FlashcardStep
+          key={rec.flashIndex}
+          item={flashItem}
+          word={flashWord}
+          pool={know.words}
+          card={know.cardsById.get(`${flashWord.id}:recognise`)}
+          voice={voice}
+          kid={kid}
+          known={know.known}
+          onDone={(r) => void onFlashDone(r)}
+        />
+      )}
+      {step === 'writing' && writeWord && !writeWord.paused && (
+        <WritingStep key={rec.writeIndex} word={writeWord} kid={kid} known={know.known} onDone={(r) => void onWriteDone(r)} />
+      )}
+      {step === 'components' && state.round && (
+        <ComponentsStep questions={state.round} kid={kid} known={know.known} onDone={() => void finishTimedStep()} />
+      )}
+      {step === 'speaking' && state.speaking && (
+        <SpeakingStep choice={state.speaking} onSave={onSpeakingSave} onSkip={() => void finishTimedStep()} />
+      )}
+    </div>
+  );
+}
