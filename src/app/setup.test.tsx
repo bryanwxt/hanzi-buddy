@@ -32,13 +32,17 @@ describe('first launch', () => {
     expect(document.querySelector('.pun')?.textContent).toContain('字己 = 自己学汉字');
   });
 
-  it('PetSetup saves the name and colour', async () => {
+  it('Meet Truffle: wake him, then continue to placement', async () => {
     const app = await makeAppData({ kid: null });
     renderWithApp(<PetSetup />, app);
-    fireEvent.input(screen.getByLabelText('Pet name'), { target: { value: '豆豆' } });
-    fireEvent.click(screen.getByText('好了！'));
+    expect(document.querySelector('svg.truffle')?.getAttribute('data-mood')).toBe('sleepy');
+    expect((screen.getByText('好！').closest('button') as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: '叫醒松露' }));
+    expect(document.querySelector('svg.truffle')?.getAttribute('data-mood')).toBe('sulk');
+    expect(screen.getByText(/我是松露/)).toBeTruthy();
+    fireEvent.click(screen.getByText('好！'));
     await waitFor(() => expect(app.go).toHaveBeenCalledWith({ name: 'placement' }));
-    expect(await getKid(app.db)).toMatchObject({ petName: '豆豆' });
+    expect((await getKid(app.db))?.petName).toBe('松露');
   });
 
   it('Placement seeds everything ranked before the first unknown sample', async () => {
