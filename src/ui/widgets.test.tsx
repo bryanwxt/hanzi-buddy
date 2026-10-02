@@ -1,0 +1,42 @@
+import { fireEvent, render, screen } from '@testing-library/preact';
+import { describe, expect, it, vi } from 'vitest';
+import { DEFAULT_KID } from '../types';
+import { Label } from './Label';
+import { Pet } from './Pet';
+import { PinPad } from './PinPad';
+import { SpeakButton } from './SpeakButton';
+
+vi.mock('../audio/speech', () => ({ speak: vi.fn() }));
+import { speak } from '../audio/speech';
+
+describe('widgets', () => {
+  it('Label shows pinyin above the Chinese', () => {
+    const { container } = render(<Label zh="你好" />);
+    expect(container.querySelector('.label__py')?.textContent).toBe('nǐ hǎo');
+    expect(screen.getByText('你好')).toBeTruthy();
+  });
+
+  it('Pet grows from egg to dragon and always wears its accessory', () => {
+    const kid = { ...DEFAULT_KID, wearing: '🎩' };
+    const { rerender } = render(<Pet kid={kid} known={0} />);
+    expect(screen.getByRole('img').textContent).toBe('🥚');
+    expect(screen.getByText('🎩')).toBeTruthy();
+    rerender(<Pet kid={kid} known={80} bubble="加油！" />);
+    expect(screen.getByRole('img').textContent).toBe('🐲');
+    expect(screen.getByText('加油！')).toBeTruthy();
+  });
+
+  it('PinPad reports a 4-digit PIN and resets', () => {
+    const onComplete = vi.fn();
+    render(<PinPad onComplete={onComplete} />);
+    for (const d of ['1', '2', '3', '4']) fireEvent.click(screen.getByRole('button', { name: d }));
+    expect(onComplete).toHaveBeenCalledWith('1234');
+    expect(document.querySelectorAll('.pin-dots .is-filled')).toHaveLength(0);
+  });
+
+  it('SpeakButton speaks its text', () => {
+    render(<SpeakButton text="河" />);
+    fireEvent.click(screen.getByRole('button', { name: '听' }));
+    expect(speak).toHaveBeenCalledWith('河');
+  });
+});
