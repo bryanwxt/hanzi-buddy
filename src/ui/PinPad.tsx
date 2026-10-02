@@ -1,3 +1,4 @@
+import { Delete } from 'lucide-preact';
 import { useState } from 'preact/hooks';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
@@ -24,7 +25,7 @@ export function PinPad({ onComplete, error = null }: { onComplete: (pin: string)
         {KEYS.map((k, i) =>
           k ? (
             <button key={k} type="button" aria-label={k === '⌫' ? 'Delete' : k} onClick={() => press(k)}>
-              {k}
+              {k === '⌫' ? <Delete size={30} strokeWidth={2.5} /> : k}
             </button>
           ) : (
             <span key={`gap-${i}`} />

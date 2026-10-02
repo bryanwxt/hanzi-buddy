@@ -17,6 +17,7 @@
     "canvas-confetti": "^1.9.4",
     "hanzi-writer": "^3.7.3",
     "idb": "^8.0.3",
+    "lucide-preact": "^1.50.0",
     "pinyin-pro": "^3.29.4",
     "preact": "^10.29.8",
     "ts-fsrs": "^5.4.2"
