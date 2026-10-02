@@ -20,7 +20,8 @@ describe('App', () => {
     type('1234');
     await screen.findByText('Enter the same PIN again');
     type('1234');
-    fireEvent.click(await screen.findByText('好了！'));
+    fireEvent.click(await screen.findByRole('button', { name: '叫醒松露' }));
+    fireEvent.click(await screen.findByText('好！'));
     fireEvent.click(await screen.findByText('不认识'));
     fireEvent.click(await screen.findByText('开始！'));
     expect(await screen.findByText('今天的练习')).toBeTruthy();
