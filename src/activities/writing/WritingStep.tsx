@@ -5,7 +5,7 @@ import { speak } from '../../audio/speech';
 import { hanChars } from '../../content';
 import { loadStrokeData } from '../../content/strokes';
 import type { KidState, Word } from '../../types';
-import { Label } from '../../ui/Label';
+import { BottomBar } from '../../ui/BottomBar';
 import { burst } from '../../ui/motion';
 import { Pet } from '../../ui/Pet';
 import { SpeakButton } from '../../ui/SpeakButton';
@@ -79,31 +79,28 @@ export function WritingStep({ word, kid, known, onDone }: Props) {
     if (!last) setIndex(index + 1);
     else onDone({ totalMisses: misses, elapsedMs: Math.round(performance.now() - startedAt.current) });
   };
-  const bubble = charMisses === null ? '写一写！' : charMisses === 0 ? '完美！' : '写得好！';
-
   return (
-    <div class="write">
-      <div class="row">
-        <Pet kid={kid} known={known} size={80} mood={charMisses === null ? 'determined' : 'happy'} bubble={bubble} />
-        <div class="write__prompt">
-          <span class="pinyin">{word.pinyin}</span>
-          <SpeakButton text={word.text} />
+    <>
+      <div class="write">
+        <div class="row write__head">
+          <Pet kid={kid} known={known} size={130} mood={charMisses === null ? 'determined' : 'happy'} bubble={charMisses === null ? '写一写！' : null} />
+          <div class="write__prompt">
+            <span class="pinyin">{word.pinyin}</span>
+            <SpeakButton text={word.text} />
+          </div>
         </div>
+        <div class="dots">
+          {chars.map((c, i) => (
+            <span key={`${c}${i}`} class={`dot ${i < index || (i === index && charMisses !== null) ? 'is-done' : ''}`} />
+          ))}
+        </div>
+        <div ref={host} class="tianzige" />
       </div>
-      <div class="dots">
-        {chars.map((c, i) => (
-          <span key={`${c}${i}`} class={`dot ${i < index || (i === index && charMisses !== null) ? 'is-done' : ''}`} />
-        ))}
-      </div>
-      <div ref={host} class="tianzige" />
-      {charMisses !== null && (
-        <>
-          <p class="praise">{charMisses === 0 ? '⭐ 完美 ⭐' : '⭐'}</p>
-          <button type="button" class="btn btn--primary" onClick={next}>
-            <Label zh={last ? '完成' : '下一个字'} />
-          </button>
-        </>
+      {charMisses === null ? (
+        <BottomBar actionLabel={last ? '完成' : '下一个字'} disabled onAction={() => {}} />
+      ) : (
+        <BottomBar tone="good" title={charMisses === 0 ? '完美！' : '写得好！'} actionLabel={last ? '完成' : '下一个字'} onAction={next} />
       )}
-    </div>
+    </>
   );
 }

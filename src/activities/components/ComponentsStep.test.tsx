@@ -22,9 +22,9 @@ describe('ComponentsStep', () => {
     fireEvent.click(screen.getByRole('button', { name: '汉' }));
     fireEvent.click(screen.getByText('检查'));
     expect(screen.getByText('全对了！')).toBeTruthy();
-    fireEvent.click(screen.getByText('下一题'));
+    fireEvent.click(screen.getByText('继续'));
     fireEvent.click(screen.getByRole('button', { name: '女' }));
-    fireEvent.click(screen.getByText('完成'));
+    fireEvent.click(screen.getByText('继续'));
     expect(onDone).toHaveBeenCalled();
   });
 

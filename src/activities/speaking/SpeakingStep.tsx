@@ -1,8 +1,10 @@
+import { Mic, Volume2 } from 'lucide-preact';
 import { pinyin } from 'pinyin-pro';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { recordingSupported, startRecording, type ActiveRecording, type FinishedRecording } from '../../audio/recorder';
 import { playSfx } from '../../audio/sfx';
 import { speak } from '../../audio/speech';
+import { BottomBar } from '../../ui/BottomBar';
 import { Label } from '../../ui/Label';
 import { HELPER_QUESTIONS, type SpeakingChoice } from './prompts';
 
@@ -48,6 +50,7 @@ export function SpeakingStep({ choice, onSave, onSkip }: Props) {
   };
 
   return (
+    <>
     <div class="speak-step">
       {choice.kind === 'picture' ? (
         <>
@@ -63,35 +66,43 @@ export function SpeakingStep({ choice, onSave, onSkip }: Props) {
           <p class="passage">{choice.passage.text}</p>
           {showPinyin && <p class="passage__py">{pinyin(choice.passage.text)}</p>}
           <div class="row">
-            <button type="button" class="btn" onClick={() => speak(choice.passage.text)}>🔊 <Label zh="听一听" /></button>
+            <button type="button" class="btn" onClick={() => speak(choice.passage.text)}><Volume2 size={24} strokeWidth={2.5} /> <Label zh="听一听" /></button>
             <button type="button" class="btn btn--ghost" onClick={() => setShowPinyin(!showPinyin)}><Label zh="拼音" /></button>
           </div>
         </>
       )}
 
-      {phase === 'ready' && (
-        <button type="button" class="btn btn--primary btn--big" onClick={() => void start()}>🎙️ <Label zh="开始录音" /></button>
-      )}
-      {phase === 'recording' && (
-        <button type="button" class="btn btn--big" onClick={() => void stop()}><span class="rec-dot" /> <Label zh="停止" /></button>
-      )}
-      {phase === 'review' && (
-        <div class="row">
-          <audio controls src={playbackUrl ?? undefined} />
-          <button type="button" class="btn" onClick={() => { setFinished(null); setPhase('ready'); }}><Label zh="重录" /></button>
-          <button type="button" class="btn btn--good" onClick={() => void save()}><Label zh="保存" /> ✓</button>
-        </div>
-      )}
-      {phase === 'blocked' && (
-        <div class="center" style={{ flex: 0 }}>
+        {phase === 'ready' && (
+          <button type="button" class="mic-btn" onClick={() => void start()}>
+            <Mic size={52} strokeWidth={2.5} />
+            <Label zh="开始录音" />
+          </button>
+        )}
+        {phase === 'recording' && (
+          <button type="button" class="mic-btn is-recording" onClick={() => void stop()}>
+            <span class="rec-dot" />
+            <Label zh="停止" />
+          </button>
+        )}
+        {phase === 'review' && (
+          <div class="row">
+            <audio controls src={playbackUrl ?? undefined} />
+            <button type="button" class="btn" onClick={() => { setFinished(null); setPhase('ready'); }}><Label zh="重录" /></button>
+          </div>
+        )}
+        {phase === 'blocked' && (
           <p class="warning">
             <Label zh="麦克风没有打开。我们下次再录！" />
             <br />
             <small>Ask a parent to allow the microphone for this app.</small>
           </p>
-          <button type="button" class="btn btn--primary" onClick={onSkip}><Label zh="继续" /></button>
-        </div>
+        )}
+      </div>
+      {phase === 'blocked' ? (
+        <BottomBar actionLabel="继续" onAction={onSkip} />
+      ) : (
+        <BottomBar actionLabel="保存" disabled={phase !== 'review'} onAction={() => void save()} />
       )}
-    </div>
+    </>
   );
 }
