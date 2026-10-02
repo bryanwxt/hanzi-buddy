@@ -11,7 +11,9 @@ import { Wardrobe } from './app/Wardrobe';
 import { bootstrap, firstRoute, type Booted } from './bootstrap';
 import { ParentArea } from './parent/ParentArea';
 import { DB_NAME } from './store/db';
-import { getKid, getSettings } from './store/repo';
+import { allWords, getKid, getSettings } from './store/repo';
+import { hanChars } from './content';
+import { prefetchStrokes } from './content/strokes';
 
 export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: string; now?: () => Date }) {
   const [booted, setBooted] = useState<Booted | null>(null);
@@ -33,6 +35,12 @@ export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: str
     if (!db) return;
     const [settings, kid] = await Promise.all([getSettings(db), getKid(db)]);
     setBooted((b) => (b ? { ...b, settings, kid } : b));
+  }, [db]);
+
+  // Warm the stroke-data cache so 听写 works offline later.
+  useEffect(() => {
+    if (!db || import.meta.env.MODE === 'test' || !navigator.onLine) return;
+    void allWords(db).then((ws) => prefetchStrokes(ws.filter((w) => !w.paused).flatMap((w) => hanChars(w.text))));
   }, [db]);
 
   if (error) return <ErrorScreen message={error} dbName={dbName} />;
