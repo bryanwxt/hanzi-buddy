@@ -128,6 +128,10 @@ function applyBackup(preview: BackupPreview): Promise<void>;
 - **prompts** — `{ id, createdAt, blob }` (parent-added pictures)
 - **settings** (single record) — `{ pinHash, sessionMinutes: 20, newPerDay: 5, activities: {flashcards, writing, components, speaking}, speechRate: 0.8, targetRecognise: 500, targetWrite: 150, lastBackupAt?, placementDone: boolean }`
 
+- **kid** (single record) — `{ petName, petColor, ownedAccessories: string[], wearing: string | null, bonusStars, lastChestDate: string | null, lastStageSeen, badgesSeen: string[] }`
+- **rewards** — `{ id, title, emoji, metric: 'stars' | 'known', target, createdAt, claimedAt: number | null }`
+- settings also has `soundEffects: true`.
+
 Schema changes go through numbered migrations in `store/db.ts`. Backup files
 carry `formatVersion`.
 
@@ -213,6 +217,108 @@ step). The streak counts a day when the session is completed.
 - Large touch targets (at least 64 pt) and a landscape-friendly layout.
 - Chinese labels for the child, with pinyin shown above in small text.
 
+## 5a. Making it fun (added 2026-10-02 at the parent's request)
+
+**Principles:**
+
+- Rewards are tied to effort and completion, not only to right answers.
+- Praise is about effort (你真努力！), not ability.
+- Nothing the child earns can ever be lost: no sad or dying pet, no stars
+  spent, no rewards withdrawn.
+- No leaderboards, no purchases, nothing that looks like gambling. Treasure
+  chests only appear after a completed session and only contain cosmetic
+  items.
+
+**Art:** emoji plus CSS animation; all sound effects are generated in the
+browser with the Web Audio API. No image or audio files are needed.
+
+### Pet dragon
+
+- **Setup:** right after the parent sets the PIN, the child names the pet
+  (default 小龙) and picks one of 5 colours: red, green, blue, purple, gold.
+  The colour is applied with CSS `hue-rotate`.
+- **Growth:** the pet's stage comes from the "characters I know" count:
+
+  | Stage | Count | Look |
+  |---|---|---|
+  | 0 | 0–24 | 🥚 egg |
+  | 1 | 25+ | 🐣 hatchling |
+  | 2 | 75+ | 🐲, small |
+  | 3 | 150+ | 🐲, large |
+  | 4 | 300+ | 🐉 |
+  | 5 | 500+ | 🐉 with a golden glow |
+
+- **Companion:** the pet sits in the corner of every activity.
+  - A correct answer makes it bounce, with a cheer bubble drawn at random from
+    a fixed list.
+  - A wrong answer shows an encouraging bubble (没关系，再来！) and no sad
+    face.
+- **Treasure chest:** after the first completed daily session each day, the
+  child taps a chest to open it.
+  - It gives a random accessory the pet doesn't own yet, from a fixed list of
+    16 emoji accessories.
+  - Once all 16 are owned, it gives 3 bonus stars instead.
+  - The random choice is seeded by the date, so it can be tested.
+- **Wardrobe:** tapping the pet on the home screen opens a wardrobe. The child
+  chooses one accessory to wear, or none.
+
+### Sticker book (贴纸本)
+
+- **Families:** one family for each component in the radicals table that at
+  least 3 built-in characters contain.
+- **Family page:**
+  - Every family character appears.
+  - Known characters show as colourful stickers; tapping one speaks it.
+  - Unknown characters show as grey "？" tiles.
+  - The page shows progress, e.g. "3/8".
+- **Badges:** a family is complete when all its characters are known, and that
+  earns a 🏅 badge for the family. Badges appear on a shelf at the top of the
+  book.
+- **My words:** a separate page lists parent-added words the child knows.
+
+### Game-style activities
+
+- **Flashcards become 喂小龙 (feed the dragon):**
+  - The pet asks for a word in a speech bubble: a 🔊 button in listen mode,
+    or the character in read mode.
+  - On a correct answer, the chosen tile flies to the pet, which does a
+    munching animation with a crunch sound.
+- **Combo counter:** consecutive correct answers in a session. At 3, 5, 10 and
+  every 10 after, a "连对 N 个！🔥" banner and a rising chime appear. A wrong
+  answer resets the count without saying so.
+- **Components game becomes 钓鱼 (fishing):**
+  - "Tap all" questions show 8 gently bobbing fish, each carrying a character.
+    Tapping catches a fish into a bucket, and "检查" checks the catch.
+  - "Which part" questions show the parts as bubbles.
+- **Writing:** a burst of stars after each finished character, and "完美！"
+  for zero misses.
+- **Sound effects:**
+  - six sounds: correct, wrong (soft, never harsh), combo, star, chest, level
+    up
+  - parent setting to turn them off
+- **Celebration effects:**
+  - confetti (`canvas-confetti`) for a finished session, the pet evolving, and
+    a new badge
+  - `prefers-reduced-motion` turns off confetti and motion
+
+### End-of-session sequence
+
+1. Stars earned.
+2. Treasure chest, if it's the first completed daily session today.
+3. Pet evolution, if its stage went up since it was last shown.
+4. New sticker badges, if any since they were last shown.
+
+### Real-world reward goals
+
+- **Goals:** the parent sets goals in the parent area, e.g. title "Ice cream
+  outing", emoji 🍦, measure "stars" or "characters known", target 100.
+- **Home screen:** shows the first unclaimed goal with a progress bar.
+  - When the target is reached, it shows "你做到了！Ask your parent for 🍦"
+    with confetti.
+  - The parent marks it as claimed in the parent area.
+- **Nothing is spent:** stars are a running total of completed steps plus
+  chest bonuses. Goals are milestones; reaching one doesn't use up stars.
+
 ## 6. Parent area
 
 - **PIN gate.** A 4-digit PIN is set on first launch and stored as a SHA-256
@@ -256,20 +362,25 @@ step). The streak counts a day when the session is completed.
 
 ### Built-in characters (`scripts/build-content.ts`, run once in development)
 
-- **About 600 characters** in 3 levels of 200, ordered by frequency of use.
-- **Frequency source:**
-  - Use Jun Da's *Modern Chinese Character Frequency List* if its terms allow
-    redistributing rank-derived data.
-  - Otherwise use the HSK 3.0 level 1–3 character list, ordered by HSK level
-    and then by stroke count.
-  - The choice and licence go in `CREDITS.md`.
+- **600 characters** in 3 app levels of 200: all characters from HSK 3.0
+  levels 1 and 2.
+  - Ordered by HSK level, then stroke count, then list order.
+  - Source: `charlist.txt` from `elkmovie/hsk30` (MIT, © 2021 Pleco Inc.).
+  - Why not Jun Da's frequency list: checked on 2026-10-02, it states no terms
+    of use, so under the rule agreed at design time it isn't used.
 - **Fields per character:**
   - pinyin (most common reading, via `pinyin-pro`)
-  - English meaning (first 1–2 senses from CC-CEDICT, CC BY-SA 4.0)
-  - decomposition and radical (Make Me a Hanzi `dictionary.txt`)
-  - 1–2 example words (CC-CEDICT words of 2–3 characters made only of
-    characters at the same or a lower level, chosen by the same frequency
-    source where available)
+  - English meaning (first 1–2 senses of the Make Me a Hanzi `definition`,
+    LGPL-3.0)
+  - decomposition, radical and stroke count (Make Me a Hanzi
+    `dictionary.txt`)
+  - 1–2 example words: words of 2–3 characters from the HSK 3.0 level 1–3
+    word list (`wordlist.txt`, MIT), made only of built-in characters at the
+    same or a lower app level, taken in HSK list order
+  - `writeable` defaults to true for characters in the HSK 3.0 初等手写字表
+    (elementary handwriting list, about 300 characters)
+- All sources and licences are listed in `CREDITS.md` and on the in-app
+  Credits screen.
 - **Validation (`check-content.ts`, run as a test):**
   - every entry has pinyin, a meaning and a decomposition
   - stroke data exists in `hanzi-writer-data`
@@ -350,6 +461,15 @@ step). The streak counts a day when the session is completed.
 - `store/backup`: export → import round trip using `fake-indexeddb`;
   rejecting a malformed file; migration from v1 fixtures.
 - Placement seeding logic.
+- Fun logic:
+  - pet stage thresholds
+  - the chest: deterministic by date, never repeats an accessory, gives the
+    star bonus once all are owned
+  - sticker families and badge completion
+  - new-badge detection
+  - combo milestones
+  - reward goal progress
+  - star totals
 - `check-content`: run over `builtin.json` and passages.
 
 **Flow tests** (`@testing-library/preact`, with the audio module mocked):
