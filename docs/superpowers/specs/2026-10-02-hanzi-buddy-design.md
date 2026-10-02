@@ -486,6 +486,141 @@ label.
 - **Browser pane at 1024×768 and 768×1024:** a visual walk-through of every
   screen, with screenshots.
 
+## 5c. Bold and flat app design (parent request, 2026-10-02)
+
+The parent found the overall layout dated as well. They chose three things:
+
+- a **today's path** home screen
+- a **bottom feedback sheet** for answering
+- a **bold and flat** visual style
+
+This section replaces the glassy, soft look described in §5b's visual
+refresh. The motion system, mascot, scenes and rewards from §5b stay.
+
+### Visual language
+
+- **Surfaces:**
+  - an off-white page (`#f7f8fa`) and white surfaces
+  - crisp 2px borders (`#e5e7eb`)
+  - no glass blur and no soft drop shadows on controls
+- **Pressable style:** every button, answer tile, path node and fish has:
+  - a 2px border
+  - a darker 4–5px bottom edge in the same hue (`box-shadow: 0 5px 0 <edge>`)
+  - on press, it moves down to meet the edge (`translateY(4px)`, edge → 0)
+- **Colours:**
+
+  | Role | Fill | Edge |
+  |---|---|---|
+  | Primary (go / correct) | green `#2fbf71` | `#22995a` |
+  | Secondary (selected) | blue `#2f9bf2` | `#1f78c4` |
+  | Wrong ("not quite") | orange `#ff9b3d` | `#e07a17` |
+  | Rewards | gold `#ffc845` | `#e0a51f` |
+
+  Text is `#2d3340`.
+- **Typography:**
+  - Nunito 800 and 900 for headings, numbers and buttons; buttons in
+    sentence case
+  - PingFang for Chinese UI labels
+  - WenKai for learning characters
+- **Icons:** one consistent rounded icon set, `lucide-preact` (ISC), for
+  every control: close, home, lock, stickers, wardrobe, sound, check,
+  microphone and so on. Emoji stay only for content: prizes, accessories,
+  fish.
+- **Scenes:**
+  - Home gets a short sky band at the top with drifting clouds.
+  - Lesson screens are plain off-white.
+  - The celebration keeps its full night-sky scene.
+
+### Kid app shell
+
+- **Top bar:** the 🔥 streak and ⭐ stars pills, and the pet's name with "认识
+  N 个字".
+- **Bottom tab bar** on Home, Sticker book and Wardrobe. Four tabs, each an
+  icon with a label: 首页 (home), 贴纸 (stickers), 小龙 (wardrobe), 家长 (lock,
+  goes to the PIN gate).
+
+### Home: today's path
+
+- A vertical winding path of nodes, offset left and right on a gentle sine
+  curve and joined by a dotted line:
+  - one node per step in today's plan (feed the dragon 🐲, write ✍️, fish 🎣,
+    speak 🎤; only the switched-on steps)
+  - then a chest node 🎁
+- **Node states:**
+  - `done`: gold, with a check mark
+  - `current`: large, gently bouncing, with a 开始 or 继续 speech bubble
+  - `upcoming`: grey
+- **Tapping:**
+  - Tapping the current node starts or resumes the session; the session still
+    runs every step in order.
+  - Done and upcoming nodes do nothing (they wiggle gently).
+- **The dragon** stands beside the path, level with the current node, and
+  keeps its idle and sleepy behaviour.
+- **When today is complete:**
+  - every node is gold and the chest node shows open
+  - a 今天完成了！ card appears with 再玩一会儿 (free play)
+- **The reward-goal card** sits above the path.
+- **Node states come from a pure function:**
+  `pathNodes(steps, completedSteps, chestOpened, todayCompleted)`.
+
+### Lessons: layout and bottom sheet
+
+- **Lesson top bar:**
+  - an ✕ close button, which goes home and keeps progress
+  - the progress bar
+  - the 🔥 combo pill
+- **Bottom bar:** a fixed `BottomBar` holds the step's main action at the
+  bottom of the screen:
+
+  | Step | Action |
+  |---|---|
+  | Intro card | 我记住了！ |
+  | Fishing | 检查 (grey until something is selected) |
+  | Writing | 下一个字 or 完成, once a character is done |
+  | Speaking | 保存 or 继续 |
+
+- **Feedback sheet:** after an answer, the bar becomes a coloured sheet that
+  slides up:
+  - correct: green, ✔ icon, a cheer line (e.g. 太棒了！), and a full-width
+    继续 button
+  - wrong: orange, with "正确答案：" plus the answer, a 🔊 button, and 继续
+  - It replaces the inline answer-reveal and the 下一个 button.
+- **Answer tiles** are pressable tiles:
+  - correct: green fill and green edge
+  - wrong: orange
+  - selected (fishing): blue
+- **Fishing:**
+  - a 4×2 grid of pressable light-blue tiles, each with the character large in
+    dark ink and a small 🐟 badge
+  - caught tiles turn blue and lift
+  - the check result appears in the bottom sheet
+  - Readability over decoration; the bobbing motion is kept, but subtle.
+- **The writing pet** is larger (at least 120px).
+
+### Other screens
+
+- **Pet setup, placement and PIN screens** use the same flat cards, pressable
+  buttons and icons.
+- **The celebration** keeps the night scene; its buttons and cards use the new
+  style.
+- **Parent area:**
+  - flat cards
+  - a segmented tab control
+  - icons on the tabs
+  - It is otherwise unchanged.
+
+### Testing
+
+- **Unit:** `pathNodes` states.
+- **Component:**
+  - `BottomBar` neutral, good and oops states, and its action callback
+  - the tab bar navigation
+  - the path's current node starts the session
+- **Updated tests:**
+  - the flashcard and components flows use 继续
+  - the home test taps the path's current node
+- **Browser pane:** a full walkthrough at 1024×768 and 768×1024.
+
 ## 6. Parent area
 
 - **PIN gate.** A 4-digit PIN is set on first launch and stored as a SHA-256
