@@ -88,7 +88,7 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
     phase === 'intro' ? '新字来了！'
     : phase === 'feedback' ? (result!.correct ? quiz.cheer : quiz.comfort)
     : quiz.listen ? '我想吃这个字！' : '这个字怎么读？';
-  const mood = phase === 'feedback' ? (result!.correct ? 'munch' : 'comfort') : null;
+  const mood = phase === 'feedback' ? (result!.correct ? 'munch' : 'comfort') : phase === 'quiz' ? 'determined' : 'happy';
 
   return (
     <div class="flash">

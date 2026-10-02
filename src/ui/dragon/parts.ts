@@ -1,14 +1,10 @@
 import type { PetColor } from '../../types';
 
-export interface Circle {
-  cy: number;
-  r: number;
-}
-
-export interface Body {
-  cy: number;
-  rx: number;
-  ry: number;
+/** The one-piece pear-shaped body: top and bottom y, and half-width, in a 200×200 viewBox. */
+export interface Blob {
+  top: number;
+  bottom: number;
+  hw: number;
 }
 
 export interface DragonParts {
@@ -18,26 +14,76 @@ export interface DragonParts {
   horns: boolean;
   tail: boolean;
   aura: boolean;
-  head: Circle | null;
-  body: Body | null;
+  blob: Blob | null;
 }
 
-/** Geometry per growth stage, in a 200×200 viewBox. */
 export function stageParts(stage: number): DragonParts {
   const s = Math.max(0, Math.min(5, Math.round(stage)));
   const none = { egg: false, shell: false, wingScale: 0, horns: false, tail: false, aura: false };
-  if (s === 0) return { ...none, egg: true, head: null, body: null };
-  if (s === 1) return { ...none, shell: true, head: { cy: 108, r: 46 }, body: null };
-  if (s === 2) return { ...none, wingScale: 1, head: { cy: 86, r: 44 }, body: { cy: 150, rx: 42, ry: 36 } };
-  if (s === 3) return { ...none, wingScale: 1, horns: true, tail: true, head: { cy: 80, r: 42 }, body: { cy: 148, rx: 46, ry: 40 } };
-  return { ...none, wingScale: 1.45, horns: true, tail: true, aura: s === 5, head: { cy: 74, r: 40 }, body: { cy: 146, rx: 50, ry: 44 } };
+  if (s === 0) return { ...none, egg: true, blob: null };
+  if (s === 1) return { ...none, shell: true, blob: { top: 68, bottom: 170, hw: 48 } };
+  if (s === 2) return { ...none, wingScale: 1, blob: { top: 62, bottom: 182, hw: 50 } };
+  if (s === 3) return { ...none, wingScale: 1, horns: true, tail: true, blob: { top: 54, bottom: 182, hw: 54 } };
+  return { ...none, wingScale: 1.4, horns: true, tail: true, aura: s === 5, blob: { top: 44, bottom: 182, hw: 60 } };
 }
 
-/** Where an accessory emoji sits: its baseline just inside the top of the egg or head. */
+/** Rounded at the top, widest low down, flat-ish bottom — head and body in one shape. */
+export function blobPath({ top, bottom, hw }: Blob): string {
+  const h = bottom - top;
+  const side = top + h * 0.62;
+  return [
+    `M100 ${top}`,
+    `C${100 + hw * 0.9} ${top} ${100 + hw} ${top + h * 0.42} ${100 + hw} ${side}`,
+    `C${100 + hw * 0.98} ${bottom - h * 0.1} ${100 + hw * 0.55} ${bottom} 100 ${bottom}`,
+    `C${100 - hw * 0.55} ${bottom} ${100 - hw * 0.98} ${bottom - h * 0.1} ${100 - hw} ${side}`,
+    `C${100 - hw} ${top + h * 0.42} ${100 - hw * 0.9} ${top} 100 ${top}`,
+    'Z',
+  ].join(' ');
+}
+
+export interface Face {
+  eyeY: number;
+  eyeDx: number;
+  eyeRx: number;
+  eyeRy: number;
+  pupilR: number;
+  browY: number;
+  cheekY: number;
+  muzzleY: number;
+  muzzleRx: number;
+  muzzleRy: number;
+  bellyY: number;
+  bellyRx: number;
+  bellyRy: number;
+}
+
+/** Big close-set eyes high on the blob, a small muzzle below, a belly patch at the bottom. */
+export function faceGeometry({ top, bottom, hw }: Blob): Face {
+  const h = bottom - top;
+  const eyeY = top + h * 0.34;
+  const eyeRy = hw * 0.36;
+  return {
+    eyeY,
+    eyeDx: hw * 0.37,
+    eyeRx: hw * 0.31,
+    eyeRy,
+    pupilR: hw * 0.18,
+    browY: eyeY - eyeRy - 7,
+    cheekY: top + h * 0.5,
+    muzzleY: top + h * 0.57,
+    muzzleRx: hw * 0.4,
+    muzzleRy: hw * 0.22,
+    bellyY: top + h * 0.82,
+    bellyRx: hw * 0.56,
+    bellyRy: h * 0.15,
+  };
+}
+
+/** Where an accessory emoji sits: its baseline just inside the top of the egg or blob. */
 export function accessoryAnchor(parts: DragonParts): { x: number; y: number; size: number } {
-  if (!parts.head) return { x: 100, y: 66, size: 40 };
-  const size = Math.round(parts.head.r * 0.95);
-  return { x: 100, y: parts.head.cy - parts.head.r + Math.round(size * 0.3), size };
+  if (!parts.blob) return { x: 100, y: 66, size: 40 };
+  const size = Math.round(parts.blob.hw * 0.85);
+  return { x: 100, y: parts.blob.top + Math.round(size * 0.3), size };
 }
 
 export interface DragonPalette {
@@ -49,11 +95,11 @@ export interface DragonPalette {
 }
 
 export const DRAGON_PALETTES: Record<PetColor, DragonPalette> = {
-  green: { body: '#5bc98c', belly: '#e8f8d8', wing: '#3fa36c', cheek: '#ff9fb0', dark: '#2e6b4a' },
-  blue: { body: '#5aa9f0', belly: '#e3f1ff', wing: '#3b82d6', cheek: '#ffa3b5', dark: '#234e7e' },
-  purple: { body: '#a98bf0', belly: '#f1ebff', wing: '#7e5bd6', cheek: '#ffa3c8', dark: '#4a3488' },
-  red: { body: '#f07a6a', belly: '#ffe9e2', wing: '#d65745', cheek: '#ffc2a8', dark: '#7e2e24' },
-  gold: { body: '#f6c343', belly: '#fff6d6', wing: '#e0a21e', cheek: '#ff9f7a', dark: '#7a5a10' },
+  green: { body: '#58cc6f', belly: '#eafbe0', wing: '#3aa856', cheek: '#ff9fb0', dark: '#1f5a33' },
+  blue: { body: '#4fa8f5', belly: '#e3f1ff', wing: '#2f86dd', cheek: '#ffa3b5', dark: '#1d4a7c' },
+  purple: { body: '#a685f7', belly: '#f1ebff', wing: '#8160e0', cheek: '#ffa3c8', dark: '#43307f' },
+  red: { body: '#f6766b', belly: '#ffece6', wing: '#df5546', cheek: '#ffc2a8', dark: '#7a2a21' },
+  gold: { body: '#f8c33c', belly: '#fff6d6', wing: '#e3a018', cheek: '#ff9f7a', dark: '#71520a' },
 };
 
 export function paletteVars(color: PetColor): Record<string, string> {

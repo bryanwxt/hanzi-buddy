@@ -18,9 +18,27 @@ interface HomeData {
   goals: RewardGoal[];
 }
 
-export function HomeScreen() {
+const SLEEP_AFTER_MS = 20_000;
+
+export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: number }) {
   const { db, now, go, kid } = useApp();
   const [data, setData] = useState<HomeData | null>(null);
+  const [sleepy, setSleepy] = useState(false);
+
+  // The dragon dozes off when nobody is around; any tap wakes it.
+  useEffect(() => {
+    let timer = setTimeout(() => setSleepy(true), sleepAfterMs);
+    const wake = () => {
+      setSleepy(false);
+      clearTimeout(timer);
+      timer = setTimeout(() => setSleepy(true), sleepAfterMs);
+    };
+    window.addEventListener('pointerdown', wake);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pointerdown', wake);
+    };
+  }, [sleepAfterMs]);
 
   useEffect(() => {
     void Promise.all([loadKnowledge(db), allSessions(db), listRewards(db)]).then(([know, sessions, goals]) => setData({ know, sessions, goals }));
@@ -56,7 +74,7 @@ export function HomeScreen() {
       </header>
       <main class="home__main">
         <button type="button" class="pet-button" aria-label="换装" onClick={() => go({ name: 'wardrobe' })}>
-          <Pet kid={k} known={data.know.known} mood="happy" size={170} />
+          <Pet kid={k} known={data.know.known} mood={sleepy ? 'sleepy' : 'happy'} size={190} />
         </button>
         <div class="home__name">{k.petName}</div>
         <div class="home__known"><Label zh={`我认识 ${data.know.known} 个字`} /></div>

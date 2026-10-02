@@ -84,7 +84,7 @@ export function WritingStep({ word, kid, known, onDone }: Props) {
   return (
     <div class="write">
       <div class="row">
-        <Pet kid={kid} known={known} size={80} mood={charMisses === null ? null : 'happy'} bubble={bubble} />
+        <Pet kid={kid} known={known} size={80} mood={charMisses === null ? 'determined' : 'happy'} bubble={bubble} />
         <div class="write__prompt">
           <span class="pinyin">{word.pinyin}</span>
           <SpeakButton text={word.text} />

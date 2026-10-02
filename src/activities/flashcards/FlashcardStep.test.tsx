@@ -86,3 +86,17 @@ describe('feedback effects', () => {
     expect(burst).not.toHaveBeenCalled();
   });
 });
+
+describe('dragon expressions', () => {
+  const dragonClass = () => document.querySelector('svg.dragon')!.getAttribute('class') ?? '';
+  it('looks determined during the quiz, munches when right, and is kind when wrong', () => {
+    const { unmount } = render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
+    expect(dragonClass()).toContain('dragon--determined');
+    fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
+    expect(dragonClass()).toContain('dragon--munch');
+    unmount();
+    render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
+    fireEvent.click([...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!);
+    expect(dragonClass()).toContain('dragon--comfort');
+  });
+});

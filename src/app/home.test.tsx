@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/preact';
+import { act, fireEvent, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { BUILTIN, builtinWords } from '../content';
 import { stickerFamilies } from '../fun/stickers';
@@ -63,5 +63,17 @@ describe('StickerBook', () => {
     fireEvent.click(await screen.findByRole('button', { name: `氵 1/${water.chars.length}` }));
     expect(screen.getByRole('button', { name: water.chars[0] })).toBeTruthy();
     expect(document.querySelectorAll('.sticker--unknown')).toHaveLength(water.chars.length - 1);
+  });
+});
+
+describe('HomeScreen dragon', () => {
+  it('dozes off when left alone and wakes on a tap', async () => {
+    const app = await makeAppData();
+    renderWithApp(<HomeScreen sleepAfterMs={150} />, app);
+    await screen.findByText('今天的练习');
+    const dragon = () => document.querySelector('svg.dragon')!.getAttribute('class') ?? '';
+    await waitFor(() => expect(dragon()).toContain('dragon--sleepy'));
+    act(() => { window.dispatchEvent(new Event('pointerdown')); });
+    await waitFor(() => expect(dragon()).toContain('dragon--happy'));
   });
 });

@@ -48,7 +48,7 @@ export function ComponentsStep({ questions, kid, known, onDone }: Props) {
         kid={kid}
         known={known}
         size={80}
-        mood={checked === null ? null : checked ? 'happy' : 'comfort'}
+        mood={checked === null ? 'determined' : checked ? 'happy' : 'comfort'}
         bubble={checked === null ? '钓鱼啦！' : checked ? '全对了！' : '看看绿色的！'}
       />
       {q.kind === 'tapAll' ? (
