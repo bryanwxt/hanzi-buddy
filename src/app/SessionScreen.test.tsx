@@ -27,7 +27,7 @@ async function learnCurrentWord() {
   fireEvent.click(await screen.findByText('我记住了！'));
   const shown = document.querySelector('.hanzi--xl')!.textContent!;
   fireEvent.click(screen.getByRole('button', { name: byText.get(shown)!.pinyin }));
-  fireEvent.click(screen.getByText('下一个'));
+  fireEvent.click(screen.getByText('继续'));
 }
 
 describe('SessionScreen', () => {

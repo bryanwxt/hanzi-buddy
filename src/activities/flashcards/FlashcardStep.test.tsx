@@ -25,7 +25,7 @@ describe('FlashcardStep', () => {
     const onDone = vi.fn();
     render(<FlashcardStep {...base} item={review} voice={false} onDone={onDone} />);
     fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
-    fireEvent.click(screen.getByText('下一个'));
+    fireEvent.click(screen.getByText('继续'));
     expect(onDone).toHaveBeenCalledWith({ correct: true, responseMs: expect.any(Number), elapsedMs: expect.any(Number) });
   });
 
@@ -34,8 +34,8 @@ describe('FlashcardStep', () => {
     render(<FlashcardStep {...base} item={review} voice={false} onDone={onDone} />);
     const wrong = [...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!;
     fireEvent.click(wrong);
-    expect(document.querySelector('.answer-reveal')?.textContent).toContain(he.pinyin);
-    fireEvent.click(screen.getByText('下一个'));
+    expect(document.querySelector('.bottombar__detail')?.textContent).toContain(he.pinyin);
+    fireEvent.click(screen.getByText('继续'));
     expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ correct: false }));
   });
 
@@ -76,7 +76,7 @@ describe('feedback effects', () => {
     fireEvent.click(right);
     expect(burst).toHaveBeenCalledTimes(1);
     expect(flyAlong).toHaveBeenCalledWith(right, expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }), expect.anything());
-    fireEvent.click(screen.getByText('下一个'));
+    fireEvent.click(screen.getByText('继续'));
     expect(onDone).toHaveBeenCalledTimes(1);
   });
   it('does not celebrate a wrong answer', () => {
@@ -98,5 +98,18 @@ describe('dragon expressions', () => {
     render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
     fireEvent.click([...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!);
     expect(dragonClass()).toContain('dragon--comfort');
+  });
+});
+
+describe('feedback sheet', () => {
+  it('slides up green with a cheer when right, orange with the answer when wrong', () => {
+    const { unmount } = render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
+    expect(document.querySelector('.bottombar--neutral button')!.hasAttribute('disabled')).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: he.pinyin }));
+    expect(document.querySelector('.bottombar--good')).toBeTruthy();
+    unmount();
+    render(<FlashcardStep {...base} item={review} voice={false} onDone={vi.fn()} />);
+    fireEvent.click([...document.querySelectorAll<HTMLButtonElement>('.choice')].find((b) => b.textContent !== he.pinyin)!);
+    expect(document.querySelector('.bottombar--oops')!.textContent).toContain('正确答案');
   });
 });

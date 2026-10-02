@@ -5,9 +5,9 @@ import { getCharInfo, hanChars } from '../../content';
 import { radicalMeaning } from '../../content/radicals';
 import { CHEERS, COMFORTS, pickLine } from '../../fun/pet';
 import { mulberry32, shuffle } from '../../lib/random';
+import { BottomBar } from '../../ui/BottomBar';
 import { burst, flyAlong } from '../../ui/motion';
 import type { CardRecord, FlashItem, KidState, Word } from '../../types';
-import { Label } from '../../ui/Label';
 import { Pet } from '../../ui/Pet';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { pickCharacterDistractors, pickPinyinDistractors } from './distractors';
@@ -84,65 +84,70 @@ export function FlashcardStep({ item, word, pool, card, voice, kid, known, onDon
     return o === choice ? 'is-wrong' : 'is-dim';
   };
 
-  const bubble =
-    phase === 'intro' ? '新字来了！'
-    : phase === 'feedback' ? (result!.correct ? quiz.cheer : quiz.comfort)
-    : quiz.listen ? '我想吃这个字！' : '这个字怎么读？';
+  const bubble = phase === 'intro' ? '新字来了！' : phase === 'quiz' ? (quiz.listen ? '我想吃这个字！' : '这个字怎么读？') : null;
+  const next = () => {
+    if (result) onDone({ ...result, elapsedMs: Math.round(performance.now() - shownAt.current) });
+  };
   const mood = phase === 'feedback' ? (result!.correct ? 'munch' : 'comfort') : phase === 'quiz' ? 'determined' : 'happy';
 
   return (
-    <div class="flash">
-      <div class="flash__pet" ref={petRef}>
-        <Pet kid={kid} known={known} mood={mood} bubble={bubble} size={170} lookAt={phase === 'quiz' ? 0.8 : 0} />
-      </div>
-      <div class="flash__main">
-        {phase === 'intro' ? (
-          <Intro word={word} onReady={() => setPhase('quiz')} />
-        ) : (
-          <>
-            <div class="flash__prompt">
-              {quiz.listen ? <SpeakButton text={word.text} big /> : <div class="hanzi hanzi--xl">{word.text}</div>}
-            </div>
-            <div class={`choices stagger ${quiz.listen ? 'choices--hanzi' : 'choices--pinyin'}`}>
-              {quiz.options.map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  class={`choice ${optionState(o)}`}
-                  disabled={phase === 'feedback'}
-                  onClick={() => choose(o)}
-                  ref={(el) => {
-                    if (el) optionRefs.current.set(o, el);
-                  }}
-                >
-                  {o}
-                </button>
-              ))}
-            </div>
-            {phase === 'feedback' && result && (
-              <div class="flash__next">
-                {!result.correct && (
-                  <p class="answer-reveal">
-                    <span class="hanzi">{word.text}</span> {word.pinyin} <SpeakButton text={word.text} />
-                  </p>
-                )}
-                <button
-                  type="button"
-                  class="btn btn--primary"
-                  onClick={() => onDone({ ...result, elapsedMs: Math.round(performance.now() - shownAt.current) })}
-                >
-                  <Label zh="下一个" /> →
-                </button>
+    <>
+      <div class="flash">
+        <div class="flash__pet" ref={petRef}>
+          <Pet kid={kid} known={known} mood={mood} bubble={bubble} size={180} lookAt={phase === 'quiz' ? 0.8 : 0} />
+        </div>
+        <div class="flash__main">
+          {phase === 'intro' ? (
+            <Intro word={word} />
+          ) : (
+            <>
+              <div class="flash__prompt">
+                {quiz.listen ? <SpeakButton text={word.text} big /> : <div class="hanzi hanzi--xl">{word.text}</div>}
               </div>
-            )}
-          </>
-        )}
+              <div class={`choices stagger ${quiz.listen ? 'choices--hanzi' : 'choices--pinyin'}`}>
+                {quiz.options.map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    class={`choice press ${optionState(o)}`}
+                    disabled={phase === 'feedback'}
+                    onClick={() => choose(o)}
+                    ref={(el) => {
+                      if (el) optionRefs.current.set(o, el);
+                    }}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+      {phase === 'intro' && <BottomBar actionLabel="我记住了！" onAction={() => setPhase('quiz')} />}
+      {phase === 'quiz' && <BottomBar actionLabel="继续" disabled onAction={() => {}} />}
+      {phase === 'feedback' && result && (
+        <BottomBar
+          tone={result.correct ? 'good' : 'oops'}
+          title={result.correct ? quiz.cheer : quiz.comfort}
+          detail={
+            result.correct ? undefined : (
+              <>
+                正确答案：<span class="hanzi">{word.text}</span>
+                <span>{word.pinyin}</span>
+                <SpeakButton text={word.text} />
+              </>
+            )
+          }
+          actionLabel="继续"
+          onAction={next}
+        />
+      )}
+    </>
   );
 }
 
-function Intro({ word, onReady }: { word: Word; onReady: () => void }) {
+function Intro({ word }: { word: Word }) {
   return (
     <div class="intro">
       <div class="intro__card">
@@ -177,9 +182,6 @@ function Intro({ word, onReady }: { word: Word; onReady: () => void }) {
           </div>
         ))}
       </div>
-      <button type="button" class="btn btn--primary" onClick={onReady}>
-        <Label zh="我记住了！" />
-      </button>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { loadKnowledge, type Knowledge } from './knowledge';
 const tilt = (text: string) => `--tilt:${(text.codePointAt(0)! % 7) - 3}deg`;
 
 export function StickerBook() {
-  const { db, go } = useApp();
+  const { db } = useApp();
   const families = useMemo(() => stickerFamilies(BUILTIN), []);
   const [know, setKnow] = useState<Knowledge | null>(null);
   const [open, setOpen] = useState<string | null>(null); // a family's component, or 'mine'
