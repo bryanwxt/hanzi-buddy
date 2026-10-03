@@ -17,9 +17,9 @@ describe('widgets', () => {
   });
 
   it("Pet is Truffle wearing the kid's accessory, with a bubble", () => {
-    const { container } = render(<Pet kid={{ ...DEFAULT_KID, wearing: '👑' }} mood="pleased" bubble="加油！" />);
+    const { container } = render(<Pet kid={{ ...DEFAULT_KID, ownedAccessories: ['medal'], wearing: 'medal' }} mood="pleased" bubble="加油！" />);
     expect(screen.getByRole('img', { name: '松露' }).getAttribute('data-mood')).toBe('pleased');
-    expect(container.querySelector('.truffle__accessory')?.textContent).toBe('👑');
+    expect(container.querySelector('.truffle__accessory')).toBeTruthy();
     expect(screen.getByText('加油！')).toBeTruthy();
   });
 
@@ -61,9 +61,9 @@ describe('Pet power', () => {
 });
 
 describe('Pet costume', () => {
-  it('a onesie hides the accessory', () => {
-    const { container } = render(<Pet kid={{ ...DEFAULT_KID, outfit: 'tiger', wearing: '👑' }} />);
+  it('accessories go with a onesie', () => {
+    const { container } = render(<Pet kid={{ ...DEFAULT_KID, outfit: 'tiger', wearing: 'scarf' }} />);
     expect(container.querySelector('svg.truffle')?.getAttribute('data-outfit')).toBe('tiger');
-    expect(container.querySelector('.truffle__accessory')).toBeNull();
+    expect(container.querySelector('.truffle__accessory')).toBeTruthy();
   });
 });

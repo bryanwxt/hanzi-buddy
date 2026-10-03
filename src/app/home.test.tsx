@@ -52,12 +52,12 @@ describe('HomeScreen', () => {
 
 describe('Wardrobe', () => {
   it('puts on an owned accessory', async () => {
-    const kid = { ...DEFAULT_KID, ownedAccessories: ['🎩', '👑'] };
+    const kid = { ...DEFAULT_KID, ownedAccessories: ['moustache', 'medal'] };
     const app = await makeAppData({ kid });
     await saveKid(app.db, kid);
     renderWithApp(<Wardrobe />, app);
-    fireEvent.click(await screen.findByRole('button', { name: '👑' }));
-    await waitFor(async () => expect((await getKid(app.db))?.wearing).toBe('👑'));
+    fireEvent.click(await screen.findByRole('button', { name: '金牌' }));
+    await waitFor(async () => expect((await getKid(app.db))?.wearing).toBe('medal'));
   });
 });
 
@@ -88,9 +88,9 @@ describe('CollectionScreen', () => {
 
 describe('Wardrobe', () => {
   it('shows Truffle wearing what the child already earned (dragon-era data)', async () => {
-    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedAccessories: ['👑'], wearing: '👑', lastStageSeen: 3 } });
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedAccessories: ['medal'], wearing: 'medal', lastStageSeen: 3 } });
     renderWithApp(<Wardrobe />, app);
-    expect(document.querySelector('svg.truffle .truffle__accessory')?.textContent).toBe('👑');
+    expect(document.querySelector('svg.truffle .truffle__accessory')).toBeTruthy();
   });
 });
 
@@ -124,13 +124,12 @@ describe("Truffle's room ready-to-unlock hint", () => {
 
 describe("Truffle's room outfits", () => {
   it('wear a onesie, take it off; locked ones are disabled', async () => {
-    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], ownedAccessories: ['👑'], wearing: '👑' } });
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], ownedAccessories: ['medal'], wearing: 'medal' } });
     renderWithApp(<Wardrobe />, app);
     fireEvent.click(screen.getByRole('button', { name: '虎' }));
     await waitFor(async () => expect((await getKid(app.db))?.outfit).toBe('tiger'));
     expect(document.querySelector('svg.truffle')?.getAttribute('data-outfit')).toBe('tiger');
-    expect(document.querySelector('.truffle__accessory')).toBeNull();
-    expect(screen.getByText('穿着连体衣时看不到小东西')).toBeTruthy();
+    expect(document.querySelector('.truffle__accessory')).toBeTruthy(); // accessories go with any costume
     fireEvent.click(screen.getByRole('button', { name: '虎' }));
     await waitFor(async () => expect((await getKid(app.db))?.outfit).toBeNull());
     expect((screen.getByRole('button', { name: '龙' }) as HTMLButtonElement).disabled).toBe(true);
@@ -138,15 +137,15 @@ describe("Truffle's room outfits", () => {
 });
 
 describe("Truffle's room outfit details", () => {
-  it('shows pinyin on costume names, toggles accessories, and explains a hidden accessory where it is tapped', async () => {
-    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], outfit: 'tiger', ownedAccessories: ['👑'], wearing: null } });
+  it('shows pinyin on costume and accessory names and toggles accessories', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], outfit: 'tiger', ownedAccessories: ['medal'], wearing: null } });
     renderWithApp(<Wardrobe />, app);
     expect(screen.getByRole('button', { name: '虎' }).querySelector('.label__py')?.textContent).toBe('hǔ');
-    const crown = screen.getByRole('button', { name: '👑' });
+    const crown = screen.getByRole('button', { name: '金牌' });
+    expect(crown.querySelector('.label__py')?.textContent).toBe('jīn pái');
     fireEvent.click(crown);
-    await waitFor(async () => expect((await getKid(app.db))?.wearing).toBe('👑'));
+    await waitFor(async () => expect((await getKid(app.db))?.wearing).toBe('medal'));
     expect(crown.getAttribute('aria-pressed')).toBe('true');
-    expect(crown.closest('section')?.textContent).toContain('穿着连体衣时看不到小东西');
     fireEvent.click(crown);
     await waitFor(async () => expect((await getKid(app.db))?.wearing).toBeNull());
   });

@@ -1,3 +1,4 @@
+import { migrateAccessory } from '../fun/accessories';
 import { DEFAULT_KID, DEFAULT_SETTINGS, type CardRecord, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
 import type { AppDb } from './db';
 
@@ -20,7 +21,11 @@ export async function updateSettings(db: AppDb, patch: Partial<Settings>): Promi
 
 /** Older records (dragon era, older backups) lack newer fields: fill them with defaults. */
 export function normalizeKid(raw: Partial<KidState> | null | undefined): KidState | null {
-  return raw ? { ...DEFAULT_KID, ...raw } : null;
+  if (!raw) return null;
+  const kid = { ...DEFAULT_KID, ...raw };
+  // Accessories v2: dragon-era emoji map one-to-one onto the new add-ons; unknown values are dropped.
+  const owned = [...new Set(kid.ownedAccessories.map(migrateAccessory).filter((x): x is string => !!x))];
+  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(kid.wearing) };
 }
 
 export async function getKid(db: AppDb): Promise<KidState | null> {

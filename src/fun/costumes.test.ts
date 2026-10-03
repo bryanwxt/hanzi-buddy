@@ -21,7 +21,7 @@ describe('costumes', () => {
     expect(canOpenChest(b.kid, '2026-10-03')).toBe(false);
   });
   it('dragon-era installs with accessories still get the zodiac first', () => {
-    const old = { ...DEFAULT_KID, ownedAccessories: ['👑', '🎩'], lastChestDate: '2026-09-30' };
+    const old = { ...DEFAULT_KID, ownedAccessories: ['medal', 'moustache'], lastChestDate: '2026-09-30' };
     expect(openChest(old, '2026-10-02', 'pig').result).toEqual({ kind: 'costume', id: 'pig' });
   });
   it('never repeats; stars when everything is owned', () => {
@@ -37,13 +37,13 @@ describe('costumes', () => {
     }
     expect(openChest(kid, '2026-12-25', 'dog').result).toEqual({ kind: 'stars', amount: 3 });
   });
-  it('a onesie hides the accessory', () => {
-    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'tiger' })).toBeNull();
-    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'chef' })).toBeNull(); // no hat on a hat
-    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '🕶️', outfit: 'chef' })).toBe('🕶️');
-    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: null })).toBe('👑');
-    expect(visibleAccessory({ ...DEFAULT_KID, wearing: '👑', outfit: 'bogus' })).toBe('👑');
+  it('accessories are add-ons: they show with any costume', () => {
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: 'scarf', outfit: 'tiger' })).toBe('scarf');
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: 'wand', outfit: 'wizard' })).toBe('wand');
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: 'jetpack', outfit: 'bogus' })).toBe('jetpack');
+    expect(visibleAccessory({ ...DEFAULT_KID, wearing: 'bogus', outfit: null })).toBeNull();
   });
+
 });
 
 describe('costume input hardening', () => {

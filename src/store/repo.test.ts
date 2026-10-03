@@ -82,6 +82,14 @@ describe('normalizeKid', () => {
   it('fills new kid fields with defaults for dragon-era records', async () => {
     const db = await freshDb();
     await db.put('kid', { petName: '小龙', petColor: 'green', ownedAccessories: ['👑'], wearing: '👑', bonusStars: 2, lastChestDate: null, lastStageSeen: 3, badgesSeen: [] } as never, 'main');
-    expect(await getKid(db)).toMatchObject({ wearing: '👑', bonusStars: 2, activePower: null, powerTiersSeen: {} });
+    expect(await getKid(db)).toMatchObject({ wearing: 'medal', bonusStars: 2, activePower: null, powerTiersSeen: {} });
+  });
+});
+
+describe('normalizeKid accessories v2', () => {
+  it('maps old emoji accessories to the new ones and drops unknown values', async () => {
+    const db = await freshDb();
+    await db.put('kid', { ...DEFAULT_KID, ownedAccessories: ['👑', '🎓', 'x'], wearing: '🎓' } as never, 'main');
+    expect(await getKid(db)).toMatchObject({ ownedAccessories: ['medal', 'brush'], wearing: 'brush' });
   });
 });

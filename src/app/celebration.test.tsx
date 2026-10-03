@@ -128,17 +128,17 @@ describe('Celebration chest save failure', () => {
 });
 
 describe('Celebration power-up in costume', () => {
-  it('keeps the onesie on and the hidden accessory hidden', async () => {
+  it('keeps the onesie and the accessory on', async () => {
     const app = await makeAppData();
     const water = powerFamilies(BUILTIN).water.slice(0, 3);
     await putWords(app.db, builtinWords(0));
     await putCards(app.db, water.map((c) => makeCard(`b:${c}`, 'recognise', new Date(2026, 9, 20), true)));
-    await saveKid(app.db, { ...DEFAULT_KID, lastChestDate: '2026-10-02', ownedCostumes: ['tiger'], outfit: 'tiger', ownedAccessories: ['👑'], wearing: '👑' });
+    await saveKid(app.db, { ...DEFAULT_KID, lastChestDate: '2026-10-02', ownedCostumes: ['tiger'], outfit: 'tiger', ownedAccessories: ['scarf'], wearing: 'scarf' });
     renderWithApp(<Celebration rec={finished('2026-10-02', ['flashcards'])} />, app);
     await screen.findByText('太棒了！');
     fireEvent.click(screen.getByText('继续'));
     await screen.findByText('新能力！');
     expect(document.querySelector('.celebrate svg.truffle')?.getAttribute('data-outfit')).toBe('tiger');
-    expect(document.querySelector('.celebrate .truffle__accessory')).toBeNull();
+    expect(document.querySelector('.celebrate .truffle__accessory')).toBeTruthy();
   });
 });

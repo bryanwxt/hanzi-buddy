@@ -1,5 +1,6 @@
 import { mulberry32, seedFromString } from '../lib/random';
 import type { KidState } from '../types';
+import { accessoryById } from './accessories';
 import { ACCESSORIES, CHEST_BONUS_STARS } from './pet';
 
 export type ZodiacId = 'rat' | 'ox' | 'tiger' | 'rabbit' | 'dragon' | 'snake' | 'horse' | 'goat' | 'monkey' | 'rooster' | 'dog' | 'pig';
@@ -35,15 +36,9 @@ export const COSTUMES: Costume[] = [...ONESIES, ...OUTFITS];
 
 export const costumeById = (id: string | null | undefined): Costume | undefined => COSTUMES.find((c) => c.id === id);
 
-/** Accessories that sit on the eyes or neck rather than on top of the head. */
-const NOT_ON_HEAD = ['🕶️', '🧣'];
-
-/** A onesie hides the accessory slot; an outfit (each has its own hat) hides head-top accessories — no hat on a hat. */
+/** Accessories are add-ons (face, neck, paw, back), so they show with any costume; unknown values show nothing. */
 export function visibleAccessory(kid: KidState): string | null {
-  const c = costumeById(kid.outfit);
-  if (!c || !kid.wearing) return kid.wearing;
-  if (c.kind === 'onesie') return null;
-  return NOT_ON_HEAD.includes(kid.wearing) ? kid.wearing : null;
+  return accessoryById(kid.wearing) ? kid.wearing : null;
 }
 
 export type ChestResult = { kind: 'costume'; id: string } | { kind: 'accessory'; item: string } | { kind: 'stars'; amount: number };
