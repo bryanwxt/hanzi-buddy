@@ -888,3 +888,190 @@ The step's usual star. No bonus star: talking time isn't a fair measure here.
 5. Truffle asks.
 6. Parent grouping in Recordings.
 7. Walkthrough.
+
+## 18. Adaptive layouts: one screen on every iPad and iPhone (added 2026-10-03 at the parent's request)
+
+### Why
+
+On the iPad the parent found three problems:
+- **Lessons hide the world.** Lessons show it only as a 190px strip along the
+  bottom. The 继续 bar covers half of it, and the feedback panel covers nearly
+  all of it.
+- **Home scrolls.** The page is 600–860px taller than the screen. The lesson
+  path scrolls over a fixed world picture, and Truffle scrolls with the list,
+  so he floats up into the sky.
+- **Pages scroll a little.** Some screens overflow by a few pixels, which
+  feels sloppy.
+
+The parent also wants the app to work on iPhones. He turns the iPad either
+way, so both iPad orientations matter.
+
+### The rule
+
+- Every child screen is **exactly one screen tall** and the document never
+  scrolls.
+  - Child screens: everything outside the PIN-gated parent area, including
+    the PIN pad.
+  - This holds on an upright iPhone (from SE size, 375×667) and on an iPad in
+    either orientation.
+- **Long lists scroll inside their own panel.** These are the 字卡
+  collection, the costumes tab, and any other list that can grow.
+  - The top bar, the tabs and the bottom nav stay put.
+- **The parent area may scroll.** Its tables are genuinely long.
+  - On a phone, nothing in it may overflow sideways.
+  - Wide tables scroll sideways inside their own box.
+- **Safe areas stay respected:** notch, home indicator and rounded corners.
+  `viewport-fit=cover` and the `env(safe-area-inset-*)` padding stay.
+
+### Three arrangements, one fluid layout
+
+Layout is CSS only: no device detection in code. Sizes scale with the screen
+using `clamp()` on `dvh`/`vw`/`vmin`. The three arrangements are:
+
+| Arrangement | When | Shape |
+|---|---|---|
+| phone | width < 600px, portrait | one column, smaller Truffle, compact path |
+| tablet portrait | width ≥ 600px, portrait | today's layout, tightened to fit |
+| tablet landscape | landscape and height ≥ 600px | two columns |
+
+- **Fixed-size regions:** the top bar or lesson bar, the bottom nav, and the
+  floating 继续/feedback card.
+- **Fluid regions** grow and shrink with the screen:
+  - Truffle;
+  - the big character;
+  - the answer tiles;
+  - the writing box;
+  - the 看图说话 picture;
+  - the 朗读 passage;
+  - the path.
+- **Tap targets:** at least 64px on tablets and at least 52px on phones.
+  Apple's minimum is 44pt.
+- **Text never gets smaller than readable:** at least 15px for Chinese labels
+  and at least 12px for pinyin.
+
+**A phone turned sideways** (landscape, height < 500px) shows a full-screen
+overlay: Truffle with 请把手机竖过来 ("turn your phone upright"), with pinyin
+as everywhere else.
+- A sideways phone is only about 375px tall, too short for a lesson.
+- The overlay applies to child screens only, so the parent area can still be
+  read sideways.
+- The lesson underneath keeps its state. Turning the phone back continues
+  where he was.
+
+### Home
+
+- **Truffle is pinned** to a spot on the ground beside the path. He is no
+  longer part of the path list, and nothing on Home scrolls.
+  - phone and tablet portrait: he stands bottom-right;
+  - tablet landscape: he stands under the path.
+  - His bubble and his tap behaviour (§5b) don't change.
+- **The path** becomes a compact zigzag of today's stops, each with its label.
+  It stretches or squeezes to the room left.
+- **The word of the day:**
+  - phone and tablet portrait: a single row card (the character, its pinyin,
+    and its word with 🔊);
+  - tablet landscape: the existing upright card in a left column, above the
+    "today done / 再玩一会儿" card.
+- **The world taps (§15)** must stay tappable in every arrangement: not under
+  the path, the cards or Truffle. Each world's target position may differ per
+  arrangement. The sweep (below) checks it with `elementFromPoint` at each
+  target's centre.
+
+### Lessons
+
+- **The whole world sits behind every lesson step,** the same full-screen
+  scene as Home: sky above, ground below. It replaces the 190px strip.
+- **继续 floats:**
+  - phone: a rounded card inset 16px from the sides, above the safe area;
+  - tablet portrait: the card is centred, not full width;
+  - tablet landscape: the button sits bottom-right under the answers.
+- **The right/wrong feedback becomes the same floating card,** tinted:
+  message, correct answer and 🔊 on the left, 继续 on the right. Ground shows
+  around and beneath it.
+- **Paper backing:** text that sits on the scene keeps it (tiles, chips,
+  cards). The big character may sit on the sky, which is pale in every world
+  and time of day; check night (§15 time layers) during the sweep.
+- **Tablet landscape splits each step in two:**
+
+| Step | Left | Right |
+|---|---|---|
+| 认一认 (flashcards) | Truffle + bubble, the character | the answer tiles |
+| 写一写 (writing) | Truffle + the cue (meaning/pinyin/word) | the writing box |
+| 钓鱼 (components) | Truffle + the target | the pond |
+| 朗读 | warm-up line or the passage | loudness meter, record/listen controls |
+| 看图说话 | the picture | question, starter or 提示, theme words, mic, 听松露说 |
+| chest / celebration | Truffle | the reward |
+
+- **The phone stacks them:** Truffle sits small at the top-left with his
+  bubble to his right, then the prompt, then the answers.
+- **看图说话 on a phone:** the picture takes the full width (4:3). The theme
+  words wrap into at most two rows; if they still don't fit, they become one
+  horizontally scrolling row. This is the one allowed in-panel scroll in a
+  lesson.
+- **朗读 passages:** a long passage scrolls inside the passage card. The
+  card's height comes from the space left on the screen.
+
+### Other child screens
+
+Each one fits one screen in all three arrangements:
+- the PIN pad (setup and the 家长 gate);
+- PetSetup (the 字己 seal and waking Truffle);
+- the placement quiz;
+- 字卡, including its card close-up;
+- 松露 (Wardrobe) with its 服装, 能力 and 地方 tabs;
+- 多读一遍 (the extra 朗读 round);
+- the error screen.
+
+### Checking it
+
+- **CSS contract tests** (`src/styles.test.ts`) pin the rules jsdom can't see:
+  - `.screen` is exactly `100dvh` tall with no document scroll;
+  - lessons use the full world scene, not `.world-strip`;
+  - the bottom card floats;
+  - the three arrangement media queries exist;
+  - the phone-landscape overlay rule exists.
+- **A fit sweep:** `scripts/fit-check.mjs`, run with `npm run fit`.
+  - It uses Playwright's WebKit: Safari's engine, which is what the iPad and
+    iPhone run. `playwright-core` becomes a dev dependency; the sweep is not
+    part of `npm test`.
+  - It runs against a built preview.
+  - It seeds a test profile by writing the app's IndexedDB stores directly.
+    It never touches a real profile.
+  - It visits every child screen and every lesson step. Steps are reached
+    through free play with one activity enabled at a time.
+  - It covers six sizes: 375×667, 390×844, 768×1024, 1024×768 and 1180×820,
+    plus 667×375, where the overlay should show.
+  - For each screen it checks, and fails otherwise, that:
+    - the document's `scrollHeight` equals the viewport height (and
+      `scrollWidth` its width);
+    - every visible interactive element lies fully on screen and is at least
+      the minimum tap size;
+    - the world-tap target is the top element at its centre on Home.
+  - It saves a screenshot of every screen at every size for the parent to
+    look through.
+- **Visual check** of the screenshots for overlaps the numbers can't catch:
+  text over busy scenery, Truffle clipped by a card.
+
+### Out of scope
+
+- Phone landscape lessons: the overlay asks him to turn the phone back.
+- Android tablets, desktop browsers and split-screen iPad multitasking. They
+  get whichever arrangement their size implies, and nothing is checked for
+  them.
+- Redesigning the parent area.
+
+### Build order
+
+**Plan 10:**
+1. The layout foundation:
+   - the one-screen `.screen`;
+   - the arrangement media queries and fluid size tokens;
+   - the phone-landscape overlay;
+   - in-panel scrolling for lists.
+2. The fit sweep script, so every later task is checked by it.
+3. Home: pinned Truffle, compact path, word card per arrangement, world-tap
+   positions.
+4. Lessons: the full world behind them, the floating 继续 and feedback card,
+   and each step's three arrangements.
+5. The other child screens.
+6. Sweep at all sizes, screenshot review, and fixes.
