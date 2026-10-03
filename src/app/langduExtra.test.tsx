@@ -1,12 +1,13 @@
 import { fireEvent, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
-import { getKid, listRecordings, saveKid, saveParentPassage } from '../store/repo';
+import { getKid, listRecordings, saveKid, saveParentPassage, saveSession } from '../store/repo';
+import { createSessionRecord } from '../session/runner';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
 import { DEFAULT_KID } from '../types';
 import { HomeScreen } from './HomeScreen';
 import { LangduScreen } from './LangduScreen';
 
-vi.mock('../audio/speech', () => ({ speak: vi.fn(), primeSpeech: vi.fn() }));
+vi.mock('../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn(), primeSpeech: vi.fn() }));
 vi.mock('../audio/sfx', () => ({ playSfx: vi.fn() }));
 vi.mock('../ui/confetti', () => ({ celebrate: vi.fn() }));
 vi.mock('../audio/recorder', () => ({
@@ -68,5 +69,18 @@ describe('the lesson path names the speaking step by today\'s activity', () => {
     renderWithApp(<HomeScreen />, reading);
     await screen.findByText('今天的练习');
     expect(names()).toContain('朗读');
+  });
+});
+
+describe('the path after the day is done', () => {
+  it('names the activity he actually did today, not tomorrow\'s', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, speakingLast: 'story' }, now: () => new Date(2026, 9, 6, 18) });
+    await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
+    const plan = { steps: ['speaking' as const], reviewWordIds: [], newWordIds: [], flashTimeBoxMs: 0, writeCandidates: [], writeCount: 0 };
+    await saveSession(app.db, { ...createSessionRecord(plan, '2026-10-06', 0), completed: true, completedSteps: ['speaking'] });
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    const names = [...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent);
+    expect(names).toContain('看图说话');
   });
 });

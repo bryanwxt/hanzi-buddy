@@ -2,6 +2,7 @@ import { Mic } from 'lucide-preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { recordingSupported, startRecording, type ActiveRecording, type FinishedRecording } from '../../audio/recorder';
 import { quietFor } from '../../langdu/loudness';
+import { stopSpeaking } from '../../audio/speech';
 import { Label } from '../../ui/Label';
 import { LoudnessMeter } from '../langdu/LoudnessMeter';
 
@@ -11,8 +12,9 @@ export const BLOCKED_NOTE = '麦克风没有打开。我们下次再录！';
 const HEARD = 0.002; // above a working microphone's noise floor; a suspended meter reads exactly 0
 
 /** One recording at a time, with an optional live level; a refused or missing mic becomes 'blocked', never an error. */
-export function useRecorder() {
-  const [state, setState] = useState<MicState>(recordingSupported() ? 'ready' : 'blocked');
+/** startBlocked: the microphone was already refused on an earlier screen, so don't ask again. */
+export function useRecorder(startBlocked = false) {
+  const [state, setState] = useState<MicState>(recordingSupported() && !startBlocked ? 'ready' : 'blocked');
   const [result, setResult] = useState<FinishedRecording | null>(null);
   const [level, setLevel] = useState(0);
   const [quietMs, setQuietMs] = useState(0);
@@ -36,6 +38,7 @@ export function useRecorder() {
   const start = async (withLevel: boolean) => {
     if (starting.current || active.current) return;
     starting.current = true;
+    stopSpeaking(); // don't record Truffle's voice into his answer
     series.current = [];
     try {
       const rec = await startRecording(

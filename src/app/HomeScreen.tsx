@@ -174,7 +174,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>
         <TodayPath
-          speakingName={nextSpeaking(k.speakingLast, canRead) === 'story' ? '看图说话' : '朗读'}
+          speakingName={(todaySession?.completedSteps.includes('speaking') ? k.speakingLast ?? 'story' : nextSpeaking(k.speakingLast, canRead)) === 'story' ? '看图说话' : '朗读'}
           nodes={nodes}
           started={!!todaySession}
           onStart={() => play(false)}

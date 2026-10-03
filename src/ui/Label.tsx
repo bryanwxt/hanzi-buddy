@@ -1,4 +1,5 @@
 import { pinyin } from 'pinyin-pro';
+import '../content/pinyinFixes';
 import { useMemo } from 'preact/hooks';
 
 interface Cell {

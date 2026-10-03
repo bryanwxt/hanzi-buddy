@@ -41,6 +41,11 @@ export function speak(text: string): void {
   speechSynthesis.speak(u);
 }
 
+/** Silence any speech in progress (before recording him, and when leaving a screen). */
+export function stopSpeaking(): void {
+  if (available()) speechSynthesis.cancel();
+}
+
 /** iOS only allows speech after a user gesture; call this from the first tap. */
 export function primeSpeech(): void {
   if (!available()) return;

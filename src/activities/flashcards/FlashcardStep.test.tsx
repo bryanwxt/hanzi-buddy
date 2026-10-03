@@ -5,7 +5,7 @@ import { createEmptyCard, State } from 'ts-fsrs';
 import { DEFAULT_KID } from '../../types';
 import { FlashcardStep } from './FlashcardStep';
 
-vi.mock('../../audio/speech', () => ({ speak: vi.fn() }));
+vi.mock('../../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn() }));
 vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }));
 vi.mock('../../ui/motion', () => ({ burst: vi.fn(), flyAlong: vi.fn(async () => {}), reducedMotion: () => false }));
 import { burst, flyAlong } from '../../ui/motion';

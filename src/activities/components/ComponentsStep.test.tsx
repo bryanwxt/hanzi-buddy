@@ -4,7 +4,7 @@ import { DEFAULT_KID } from '../../types';
 import { ComponentsStep } from './ComponentsStep';
 import type { ComponentQuestion } from './game';
 
-vi.mock('../../audio/speech', () => ({ speak: vi.fn() }));
+vi.mock('../../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn() }));
 vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }));
 vi.mock('../../ui/motion', () => ({ burst: vi.fn(), reducedMotion: () => false }));
 import { burst } from '../../ui/motion';

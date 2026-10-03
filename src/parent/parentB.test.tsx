@@ -12,7 +12,7 @@ import { WordsPanel } from './WordsPanel';
 
 vi.mock('../content/strokes', () => ({ strokeAvailability: vi.fn(async () => 'yes') }));
 vi.mock('../lib/files', () => ({ saveTextFile: vi.fn(async () => {}) }));
-vi.mock('../audio/speech', () => ({ speak: vi.fn(), setSpeechRate: vi.fn() }));
+vi.mock('../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn(), setSpeechRate: vi.fn() }));
 vi.mock('../audio/sfx', () => ({ setSfxEnabled: vi.fn() }));
 
 import { saveTextFile } from '../lib/files';

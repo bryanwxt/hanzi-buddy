@@ -12,7 +12,7 @@ import { powerFamilies } from '../fun/powers';
 import { Wardrobe } from './Wardrobe';
 import { WORLD_LINES } from '../fun/worlds';
 
-vi.mock('../audio/speech', () => ({ speak: vi.fn(), primeSpeech: vi.fn() }));
+vi.mock('../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn(), primeSpeech: vi.fn() }));
 vi.mock('../ui/confetti', () => ({ celebrate: vi.fn() }));
 
 const emptyPlan: SessionPlan = { steps: [], reviewWordIds: [], newWordIds: [], flashTimeBoxMs: 0, writeCandidates: [], writeCount: 0 };

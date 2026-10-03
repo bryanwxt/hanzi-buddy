@@ -6,7 +6,7 @@ import { Pet } from './Pet';
 import { PinPad } from './PinPad';
 import { SpeakButton } from './SpeakButton';
 
-vi.mock('../audio/speech', () => ({ speak: vi.fn() }));
+vi.mock('../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn() }));
 import { speak } from '../audio/speech';
 
 describe('widgets', () => {

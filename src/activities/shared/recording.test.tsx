@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BLOCKED_NOTE, MicButton, useRecorder } from './recording';
 
 vi.mock('../../audio/recorder', () => ({ recordingSupported: vi.fn(() => true), startRecording: vi.fn() }));
+vi.mock('../../audio/speech', () => ({ stopSpeaking: vi.fn() }));
+import { stopSpeaking } from '../../audio/speech';
 import { recordingSupported, startRecording } from '../../audio/recorder';
 
 function Harness() {
@@ -40,5 +42,11 @@ describe('shared recorder', () => {
     vi.mocked(recordingSupported).mockReturnValue(false);
     render(<Harness />);
     expect(screen.getByText(BLOCKED_NOTE)).toBeTruthy();
+  });
+  it("starting a recording silences Truffle first, so his voice isn't recorded into the answer", async () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByText('开始录音'));
+    await screen.findByText('停止');
+    expect(stopSpeaking).toHaveBeenCalled();
   });
 });

@@ -7,7 +7,7 @@ vi.mock('../../audio/recorder', () => ({
   recordingSupported: vi.fn(() => true),
   startRecording: vi.fn(),
 }));
-vi.mock('../../audio/speech', () => ({ speak: vi.fn() }));
+vi.mock('../../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn() }));
 vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }));
 
 import { recordingSupported, startRecording } from '../../audio/recorder';

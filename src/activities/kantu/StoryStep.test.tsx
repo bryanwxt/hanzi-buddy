@@ -6,7 +6,7 @@ import { BLOCKED_NOTE } from '../shared/recording';
 import { StoryStep } from './StoryStep';
 
 vi.mock('../../audio/recorder', () => ({ recordingSupported: vi.fn(() => true), startRecording: vi.fn() }));
-vi.mock('../../audio/speech', () => ({ speak: vi.fn() }));
+vi.mock('../../audio/speech', () => ({ stopSpeaking: vi.fn(), speak: vi.fn() }));
 vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }));
 
 import { recordingSupported, startRecording } from '../../audio/recorder';
@@ -91,5 +91,16 @@ describe('StoryStep', () => {
     for (let i = 0; i < STORY_PARTS.length + 1; i++) fireEvent.click(screen.getByText('继续'));
     expect(screen.getByText(vase.questions[0]!.q)).toBeTruthy();
     expect(screen.getByRole('img', { name: '打翻花瓶' })).toBeTruthy();
+  });
+  it('a refused microphone is remembered for the rest of the story: no tapping 开始录音 on every screen', async () => {
+    vi.mocked(startRecording).mockRejectedValue(new Error('denied'));
+    render(<StoryStep scene={vase} told={0} kid={DEFAULT_KID} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByText('开始录音'));
+    await screen.findByText(BLOCKED_NOTE);
+    fireEvent.click(screen.getByText('继续'));
+    expect(screen.getByText(BLOCKED_NOTE)).toBeTruthy();
+    expect(screen.queryByText('开始录音')).toBeNull();
+    expect((screen.getByText('继续').closest('button') as HTMLButtonElement).disabled).toBe(false);
+    expect(startRecording).toHaveBeenCalledTimes(1);
   });
 });

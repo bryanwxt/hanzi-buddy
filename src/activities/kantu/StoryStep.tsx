@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { FinishedRecording } from '../../audio/recorder';
-import { speak } from '../../audio/speech';
+import { speak, stopSpeaking } from '../../audio/speech';
 import { showStarters } from '../../kantu/flow';
 import { STORY_PARTS, type Scene, type StoryPart } from '../../kantu/scenes';
 import type { KidState } from '../../types';
@@ -41,8 +41,8 @@ function Starter({ text, told }: { text: string; told: number }) {
 }
 
 /** One screen: try first (record), then hear Truffle's model, then go on. Keyed per screen, so each gets a fresh recorder. */
-function StoryScreen({ scene, screen, told, kid, last, onNext }: { scene: Scene; screen: Screen; told: number; kid: KidState; last: boolean; onNext: (r: FinishedRecording | null) => void }) {
-  const rec = useRecorder();
+function StoryScreen({ scene, screen, told, kid, last, blocked, onNext }: { scene: Scene; screen: Screen; told: number; kid: KidState; last: boolean; blocked: boolean; onNext: (r: FinishedRecording | null, micBlocked: boolean) => void }) {
+  const rec = useRecorder(blocked);
   const [heardModel, setHeardModel] = useState(false);
   const tried = rec.state === 'done' || rec.state === 'blocked';
   useEffect(() => {
@@ -91,7 +91,7 @@ function StoryScreen({ scene, screen, told, kid, last, onNext }: { scene: Scene;
         )}
         {heardModel && <p class="kantu__model"><Label zh={screen.model} /></p>}
       </div>
-      <BottomBar actionLabel={last ? '完成' : '继续'} disabled={!tried} onAction={() => onNext(rec.result)} />
+      <BottomBar actionLabel={last ? '完成' : '继续'} disabled={!tried} onAction={() => onNext(rec.result, rec.state === 'blocked')} />
     </>
   );
 }
@@ -104,11 +104,14 @@ export function StoryStep({ scene, told, kid, onDone }: Props) {
     ...scene.questions.map((q, index) => ({ kind: 'ask' as const, index, question: q.q, starter: q.starter, model: q.answer })),
   ];
   const [i, setI] = useState(0);
+  const [blocked, setBlocked] = useState(false); // a refused microphone stays refused for the rest of the story
+  useEffect(() => () => stopSpeaking(), []);
   const result = useRef<StoryResult>({ parts: {}, whole: null, answers: scene.questions.map(() => null) });
   const done = useRef(false);
 
-  const next = (r: FinishedRecording | null) => {
+  const next = (r: FinishedRecording | null, micBlocked: boolean) => {
     if (done.current) return;
+    if (micBlocked) setBlocked(true); // carried with the tap, so it holds however fast he goes
     const s = screens[i]!;
     if (r) {
       if (s.kind === 'part') result.current.parts[s.part] = r;
@@ -122,5 +125,5 @@ export function StoryStep({ scene, told, kid, onDone }: Props) {
     }
   };
 
-  return <StoryScreen key={i} scene={scene} screen={screens[i]!} told={told} kid={kid} last={i === screens.length - 1} onNext={next} />;
+  return <StoryScreen key={i} scene={scene} screen={screens[i]!} told={told} kid={kid} last={i === screens.length - 1} blocked={blocked} onNext={next} />;
 }
