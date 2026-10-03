@@ -5,12 +5,19 @@ interface Cell {
   py: string;
   ch: string;
   blank?: boolean;
+  zh?: boolean; // a Han character (keeps its slot even when its pinyin is hidden)
 }
 
 const BLANK = '＿';
 
 /** Chinese text with each syllable shown small directly above its own character, for a P2 reader. */
-export function Label({ zh, py: given }: { zh: string; /** syllables for its Han characters, from context (子 in 儿子 is zi) */ py?: string }) {
+export function Label({ zh, py: given, pinyinFor }: {
+  zh: string;
+  /** syllables for its Han characters, from context (子 in 儿子 is zi) */
+  py?: string;
+  /** which characters show their pinyin (all when omitted) — for fading pinyin as he learns */
+  pinyinFor?: (ch: string) => boolean;
+}) {
   const { cells, py } = useMemo(() => {
     const out: Cell[] = [];
     const all = pinyin(zh, { type: 'all' });
@@ -19,28 +26,29 @@ export function Label({ zh, py: given }: { zh: string; /** syllables for its Han
     let k = 0;
     for (const d of all) {
       if (d.isZh) {
-        out.push({ py: fits ? ctx[k++]! : d.pinyin, ch: d.origin });
+        const syl = fits ? ctx[k++]! : d.pinyin;
+        out.push({ py: !pinyinFor || pinyinFor(d.origin) ? syl : '', ch: d.origin, zh: true });
         continue;
       }
       // pinyin-pro may hand a run like "＿！" over as one piece; split out each blank
       for (const part of d.origin.split(/(＿)/).filter(Boolean)) {
         const prev = out[out.length - 1];
         if (part === BLANK) out.push({ py: '', ch: BLANK, blank: true });
-        else if (prev && prev.py === '' && !prev.blank) prev.ch += part; // keep "45" or "！" runs together
+        else if (prev && !prev.zh && !prev.blank) prev.ch += part; // keep "45" or "！" runs together
         else out.push({ py: '', ch: part });
       }
     }
     // data-py: the syllables plus any numbers or Latin text, without punctuation
-    const py = out.map((c) => c.py || (!c.blank && /[\p{L}\p{N}]/u.test(c.ch) ? c.ch.trim() : '')).filter(Boolean).join(' ');
+    const py = out.map((c) => (c.zh ? c.py : !c.blank && /[\p{L}\p{N}]/u.test(c.ch) ? c.ch.trim() : '')).filter(Boolean).join(' ');
     return { cells: out, py };
-  }, [zh, given]);
+  }, [zh, given, pinyinFor]);
   return (
     <span class="label" data-py={py}>
       {/* one cell already reads as the whole text; several get a single readable copy so 你好 isn't read 你…好 */}
       {cells.length > 1 && <span class="sr-only">{zh}</span>}
       <span class="label__cells" aria-hidden={cells.length > 1 ? 'true' : undefined}>
         {cells.map((c, i) => (
-          <span key={i} class={c.blank ? 'label__cell label__cell--blank' : c.py ? 'label__cell label__cell--zh' : 'label__cell'}>
+          <span key={i} class={c.blank ? 'label__cell label__cell--blank' : c.zh ? 'label__cell label__cell--zh' : 'label__cell'}>
             <small class="label__py" aria-hidden="true">{c.py}</small>
             <span class="label__ch">{c.ch}</span>
           </span>

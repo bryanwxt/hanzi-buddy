@@ -637,3 +637,12 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .meter.is-loud .meter__fill { background: var(--green); }
 .meter__target { position: absolute; top: -2px; bottom: -2px; border-left: 3px dashed var(--ink); }
 .meter__msg { font-size: 22px; font-weight: 900; min-width: 5em; }
+.langdu { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+.langdu__script { display: flex; flex-direction: column; gap: 10px; }
+.langdu__line { margin: 0; font-size: 34px; font-family: var(--hanzi); }
+.langdu__step { margin: 0; font-size: 20px; font-weight: 800; }
+.langdu__phrase { margin: 8px 0; font-size: 52px; font-family: var(--hanzi); background: var(--surface); border: var(--panel-border); box-shadow: var(--panel-shadow); border-radius: var(--radius-lg); padding: 16px 28px; }
+.langdu__title { margin: 0; }
+.langdu__passage .label__cells { justify-content: flex-start; }
+.langdu__ok { margin: 0; font-size: 22px; font-weight: 900; color: var(--green-ink); }
+.langdu__thanks { color: var(--red); }

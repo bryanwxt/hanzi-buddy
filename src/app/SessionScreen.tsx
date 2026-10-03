@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { ComponentsStep } from '../activities/components/ComponentsStep';
 import { buildComponentRound, type ComponentQuestion } from '../activities/components/game';
 import { FlashcardStep, type FlashResult } from '../activities/flashcards/FlashcardStep';
-import { chooseSpeakingPrompt, eligiblePassages, type SpeakingChoice } from '../activities/speaking/prompts';
-import { SpeakingStep } from '../activities/speaking/SpeakingStep';
+import { LangduStep, type LangduResult } from '../activities/langdu/LangduStep';
+import { pickPassage, readingPool, finishDay, type ReadingPassage } from '../langdu/cycle';
+import { earnsBonus } from '../langdu/stars';
+import { burst } from '../ui/motion';
 import { WritingStep, type WriteResult } from '../activities/writing/WritingStep';
-import type { FinishedRecording } from '../audio/recorder';
 import { playSfx } from '../audio/sfx';
 import { PASSAGES } from '../content';
 import { CLOSEUP_EVERY, closeupAllowed, restingMood } from '../fun/mood';
@@ -20,8 +21,8 @@ import {
   addActiveTime, afterFlashAnswer, afterWriteWord, createFreePlayRecord, currentFlashItem, currentStep,
   currentWriteCandidate, finishStep, skipFlashItem,
 } from '../session/runner';
-import { addRecording, countRecordings, getKid, listPrompts, saveSession } from '../store/repo';
-import { DEFAULT_KID, type KidState, type SessionRecord, type StepKind } from '../types';
+import { addRecording, getKid, getSettings, listParentPassages, listRecordings, saveKid, saveSession } from '../store/repo';
+import { DEFAULT_KID, type KidState, type OralInfo, type SessionRecord, type StepKind } from '../types';
 import { sessionProgress } from '../session/progress';
 import { ProgressBar } from '../ui/ProgressBar';
 import { useApp } from './AppContext';
@@ -38,7 +39,7 @@ interface Loaded {
   know: Knowledge;
   kid: KidState;
   round: ComponentQuestion[] | null;
-  speaking: SpeakingChoice;
+  reading: { passage: ReadingPassage; oral: OralInfo } | null;
 }
 
 export function SessionScreen({ free }: { free: boolean }) {
@@ -54,7 +55,7 @@ export function SessionScreen({ free }: { free: boolean }) {
   useEffect(() => {
     void (async () => {
       const rng = mulberry32(Date.now() >>> 0);
-      const [know, kid, pictures, recordingCount] = await Promise.all([loadKnowledge(db), getKid(db), listPrompts(db), countRecordings(db)]);
+      const [know, kid, parentPassages, settings] = await Promise.all([loadKnowledge(db), getKid(db), listParentPassages(db), getSettings(db)]);
       const today = now();
       const rec = free
         ? createFreePlayRecord(buildFreePlayQueue(know.cards, know.words, rng), localDateKey(today), today.getTime())
@@ -64,7 +65,10 @@ export function SessionScreen({ free }: { free: boolean }) {
         know,
         kid: kid ?? DEFAULT_KID,
         round: buildComponentRound([...know.knownChars], rng),
-        speaking: chooseSpeakingPrompt({ pictures, passages: eligiblePassages(PASSAGES, know.knownChars), recordingCount, rng }),
+        reading: (() => {
+          const passage = pickPassage((kid ?? DEFAULT_KID).reading, readingPool(parentPassages, PASSAGES, know.knownChars), localDateKey(today));
+          return passage ? { passage, oral: settings.oral } : null;
+        })(),
       });
     })();
   }, []);
@@ -90,7 +94,7 @@ export function SessionScreen({ free }: { free: boolean }) {
     else if (step === 'writing' && !writeCandidate) void commit(finishStep(rec));
     else if (step === 'writing' && (!writeWord || writeWord.paused)) void commit(afterWriteWord(rec, false, 0));
     else if (step === 'components' && !state.round) void commit(finishStep(rec));
-    else if (step === 'speaking' && !state.speaking) void commit(finishStep(rec));
+    else if (step === 'speaking' && !state.reading) void commit(finishStep(rec));
   }, [rec]);
 
   if (!state || !rec) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
@@ -137,12 +141,31 @@ export function SessionScreen({ free }: { free: boolean }) {
       await commit(afterWriteWord(rec, r !== null, r?.elapsedMs ?? 0));
     })();
 
-  const onSpeakingSave = async (f: FinishedRecording) => {
-    const s = state.speaking!;
-    const prompt = s.kind === 'picture' ? { kind: 'picture' as const, promptId: s.prompt.id } : { kind: 'passage' as const, passageId: s.passage.id };
-    await addRecording(db, { id: newId(), createdAt: now().getTime(), prompt, ...f });
-    await finishTimedStep();
-  };
+  /** Save the warm-up and the read, count the cycle day, and give a bonus star for beating the last read. */
+  const onLangduDone = (r: LangduResult) =>
+    once(async () => {
+      const reading = state.reading!;
+      const at = now();
+      const today = localDateKey(at);
+      if (r.intro) await addRecording(db, { id: newId(), createdAt: at.getTime(), prompt: { kind: 'intro' }, ...r.intro });
+      let bonus = false;
+      if (r.read) {
+        const prev = (await listRecordings(db)).find((x) => x.prompt.kind === 'passage' && x.prompt.passageId === reading.passage.id);
+        bonus = earnsBonus(prev, { level: r.read.level ?? 0, durationSec: r.read.durationSec });
+        await addRecording(db, { id: newId(), createdAt: at.getTime(), prompt: { kind: 'passage', passageId: reading.passage.id }, ...r.read });
+      }
+      const fresh = (await getKid(db)) ?? kid;
+      await saveKid(db, {
+        ...fresh,
+        reading: { ...finishDay(fresh.reading, reading.passage.id, today), warmups: fresh.reading.warmups + (r.intro ? 1 : 0) },
+        bonusStars: fresh.bonusStars + (bonus ? 1 : 0),
+      });
+      if (bonus) {
+        playSfx('star');
+        burst(window.innerWidth / 2, window.innerHeight / 2, { count: 18 });
+      }
+      await commit(finishStep(addActiveTime(rec, Math.round(performance.now() - stepStartedAt.current))));
+    })();
 
   return (
     <div class="screen">
@@ -177,8 +200,16 @@ export function SessionScreen({ free }: { free: boolean }) {
       {step === 'components' && state.round && (
         <ComponentsStep questions={state.round} kid={kid} resting={resting} onDone={() => void finishTimedStep()} />
       )}
-      {step === 'speaking' && state.speaking && (
-        <SpeakingStep choice={state.speaking} onSave={onSpeakingSave} onSkip={() => void finishTimedStep()} />
+      {step === 'speaking' && state.reading && (
+        <LangduStep
+          passage={state.reading.passage}
+          oral={state.reading.oral}
+          warmups={kid.reading.warmups}
+          knownChars={know.knownChars}
+          kid={kid}
+          withWarmup
+          onDone={(r) => void onLangduDone(r)}
+        />
       )}
     </div>
   );

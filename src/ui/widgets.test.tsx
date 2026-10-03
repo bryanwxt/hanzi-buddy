@@ -19,6 +19,10 @@ describe('widgets', () => {
     const cells = [...container.querySelectorAll('.label__cell')];
     expect(cells.map((c) => c.className)).toEqual(['label__cell label__cell--blank', 'label__cell', 'label__cell label__cell--zh']);
   });
+  it('Label can hide pinyin over chosen characters (fading pinyin for known ones)', () => {
+    const { container } = render(<Label zh="你好" pinyinFor={(c) => c !== '好'} />);
+    expect([...container.querySelectorAll('.label__py')].map((e) => e.textContent)).toEqual(['nǐ', '']);
+  });
   it('Label falls back to its own reading when the given syllables do not fit', () => {
     const { container } = render(<Label zh="儿子" py="zi" />);
     expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('ér zi');
