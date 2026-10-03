@@ -944,10 +944,16 @@ using `clamp()` on `dvh`/`vw`/`vmin`. The three arrangements are:
   - the 看图说话 picture;
   - the 朗读 passage;
   - the path.
-- **Tap targets:** at least 64px on tablets and at least 52px on phones.
-  Apple's minimum is 44pt.
-- **Text never gets smaller than readable:** at least 15px for Chinese labels
-  and at least 12px for pinyin.
+- **Tap targets:**
+  - every tappable element is at least 44px, Apple's minimum;
+  - main actions are at least 64px on tablets and 52px on phones. Main
+    actions are the answer tiles, 继续, the path stops, the record button and
+    the nav.
+- **Text never gets smaller than readable:**
+  - Chinese labels are at least 16px;
+  - pinyin is at least 9px (`max(0.5em, 9px)`). Pinyin is drawn at half its
+    character's size, so a fixed 12px floor would oversize it next to small
+    labels.
 
 **A phone turned sideways** (landscape, height < 500px) shows a full-screen
 overlay: Truffle with 请把手机竖过来 ("turn your phone upright"), with pinyin
@@ -1045,7 +1051,8 @@ Each one fits one screen in all three arrangements:
     - the document's `scrollHeight` equals the viewport height (and
       `scrollWidth` its width);
     - every visible interactive element lies fully on screen and is at least
-      the minimum tap size;
+      44px;
+    - main actions meet their 64px/52px minimum;
     - the world-tap target is the top element at its centre on Home.
   - It saves a screenshot of every screen at every size for the parent to
     look through.
