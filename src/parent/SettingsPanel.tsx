@@ -1,22 +1,28 @@
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { useApp } from '../app/AppContext';
 import { SetupPin } from '../app/SetupPin';
 import { setSfxEnabled } from '../audio/sfx';
 import { setSpeechRate, speak } from '../audio/speech';
 import { ONESIES, type ZodiacId } from '../fun/costumes';
+import { introLines } from '../langdu/intro';
 import { updateSettings } from '../store/repo';
-import type { Settings, StepKind } from '../types';
+import type { OralInfo, Settings, StepKind } from '../types';
 
 const ACTIVITY_LABELS: Record<StepKind, string> = {
   flashcards: 'Flashcards',
   writing: '听写 writing',
   components: 'Components game (fishing)',
-  speaking: 'Speaking recordings',
+  speaking: '朗读 reading aloud',
 };
 
 const clampInt = (value: string, min: number, max: number, fallback: number) => {
   const n = Math.round(Number(value));
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+};
+
+const introPreview = (oral: OralInfo) => {
+  const l = introLines(oral);
+  return `${l.hello}${l.body ?? ''}…… ${l.thanks}`;
 };
 
 export function SettingsPanel() {
@@ -30,6 +36,14 @@ export function SettingsPanel() {
     setSpeechRate(next.speechRate);
     setSfxEnabled(next.soundEffects);
     await refresh();
+  };
+
+  // fields save as he types: merge into the latest details, not a stale render's copy
+  const oral = useRef(s.oral);
+  const saveOral = (patch: Partial<OralInfo>) => {
+    oral.current = { ...oral.current, ...patch };
+    setS((prev) => ({ ...prev, oral: oral.current }));
+    return save({ oral: oral.current });
   };
 
   if (changingPin) return <SetupPin onDone={() => setChangingPin(false)} />;
@@ -72,6 +86,20 @@ export function SettingsPanel() {
           ))}
         </select>
       </div>
+      <fieldset class="field oral">
+        <legend>Oral exam (口试) — used for the self-introduction warm-up; stays on this iPad</legend>
+        {([['name', 'Chinese name', ''], ['age', 'Age', ''], ['school', 'School', 'XX小学'], ['className', 'Class', '二年级']] as const).map(([key, label, ph]) => (
+          <div class="field" key={key}>
+            <label for={`oral-${key}`}>{label}</label>
+            <input id={`oral-${key}`} value={s.oral[key]} placeholder={ph} onInput={(e) => void saveOral({ [key]: e.currentTarget.value })} />
+          </div>
+        ))}
+        <div class="field">
+          <label for="oral-custom">Custom introduction (optional — replaces the standard one)</label>
+          <textarea id="oral-custom" rows={2} value={s.oral.customIntro} onInput={(e) => void saveOral({ customIntro: e.currentTarget.value })} />
+        </div>
+        <p class="oral__preview">{introPreview(s.oral)}</p>
+      </fieldset>
       <label>
         <input type="checkbox" checked={s.soundEffects} onChange={(e) => void save({ soundEffects: e.currentTarget.checked })} /> Sound effects
       </label>

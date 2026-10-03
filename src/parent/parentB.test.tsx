@@ -52,7 +52,7 @@ describe('SettingsPanel', () => {
     renderWithApp(<SettingsPanel />, app);
     fireEvent.change(screen.getByLabelText('New words per day (0–10)'), { target: { value: '15' } });
     await waitFor(async () => expect((await getSettings(app.db)).newPerDay).toBe(10));
-    fireEvent.click(screen.getByLabelText('Speaking recordings'));
+    fireEvent.click(screen.getByLabelText('朗读 reading aloud'));
     await waitFor(async () => expect((await getSettings(app.db)).activities.speaking).toBe(false));
   });
 });
@@ -108,6 +108,6 @@ describe('ParentArea tabs', () => {
     renderWithApp(<ParentArea />, app);
     for (const d of '1111') fireEvent.click(screen.getByRole('button', { name: d }));
     await screen.findByText('Overview');
-    expect(document.querySelectorAll('.tabs .tab svg').length).toBe(8);
+    expect(document.querySelectorAll('.tabs .tab svg').length).toBe(9);
   });
 });

@@ -29,6 +29,7 @@ export function PicturesPanel() {
   return (
     <section class="panel">
       <h2>Pictures for 看图说话</h2>
+      <p class="note">Pictures return in the upcoming picture-story activity; they are not shown in lessons for now.</p>
       <p>Add photos, e.g. picture-composition pages from assessment books. The speaking step alternates between these and read-aloud passages.</p>
       <div class="field">
         <label for="pic-add">Add pictures</label>
