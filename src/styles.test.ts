@@ -62,6 +62,10 @@ describe('world layers never get in the way', () => {
     expect(css).toMatch(/\.world-scene \{[^}]*position: fixed/);
     expect(css).toMatch(/\.home \.world-scene \{[^}]*bottom: 80px/); // ground sits above the sticky tab bar
   });
+  it('on lessons the waiting bottom bar is see-through so the ground shows under the button; feedback bars stay solid', () => {
+    expect(css).toMatch(/\.screen:has\(\.world-strip\) \.bottombar--neutral \{[^}]*background: transparent/);
+    expect(css).not.toMatch(/\.bottombar--good[^{]*\{[^}]*background: transparent/);
+  });
   it("Truffle's bubble keeps its line on one row", () => {
     expect(css).toMatch(/\.pet__bubble \.label__cells \{[^}]*flex-wrap: nowrap/);
   });

@@ -1,9 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { builtinWords } from '../content';
-import { allCards, getSession, getWord, putWords, updateSettings } from '../store/repo';
+import { allCards, getSession, getWord, putWords, saveKid, updateSettings } from '../store/repo';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
-import { DEFAULT_SETTINGS } from '../types';
+import { DEFAULT_KID, DEFAULT_SETTINGS } from '../types';
 import { SessionScreen } from './SessionScreen';
 
 vi.mock('../audio/speech', () => ({ speak: vi.fn(), primeSpeech: vi.fn() }));
@@ -31,6 +31,13 @@ async function learnCurrentWord() {
 }
 
 describe('SessionScreen', () => {
+  it('shows a strip of the current world behind the lesson', async () => {
+    const app = await setup();
+    await saveKid(app.db, { ...DEFAULT_KID, worldsSeen: ['yard', 'grass'] }); // the session reads the kid from the db
+    renderWithApp(<SessionScreen free={false} />, app);
+    await waitFor(() => expect(document.querySelector('.world-strip')?.getAttribute('data-world')).toBe('grass'));
+  });
+
   it('runs a short daily session to the celebration and saves progress', async () => {
     const app = await setup();
     renderWithApp(<SessionScreen free={false} />, app);
