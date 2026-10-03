@@ -126,3 +126,11 @@ export function accessoryLayer(id: string | null | undefined): AccessoryLayer | 
   const art = ART[id]!();
   return { back: art.back ?? '', under: art.under ?? '', face: art.face ?? '', over: art.over ?? '' };
 }
+
+/** Where each slot's art sits in Truffle's coordinates, for drawing an accessory on its own (room tiles). */
+export const SLOT_VIEW: Record<'face' | 'neck' | 'held' | 'back', string> = {
+  face: '56 84 208 100',
+  neck: '86 176 148 80',
+  held: '172 40 118 240',
+  back: '30 172 260 120',
+};

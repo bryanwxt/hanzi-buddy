@@ -153,6 +153,16 @@ describe("Truffle's room outfit details", () => {
   });
 });
 
+describe("Truffle's room accessory tiles", () => {
+  it('shows each accessory as its own ink drawing, grouped by slot', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedAccessories: ['wand'] } });
+    renderWithApp(<Wardrobe />, app);
+    const wand = screen.getByRole('button', { name: '魔法棒' });
+    expect(wand.querySelector('svg.acc-thumb')).toBeTruthy();
+    expect(wand.closest('section')?.querySelector('h2')?.textContent).toContain('手里');
+  });
+});
+
 describe('HomeScreen word of the day', () => {
   it('shows a known character as the word of the day', async () => {
     const app = await makeAppData();

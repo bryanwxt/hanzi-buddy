@@ -586,3 +586,5 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .room .pet { position: sticky; top: 0; z-index: 3; background: var(--paper); border-radius: 0 0 24px 24px; width: 100%; display: flex; justify-content: center; }
 
 .inkicon { display: inline-block; vertical-align: middle; flex: none; overflow: visible; }
+.acc-thumb { display: block; overflow: visible; }
+.outfit__name .label { font-size: 16px; }

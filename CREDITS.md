@@ -20,5 +20,5 @@ Jun Da's *Modern Chinese Character Frequency List* was considered. On 2026-10-02
 ## Mascot
 
 - **Truffle 松露** — original vector art of the family's cat, drawn for this app (no photos are included), including
-  his power effects, zodiac onesies and outfits. Game mechanics (types, a collection, skins) are generic; no third-party
+  his power effects, zodiac onesies, outfits and accessories, and the app's ink icon set. Game mechanics (types, a collection, skins) are generic; no third-party
   characters or art are used.

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { BUILTIN } from '../content';
-import { accessoryById } from '../fun/accessories';
+import { ACCESSORY_DEFS } from '../fun/accessories';
+import { accessoryLayer, SLOT_VIEW } from '../ui/truffle/accessories';
 import { costumeById, ONESIES, OUTFITS } from '../fun/costumes';
-import { ACCESSORIES } from '../fun/pet';
 import { POWERS, powerFamilies, powerProgress, type PowerProgress } from '../fun/powers';
 import { saveKid } from '../store/repo';
 import { DEFAULT_KID, type KidState } from '../types';
@@ -15,6 +15,8 @@ import { loadKnowledge } from './knowledge';
 import { InkIcon } from '../ui/icons/InkIcon';
 
 type RoomTab = 'outfits' | 'powers';
+
+const SLOT_TITLE = { face: '脸上', neck: '脖子上', held: '手里', back: '背上' } as const;
 
 /** Truffle's room: what he wears and which power he shows. */
 export function Wardrobe() {
@@ -68,18 +70,33 @@ export function Wardrobe() {
                 </div>
               </section>
             ))}
-            <section>
-              <h2><Label zh="小东西" /></h2>
-              <div class="wardrobe">
-                <button type="button" class={k.wearing === null ? 'is-on' : ''} aria-label="不戴" aria-pressed={k.wearing === null} onClick={() => void save({ ...k, wearing: null })}><InkIcon name="none" size={30} /></button>
-                {ACCESSORIES.map((a) => {
-                  const owned = k.ownedAccessories.includes(a);
-                  return (
-                    <button key={a} type="button" class={`${k.wearing === a ? 'is-on' : ''}${owned ? '' : ' is-locked'}`} aria-label={accessoryById(a)!.zh} aria-pressed={k.wearing === a} disabled={!owned} onClick={() => void save({ ...k, wearing: k.wearing === a ? null : a })}><Label zh={accessoryById(a)!.zh} /></button>
-                  );
-                })}
-              </div>
-            </section>
+            {(['face', 'neck', 'held', 'back'] as const).map((slot) => (
+              <section key={slot}>
+                <h2><Label zh={SLOT_TITLE[slot]} /></h2>
+                <div class="outfit-grid">
+                  {slot === 'face' && (
+                    <button type="button" class={`outfit ${k.wearing === null ? 'is-on' : ''}`} aria-label="不戴" aria-pressed={k.wearing === null} onClick={() => void save({ ...k, wearing: null })}>
+                      <InkIcon name="none" size={44} />
+                      <span class="outfit__name"><Label zh="不戴" /></span>
+                    </button>
+                  )}
+                  {ACCESSORY_DEFS.filter((d) => d.slot === slot).map((d) => {
+                    const owned = k.ownedAccessories.includes(d.id);
+                    const art = accessoryLayer(d.id)!;
+                    return (
+                      <button key={d.id} type="button" class={`outfit ${k.wearing === d.id ? 'is-on' : ''}`} aria-label={d.zh} aria-pressed={k.wearing === d.id} disabled={!owned} onClick={() => void save({ ...k, wearing: k.wearing === d.id ? null : d.id })}>
+                        {owned ? (
+                          <svg class="acc-thumb" viewBox={SLOT_VIEW[slot]} width="64" height="44" aria-hidden="true" dangerouslySetInnerHTML={{ __html: art.back + art.under + art.face + art.over }} />
+                        ) : (
+                          <InkIcon name="lock" size={32} />
+                        )}
+                        <span class="outfit__name"><Label zh={d.zh} /></span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
           <div class="powers" role="tabpanel">
