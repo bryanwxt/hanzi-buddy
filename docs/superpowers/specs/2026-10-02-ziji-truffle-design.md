@@ -529,6 +529,9 @@ replaced by:
   - in the band where it stopped, only the characters answered correctly are
     seeded.
   - Characters he missed are not seeded, so they come up early as new words.
+  - Seeded characters get their first recheck spread evenly over days 7–28,
+    hardest (rarest) first, so a big placement never lands on one day and
+    pauses new words (the 40-due pause).
 - The parent can re-run placement from Settings, as now.
 
 ### Writing (听写) prompts

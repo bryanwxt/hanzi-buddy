@@ -39,6 +39,12 @@ describe('seededKnownCard', () => {
     expect(isKnown(c)).toBe(true);
     expect(c.due.getTime() - now.getTime()).toBe(14 * 86_400_000);
   });
+  it('can be due on another day, with stability to match', () => {
+    const c = seededKnownCard(now, 21);
+    expect(c.due.getTime() - now.getTime()).toBe(21 * 86_400_000);
+    expect(c.stability).toBe(21);
+    expect(c.scheduled_days).toBe(21);
+  });
   it('a good review at due date pushes it further out', () => {
     const c = seededKnownCard(now);
     const next = review(c, Rating.Good, c.due);

@@ -34,16 +34,16 @@ export function isEarned(card: Card): boolean {
   return card.state === State.Review || card.state === State.Relearning;
 }
 
-/** A card for a character the child already knew at placement: in review, due in 14 days. */
-export function seededKnownCard(now: Date): Card {
+/** A card for a character the child already knew at placement: in review, due in `days` (14 by default). */
+export function seededKnownCard(now: Date, days = 14): Card {
   return {
     ...createEmptyCard(now),
     state: State.Review,
-    stability: 14,
+    stability: days,
     difficulty: 5,
     reps: 1,
-    scheduled_days: 14,
-    due: new Date(now.getTime() + 14 * 86_400_000),
+    scheduled_days: days,
+    due: new Date(now.getTime() + days * 86_400_000),
     last_review: now,
   };
 }

@@ -52,4 +52,16 @@ describe('banded placement', () => {
     expect(cards.map((c) => c.wordId)).toEqual([words[3]!.id, words[9]!.id]);
     expect(cards.every((c) => isKnown(c.fsrs) && c.kind === 'recognise')).toBe(true);
   });
+  it('spreads the first rechecks over days 7–28, hardest words first, so they never land on one day', () => {
+    const known = bands.slice(0, 3).flat().map((w) => w.id); // 180 known words
+    const cards = seedPlacementCards(words, known, now);
+    const days = cards.map((c) => Math.round((c.fsrs.due.getTime() - now.getTime()) / 86_400_000));
+    expect(Math.min(...days)).toBe(7);
+    expect(Math.max(...days)).toBeLessThanOrEqual(28);
+    const perDay = new Map<number, number>();
+    for (const d of days) perDay.set(d, (perDay.get(d) ?? 0) + 1);
+    expect(Math.max(...perDay.values())).toBeLessThanOrEqual(Math.ceil(180 / 22)); // well under the 40-review pause
+    const dueOf = (id: string) => cards.find((c) => c.wordId === id)!.fsrs.due.getTime();
+    expect(dueOf(known[known.length - 1]!)).toBeLessThan(dueOf(known[0]!)); // rank 180 is rechecked before rank 1
+  });
 });

@@ -47,9 +47,18 @@ export function placementKnownIds(s: PlacementState, bands: Word[][]): string[] 
   return [...s.passed.flatMap((b) => bands[b]!.map((w) => w.id)), ...s.right];
 }
 
+export const FIRST_CHECK_DAYS = [7, 28] as const;
+
+/**
+ * Known cards for the placed words. First rechecks are spread evenly over days 7–28 — the hardest
+ * (rarest) words first — so a big placement never lands on one day and pauses new words.
+ */
 export function seedPlacementCards(words: Word[], knownIds: string[], now: Date): CardRecord[] {
   const ids = new Set(knownIds);
-  return words
-    .filter((w) => ids.has(w.id))
-    .map((w) => ({ id: `${w.id}:recognise`, wordId: w.id, kind: 'recognise' as const, fsrs: seededKnownCard(now) }));
+  const placed = words.filter((w) => ids.has(w.id));
+  const hardestFirst = [...placed].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0));
+  const [first, last] = FIRST_CHECK_DAYS;
+  const span = last - first + 1;
+  const dayOf = new Map(hardestFirst.map((w, i) => [w.id, first + Math.floor((i * span) / placed.length)]));
+  return placed.map((w) => ({ id: `${w.id}:recognise`, wordId: w.id, kind: 'recognise' as const, fsrs: seededKnownCard(now, dayOf.get(w.id)!) }));
 }
