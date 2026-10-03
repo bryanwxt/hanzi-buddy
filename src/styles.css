@@ -767,6 +767,7 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
 .path__node--current { width: calc(var(--node) * 1.08); height: calc(var(--node) * 1.08); }
 .path__name { margin-top: 4px; font-size: 16px; }
 .path__bubble { top: -36px; font-size: 16px; }
+.home .path__row > .path__bubble { pointer-events: none; } /* a label: a tap on it is a tap on the stop */
 .home__pet { position: absolute; z-index: 2; bottom: calc(var(--nav-h) + 4px); left: 50%; transform: translateX(-50%); }
 .home__pet .truffle { width: var(--pet-home); height: auto; }
 .home__pet .pet__bubble { font-size: 17px; }
@@ -841,3 +842,41 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
   .bottombar { align-self: flex-end; max-width: 62%; }
   .bottombar--neutral { max-width: none; align-self: stretch; justify-content: flex-end; }
 }
+
+/* 写一写 */
+.write { min-height: 0; gap: 10px; }
+.write__head .truffle { width: calc(var(--pet) * 0.8); height: auto; }
+@media (max-width: 599px) {
+  .write__head { gap: 10px; flex-wrap: nowrap; }
+  .write__prompt { font-size: 28px; }
+}
+@media (orientation: landscape) and (min-height: 600px) {
+  .write { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr; align-items: center; column-gap: 32px; }
+  .write__head { grid-row: 1 / span 2; flex-direction: column; }
+  .write .dots { grid-column: 2; }
+  .write .tianzige { grid-column: 2; }
+}
+
+/* 钓鱼 */
+.pond { gap: 12px; }
+.fishtile { min-height: clamp(var(--tap-main), 11dvh, 110px); }
+.fishtile__char { font-size: clamp(40px, 6dvh, 58px); }
+.whichpart__char { font-size: var(--hanzi-xl); }
+.bubble-opt { width: clamp(96px, 14dvh, 140px); height: clamp(96px, 14dvh, 140px); font-size: clamp(44px, 6.5dvh, 66px); }
+@media (max-width: 599px) { .pond { grid-template-columns: repeat(3, minmax(0, 1fr)); } .pond-q { font-size: 22px; } .pond-q__part { font-size: 40px; } }
+
+/* Celebration and the chest */
+.celebrate { gap: clamp(10px, 2dvh, 22px); min-height: 0; }
+.celebrate h1 { font-size: clamp(36px, 6dvh, 56px); }
+.stars { font-size: clamp(48px, 8dvh, 72px); min-height: 0; }
+.prize { font-size: clamp(84px, 13dvh, 130px); }
+.chest svg { width: clamp(150px, 26dvh, 240px); height: auto; }
+.components { min-height: 0; justify-content: flex-start; gap: clamp(6px, 1.4dvh, 14px); }
+.components > .pet .truffle { width: var(--pet); height: auto; }
+@media (max-width: 599px) {
+  .components > .pet { flex-direction: row-reverse; align-items: center; gap: 8px; align-self: flex-start; }
+  .components > .pet .pet__bubble { margin-bottom: 0; font-size: 17px; }
+  .components > .pet .pet__bubble::after { left: -7px; bottom: auto; top: 50%; transform: translateY(-50%) rotate(135deg); }
+  .whichpart__char { font-size: clamp(80px, 13dvh, 120px); }
+}
+.write__cue { background: var(--surface); border: var(--panel-border); border-radius: 16px; box-shadow: 3px 3px 0 var(--ink); padding: 8px 14px; } /* paper behind the cue: it sits on the scene */

@@ -13,6 +13,7 @@ import type { TruffleMood } from '../../ui/truffle/Truffle';
 import { Label } from '../../ui/Label';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { writingCue } from './cue';
+import { writingBoxSize } from './size';
 
 export interface WriteResult {
   totalMisses: number;
@@ -46,7 +47,7 @@ export function WritingStep({ word, kid, resting, isNew, onDone }: Props) {
     el.innerHTML = '';
     setCharMisses(null);
     let cancelled = false;
-    const size = Math.min(320, window.innerWidth - 64);
+    const size = writingBoxSize(window.innerWidth, window.innerHeight);
     const writer = HanziWriter.create(el, chars[index]!, {
       width: size,
       height: size,

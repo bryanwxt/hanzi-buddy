@@ -166,7 +166,7 @@ async function sweep(browser: Browser, size: Size) {
   const run = async (flow: string, now: Date, profile: Omit<FitProfileOptions, 'now'>, then: (p: Page) => Promise<void>) => {
     if (ONLY && !ONLY.test(flow)) return;
     const page = await open(browser, size, now, profile);
-    try { await then(page); } catch (e) { results.push({ size: size.name, flow, step: -1, sig: '', problems: [`flow crashed: ${String(e).slice(0, 160)}`] }); }
+    try { await then(page); } catch (e) { results.push({ size: size.name, flow, step: -1, sig: '', problems: [`flow crashed: ${String(e).slice(0, 900)}`] }); }
     await page.context().close();
   };
   const tabTo = (p: Page, label: string) => p.click(`.tabbar__item:has-text("${label}")`);
