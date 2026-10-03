@@ -175,6 +175,7 @@ export interface Settings {
   placementDone: boolean;
   zodiac: ZodiacId | null; // the child's 生肖, the first chest's gift
   oral: OralInfo;
+  story: boolean; // 看图说话 is parked until the parent rethinks it (spec §17): off by default, no parent switch yet
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -190,6 +191,7 @@ export const DEFAULT_SETTINGS: Settings = {
   placementDone: false,
   zodiac: null,
   oral: { name: '', age: '', school: '', className: '', customIntro: '' },
+  story: false,
 };
 
 export type PetColor = 'green' | 'blue' | 'purple' | 'red' | 'gold';

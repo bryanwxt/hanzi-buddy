@@ -36,10 +36,15 @@ describe('看图说话 content', () => {
 
 describe('看图说话 flow', () => {
   it('alternates with 朗读, starting with a story, and fills in when 朗读 has nothing', () => {
-    expect(nextSpeaking(null, true)).toBe('story');
-    expect(nextSpeaking('story', true)).toBe('langdu');
-    expect(nextSpeaking('langdu', true)).toBe('story');
-    expect(nextSpeaking('story', false)).toBe('story');
+    // parked (the default): always 朗读; nothing to read → no speaking activity
+    expect(nextSpeaking(null, true)).toBe('langdu');
+    expect(nextSpeaking('langdu', true)).toBe('langdu');
+    expect(nextSpeaking(null, false)).toBeNull();
+    // switched back on: the old alternation
+    expect(nextSpeaking(null, true, true)).toBe('story');
+    expect(nextSpeaking('story', true, true)).toBe('langdu');
+    expect(nextSpeaking('langdu', true, true)).toBe('story');
+    expect(nextSpeaking('story', false, true)).toBe('story');
   });
   it('goes through the scenes in order and counts stories told', () => {
     expect(sceneFor({ next: 9 }).id).toBe('wallet');

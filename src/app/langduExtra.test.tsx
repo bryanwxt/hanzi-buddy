@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { getKid, listRecordings, saveKid, saveParentPassage, saveSession } from '../store/repo';
 import { createSessionRecord } from '../session/runner';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
-import { DEFAULT_KID } from '../types';
+import { DEFAULT_KID, DEFAULT_SETTINGS } from '../types';
 import { HomeScreen } from './HomeScreen';
 import { LangduScreen } from './LangduScreen';
 
@@ -59,7 +59,7 @@ describe('朗读 extra rounds', () => {
 describe('the lesson path names the speaking step by today\'s activity', () => {
   it('看图说话 on a story day, 朗读 on a reading day', async () => {
     const names = () => [...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent);
-    const story = await makeAppData();
+    const story = await makeAppData({ settings: { ...DEFAULT_SETTINGS, placementDone: true, story: true } }); // parked by default
     const a = renderWithApp(<HomeScreen />, story);
     await screen.findByText('今天的练习');
     expect(names()).toContain('看图说话');
@@ -69,6 +69,23 @@ describe('the lesson path names the speaking step by today\'s activity', () => {
     renderWithApp(<HomeScreen />, reading);
     await screen.findByText('今天的练习');
     expect(names()).toContain('朗读');
+  });
+});
+
+describe('看图说话 parked (the default)', () => {
+  it('the path says 朗读 when there is something to read, and leaves the speaking stop out when there is not', async () => {
+    const names = () => [...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent);
+    const reading = await makeAppData();
+    await saveParentPassage(reading.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
+    const a = renderWithApp(<HomeScreen />, reading);
+    await screen.findByText('今天的练习');
+    expect(names()).toContain('朗读');
+    expect(names()).not.toContain('看图说话');
+    a.unmount();
+    renderWithApp(<HomeScreen />, await makeAppData());
+    await screen.findByText('今天的练习');
+    expect(names()).not.toContain('朗读');
+    expect(names()).not.toContain('看图说话');
   });
 });
 

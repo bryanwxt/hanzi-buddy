@@ -2,8 +2,10 @@ import { SCENES_KT, type Scene } from './scenes';
 
 export type SpeakingKind = 'langdu' | 'story';
 
-/** The speaking step alternates 朗读 and 看图说话, starting with a story; 朗读 with nothing to read hands over to a story. */
-export function nextSpeaking(last: SpeakingKind | null, langduAvailable: boolean): SpeakingKind {
+/** 看图说话 is parked (settings.story off): the speaking step is 朗读, or nothing when there's nothing to read.
+ *  Switched on, it alternates 朗读 and 看图说话, starting with a story; 朗读 with nothing to read hands over to a story. */
+export function nextSpeaking(last: SpeakingKind | null, langduAvailable: boolean, storyOn = false): SpeakingKind | null {
+  if (!storyOn) return langduAvailable ? 'langdu' : null;
   if (!langduAvailable) return 'story';
   return last === 'story' ? 'langdu' : 'story';
 }

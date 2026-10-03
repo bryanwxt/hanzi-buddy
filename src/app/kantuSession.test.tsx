@@ -18,7 +18,7 @@ const speakingOnly = { ...DEFAULT_SETTINGS.activities, flashcards: false, writin
 
 async function setup(kid: Partial<typeof DEFAULT_KID>, withPassage = true) {
   const app = await makeAppData({ now: () => new Date(2026, 9, 6, 17) });
-  await updateSettings(app.db, { activities: speakingOnly });
+  await updateSettings(app.db, { activities: speakingOnly, story: true }); // 看图说话 is parked by default; these tests switch it on
   if (withPassage) await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
   await saveKid(app.db, { ...DEFAULT_KID, ...kid });
   return app;
@@ -91,5 +91,24 @@ describe('the dino egg hatches after a finished lesson', () => {
     renderWithApp(<SessionScreen free />, app);
     await new Promise((r) => setTimeout(r, 300));
     expect((await getKid(app.db))!.finds.dinoHatched).toBe(false);
+  });
+});
+
+describe('看图说话 is parked by default', () => {
+  it('a fresh profile gets 朗读, not a story', async () => {
+    const app = await makeAppData({ now: () => new Date(2026, 9, 6, 17) });
+    await updateSettings(app.db, { activities: speakingOnly });
+    await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
+    await saveKid(app.db, { ...DEFAULT_KID });
+    renderWithApp(<SessionScreen free={false} />, app);
+    expect(await screen.findByText('老师好！')).toBeTruthy();
+    expect(screen.queryByText('图上画的是什么？')).toBeNull();
+  });
+  it('with nothing to read, the speaking step is skipped', async () => {
+    const app = await makeAppData({ now: () => new Date(2026, 9, 6, 17) });
+    await updateSettings(app.db, { activities: speakingOnly });
+    await saveKid(app.db, { ...DEFAULT_KID });
+    renderWithApp(<SessionScreen free={false} />, app);
+    expect(await screen.findByText('太棒了！')).toBeTruthy();
   });
 });

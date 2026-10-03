@@ -97,8 +97,6 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   const todaySession = data.sessions.find((s) => s.date === today && !s.free);
   const doneToday = !!todaySession?.completed;
   const chestOpened = k.lastChestDate === today;
-  const steps = todaySession?.plan.steps ?? STEP_ORDER.filter((s) => settings.activities[s]);
-  const nodes = pathNodes(steps, todaySession?.completedSteps ?? [], chestOpened, doneToday);
   const hasCards = data.know.cards.some((c) => c.kind === 'recognise');
   const days = streak(data.sessions, today);
   const wotd = wordOfTheDay({
@@ -108,6 +106,10 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   });
   const world = currentWorld(k);
   const canRead = !!pickPassage(k.reading, readingPool(data.parentPassages, PASSAGES, data.know.knownChars), today);
+  // what the speaking stop is today: what he did, once done; otherwise what comes next (朗读 while 看图说话 is parked, or nothing to read)
+  const speakingKind = todaySession?.completedSteps.includes('speaking') ? k.speakingLast ?? 'langdu' : nextSpeaking(k.speakingLast, canRead, settings.story);
+  const steps = todaySession?.plan.steps ?? STEP_ORDER.filter((s) => settings.activities[s] && (s !== 'speaking' || speakingKind !== null));
+  const nodes = pathNodes(steps, todaySession?.completedSteps ?? [], chestOpened, doneToday);
   const wotdWord = wotd ? data.know.wordsById.get(`b:${wotd}`) : undefined;
   const wotdExample = wotdWord ? pickExample(wotdWord)?.example ?? null : null;
   const play = (free: boolean) => {
@@ -192,7 +194,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>
         <TodayPath
-          speakingName={(todaySession?.completedSteps.includes('speaking') ? k.speakingLast ?? 'story' : nextSpeaking(k.speakingLast, canRead)) === 'story' ? '看图说话' : '朗读'}
+          speakingName={speakingKind === 'story' ? '看图说话' : '朗读'}
           nodes={nodes}
           started={!!todaySession}
           onStart={() => play(false)}

@@ -73,10 +73,10 @@ export function SessionScreen({ free }: { free: boolean }) {
         speaking: (() => {
           const k = kid ?? DEFAULT_KID;
           const passage = pickPassage(k.reading, readingPool(parentPassages, PASSAGES, know.knownChars), localDateKey(today));
-          // 朗读 and 看图说话 take turns; with nothing to read, it's a story
-          return passage && nextSpeaking(k.speakingLast, true) === 'langdu'
-            ? { kind: 'langdu' as const, passage, oral: settings.oral }
-            : { kind: 'story' as const, scene: sceneFor(k.story) };
+          // 朗读; 看图说话 only when switched back on (it's parked). Nothing to run: the step is skipped.
+          const kind = nextSpeaking(k.speakingLast, !!passage, settings.story);
+          if (kind === 'langdu' && passage) return { kind: 'langdu' as const, passage, oral: settings.oral };
+          return kind === 'story' ? { kind: 'story' as const, scene: sceneFor(k.story) } : null;
         })(),
       });
     })();
