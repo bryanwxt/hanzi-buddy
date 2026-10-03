@@ -25,12 +25,22 @@ export function recordingSupported(): boolean {
   return typeof MediaRecorder !== 'undefined' && !!MediaRecorder && !!navigator.mediaDevices?.getUserMedia;
 }
 
-/** Reads the microphone level (RMS) every 100 ms from the same stream; null when Web Audio is unavailable. */
-function startLevels(stream: MediaStream, onLevel: (level: number) => void): { stop(): void; levels: number[] } | null {
+/** Made during the tap, before the microphone prompt: iPad Safari only lets audio start inside a user gesture. */
+function openMeterContext(): AudioContext | null {
   try {
     const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return null;
     const ctx = new Ctx();
+    void ctx.resume?.().catch(() => {});
+    return ctx;
+  } catch {
+    return null; // never block a recording on the meter
+  }
+}
+
+/** Reads the microphone level (RMS) every 100 ms from the recording's stream. */
+function startLevels(ctx: AudioContext, stream: MediaStream, onLevel: (level: number) => void): { stop(): void; levels: number[] } | null {
+  try {
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 1024;
     ctx.createMediaStreamSource(stream).connect(analyser);
@@ -50,15 +60,18 @@ function startLevels(stream: MediaStream, onLevel: (level: number) => void): { s
       },
     };
   } catch {
-    return null; // never block a recording on the meter
+    void ctx.close().catch(() => {});
+    return null;
   }
 }
 
 export async function startRecording(onAutoStop: () => void, onLevel?: (level: number) => void): Promise<ActiveRecording> {
+  const meterCtx = onLevel ? openMeterContext() : null;
   let stream: MediaStream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (e) {
+    void meterCtx?.close().catch(() => {});
     if (e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) throw new MicDeniedError();
     throw e;
   }
@@ -70,7 +83,7 @@ export async function startRecording(onAutoStop: () => void, onLevel?: (level: n
   };
   const started = Date.now();
   const timer = setTimeout(onAutoStop, MAX_RECORDING_MS);
-  const meter = onLevel ? startLevels(stream, onLevel) : null;
+  const meter = onLevel && meterCtx ? startLevels(meterCtx, stream, onLevel) : null;
   const release = () => {
     clearTimeout(timer);
     meter?.stop();

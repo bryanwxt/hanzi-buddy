@@ -3,7 +3,9 @@
 *字己 = 自己学汉字* — a pun on 自己 (zìjǐ, "by myself"): Chinese-character practice a child does on his own.
 
 A home-screen iPad app for daily Chinese character practice (P2 → P3), used by the child alone:
-spaced-repetition flashcards, 听写 writing, a components fishing game, and speaking recordings,
+spaced-repetition flashcards, 听写 writing, a components fishing game, and a 朗读 reading-aloud coach
+(exam-etiquette warm-up with his self-introduction, echo reading by phrase, a full read with a loudness meter,
+the same passage for 3 days; parents add school texts and mark misread characters, which return as priority words),
 with **Truffle 松露** — the family's grumpy grey-and-white cat — as the mascot: he starts every session
 unimpressed and warms up as the child gets answers right.
 Learning a radical family (氵 水, 火, 木, 金, 土, 口, 亻, 讠, 辶, 心, 日) gives Truffle a power in three tiers, and every

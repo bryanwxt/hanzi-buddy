@@ -32,6 +32,7 @@ type Part = 'warmup' | 'echo' | 'read' | 'listen';
 type MicState = 'ready' | 'recording' | 'done' | 'blocked';
 
 const BLOCKED_NOTE = '麦克风没有打开。我们下次再录！';
+const HEARD = 0.002; // above a working microphone's noise floor; a suspended meter reads exactly 0
 
 /** One recording at a time, with an optional live level; a refused or missing mic becomes 'blocked', never an error. */
 function useRecorder() {
@@ -39,6 +40,7 @@ function useRecorder() {
   const [result, setResult] = useState<FinishedRecording | null>(null);
   const [level, setLevel] = useState(0);
   const [quietMs, setQuietMs] = useState(0);
+  const [heard, setHeard] = useState(false); // a real level has arrived: until then no meter, so a silent meter never nags
   const active = useRef<ActiveRecording | null>(null);
   const series = useRef<{ at: number; level: number }[]>([]);
   useEffect(() => () => active.current?.cancel(), []);
@@ -61,6 +63,7 @@ function useRecorder() {
               series.current.push({ at: now, level: l });
               setLevel(l);
               setQuietMs(quietFor(series.current, now));
+              if (l > HEARD) setHeard(true);
             }
           : undefined,
       );
@@ -73,9 +76,10 @@ function useRecorder() {
     setResult(null);
     setLevel(0);
     setQuietMs(0);
+    setHeard(false);
     setState((s) => (s === 'blocked' ? s : 'ready'));
   };
-  return { state, result, level, quietMs, start, stop, reset };
+  return { state, result, level, quietMs, heard, start, stop, reset };
 }
 
 function MicButton({ rec, withLevel }: { rec: ReturnType<typeof useRecorder>; withLevel: boolean }) {
@@ -91,7 +95,7 @@ function MicButton({ rec, withLevel }: { rec: ReturnType<typeof useRecorder>; wi
   if (rec.state === 'recording') {
     return (
       <>
-        {withLevel && <LoudnessMeter level={rec.level} quietMs={rec.quietMs} />}
+        {withLevel && rec.heard && <LoudnessMeter level={rec.level} quietMs={rec.quietMs} />}
         <button type="button" class="mic-btn is-recording" onClick={() => void rec.stop()}>
           <span class="rec-dot" />
           <Label zh="停止" />

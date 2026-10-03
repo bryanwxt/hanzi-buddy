@@ -109,4 +109,14 @@ describe('LangduStep', () => {
     expect(screen.getByText('老师好！')).toBeTruthy();
     expect(screen.queryByText(/我叫/)).toBeNull();
   });
+  it('shows no meter and no 大声一点 until a real level arrives (a silent or blocked meter never nags)', async () => {
+    vi.mocked(startRecording).mockImplementation(async () => ({ stop: async () => ({ blob: new Blob(['x']), mime: 'audio/mp4', durationSec: 5 }), cancel: vi.fn() }));
+    render(<LangduStep passage={passage} oral={oral} warmups={0} knownChars={new Set()} kid={DEFAULT_KID} withWarmup={false} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByText('下一句'));
+    fireEvent.click(screen.getByText('开始朗读'));
+    fireEvent.click(screen.getByText('开始录音'));
+    await screen.findByText('停止');
+    expect(screen.queryByRole('meter')).toBeNull();
+    expect(screen.queryByText('大声一点！')).toBeNull();
+  });
 });

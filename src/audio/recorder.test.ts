@@ -48,4 +48,19 @@ describe('recording levels', () => {
     expect(close).toHaveBeenCalled();
     expect(track.stop).toHaveBeenCalled();
   });
+  it('creates the audio context during the tap, before waiting for the microphone (iPad Safari only starts audio in a gesture)', async () => {
+    const order: string[] = [];
+    vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: vi.fn(async () => { order.push('mic'); return { getTracks: () => [] }; }) } });
+    vi.stubGlobal('MediaRecorder', class { static isTypeSupported = () => true; mimeType = ''; state = 'inactive'; start() {} stop() {} });
+    vi.stubGlobal('AudioContext', class {
+      constructor() { order.push('ctx'); }
+      resume = vi.fn(async () => {});
+      createMediaStreamSource() { return { connect: () => {} }; }
+      createAnalyser() { return { fftSize: 4, getFloatTimeDomainData: () => {} }; }
+      close = vi.fn(async () => {});
+    });
+    const rec = await startRecording(() => {}, () => {});
+    expect(order).toEqual(['ctx', 'mic']);
+    rec.cancel();
+  });
 });

@@ -167,8 +167,8 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
           </div>
         )}
         {canRead && (
-          <button type="button" class="btn btn--secondary langdu-btn" aria-label="朗读" onClick={() => go({ name: 'langdu' })}>
-            <InkIcon name="mic" size={28} /> <Label zh="朗读" />
+          <button type="button" class="btn btn--secondary langdu-btn" aria-label="多读一遍" onClick={() => go({ name: 'langdu' })}>
+            <InkIcon name="mic" size={28} /> <Label zh="多读一遍" />
           </button>
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>

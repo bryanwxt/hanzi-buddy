@@ -20,12 +20,12 @@ vi.mock('../audio/recorder', () => ({
 const kid = { ...DEFAULT_KID, reading: { passageId: 'pp:1', days: 1, extra: 0, lastDay: '2026-10-01', lastRead: { 'pp:1': '2026-10-01' }, warmups: 3 } };
 
 describe('朗读 extra rounds', () => {
-  it("Home's 朗读 button opens an extra round of today's passage; it saves the read but leaves the cycle and stars alone", async () => {
+  it("Home's 多读一遍 button opens an extra round of today's passage; it saves the read but leaves the cycle and stars alone", async () => {
     const app = await makeAppData({ kid, now: () => new Date(2026, 9, 2, 17) });
     await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
     await saveKid(app.db, kid);
     const home = renderWithApp(<HomeScreen />, app);
-    fireEvent.click(await screen.findByRole('button', { name: '朗读' }));
+    fireEvent.click(await screen.findByRole('button', { name: '多读一遍' }));
     expect(app.go).toHaveBeenCalledWith({ name: 'langdu' });
     home.unmount();
 
@@ -47,10 +47,19 @@ describe('朗读 extra rounds', () => {
     expect(after.bonusStars).toBe(0);
   });
 
-  it('no 朗读 button when there is nothing to read', async () => {
+  it('no 多读一遍 button when there is nothing to read', async () => {
     const app = await makeAppData();
     renderWithApp(<HomeScreen />, app);
     await screen.findByText('今天的练习');
-    expect(screen.queryByRole('button', { name: '朗读' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '多读一遍' })).toBeNull();
+  });
+});
+
+describe('the lesson path names the step 朗读', () => {
+  it('shows 朗读 for the reading step', async () => {
+    const app = await makeAppData();
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect([...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent)).toContain('朗读');
   });
 });
