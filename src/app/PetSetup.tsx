@@ -22,7 +22,7 @@ export function PetSetup() {
       <Scene kind="home" />
       <div class="setup">
         <div class="setup__pet">
-          <h1 class="brand"><span class="seal seal--big">字己</span></h1>
+          <h1 class="brand" aria-label="字己"><span class="seal seal--big" aria-hidden="true"><span>字</span><span>己</span></span></h1>
           <div class="pet">
             {awake && <div class="pet__bubble">哼……我是松露。来吧！</div>}
             <button type="button" class="pet-button" aria-label="叫醒松露" onClick={() => setAwake(true)}>

@@ -30,6 +30,7 @@ describe('first launch', () => {
     renderWithApp(<PetSetup />, await makeAppData({ kid: null }));
     expect(screen.getByRole('heading', { name: '字己' })).toBeTruthy();
     expect(document.querySelector('.brand .seal')?.textContent).toBe('字己');
+    expect([...document.querySelectorAll('.brand .seal > span')].map((s) => s.textContent)).toEqual(['字', '己']); // stacked, not vertical text
     expect(document.querySelector('.pun')).toBeNull();
     expect(document.body.textContent).not.toContain('自己学汉字');
   });

@@ -100,3 +100,11 @@ describe('scene texture', () => {
     expect(css).toMatch(/\.world-scene::after, \.world-strip::after, \.grainy::after \{[^}]*mix-blend-mode: multiply/);
   });
 });
+
+describe('the 字己 seal', () => {
+  it('stacks its characters without vertical writing mode (WebKit pushes WenKai glyphs out of the red box)', () => {
+    const rules = [...css.matchAll(/\.seal[^{]*\{[^}]*\}/g)].map((m) => m[0]);
+    expect(rules.length).toBeGreaterThan(0);
+    expect(rules.filter((r) => /writing-mode:\s*vertical/.test(r))).toEqual([]);
+  });
+});

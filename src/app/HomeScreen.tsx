@@ -142,7 +142,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         </span>
       </header>
       <div class="home__week">
-        <span class="seal" aria-hidden="true">字己</span>
+        <span class="seal" aria-hidden="true"><span>字</span><span>己</span></span>
         <WeekStrip days={weekDays(data.sessions, today)} />
       </div>
       <main class="home__main">
