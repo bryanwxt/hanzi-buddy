@@ -266,3 +266,32 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - a failed save (storage full) leaves 完成 dead on the last screen; partial parts saved
 - KEEP=100 counts parts, so the 'too many recordings' warning shows after ~12 stories; pruneOld can split a story group
 - test gaps — leaving mid-story (focus 3) and a double tap on 继续 aren't tested (both hold by construction)
+
+## Plan 7 — world tap fun
+
+### Rulings
+- Task 1: Ruling: normalizeFinds lives in fun/finds.ts (with the rules) and repo calls it; types.ts imports DEFAULT_FINDS from fun/finds (a value import into types, like DEFAULT_READING lives in types) — cost if wrong: none
+- Task 2: Ruling: gallery showed the goat's pale horns vanishing on cream — horns darkened to #8f8a93 — cost if wrong: art polish
+- Task 3: Ruling: drawings baked into the scene can't move, so the race lap is a second car zooming round the track, the submarine's tap is bubbles + a fish swimming past (spec: "it dives; fish follow"), and the rocket launch covers the drawn rocket with sky while a copy lifts off — cost if wrong: effects differ from the spec wording
+- Task 3: Ruling: browser check found every SVG animation already finished on tap (SMIL times from the <svg>'s load) — the layer rewinds its clock (setCurrentTime(0)) per effect (test RED→GREEN) — cost if wrong: none
+- Task 3: Ruling: browser check found the gem block, egg nest, sprinkler and pirate X under Home's path and Truffle (scene x 110–290) — those drawings moved to the open sides (sprinkler by the pool, gems to the right hill, nest under the mother dino, submarine left, X on the island's left) and the race starts from the chequered flag; a test pins every target outside x 110–290 (RED→GREEN) — cost if wrong: scenery layout differs from the approved mockup
+- Task 3: Ruling: Home content (topbar, week, main) is raised to z-index 1 with pass-through on its layout boxes; the tap layer is a fixed SVG at z-index 0 (CSS contract RED→GREEN); verified path tiles, word card and tab bar still win their taps — cost if wrong: none
+- Task 4: Ruling: the animals page is a 字卡 filter chip (动物, aria 找到的动物) that swaps the card grid for a 12-slot grid with the note 在草丛里找一找！; the gem jar sits at the top of the room's 地方 tab — cost if wrong: placement
+- Task 5: Ruling: the hatch runs in SessionScreen.commit when a daily record first becomes completed (re-reading the kid first), before Celebration mounts — cost if wrong: none
+- Final: Ruling: on-iPad SMIL check (Important 2) — can't be done here; the fresh-layer fix removes the setCurrentTime dependency, and the parent is asked to tap grass/blocks/space once on the iPad after release — cost if wrong: taps show only Truffle's bubble until fixed
+- Final: Ruling: face recognisability at 48 px, mockup layout drift, iOS double-tap zoom, Truffle overlapping the right gem block, millisecond save races (declined) — visual or negligible — cost if wrong: polish
+
+### Fixed in the final review
+- the day's gem wiped by a 5th tap — 'the popped gem stays up…' RED→GREEN (guard held 1400 ms after a pop), suite 446/446
+- reliance on setCurrentTime for SMIL — 'each effect plays in a fresh animation layer…' RED→GREEN (a keyed <svg> per effect starts its own clock; the setCurrentTime test removed), suite 446/446; Chromium-verified (rocket mid-flight)
+- egg over the hatched baby — 'once hatched, tapping the nest makes the baby hop…' RED→GREEN, suite 446/446
+- rocket leaving before 一 — 'the rocket waits for the countdown…' RED→GREEN (lift-off begins at 1.5 s; sky patch stops above the pad), suite 446/446
+- the red car not starting the race — 'tapping the red car starts the race too' RED→GREEN (second hit rect over the car's near half, x 86–110), suite 446/446
+
+### Deferred minors
+- gemTaps counter doesn't reset if Home stays open past midnight (first tap next day pops at once)
+- reduced-motion fish fades in mostly off-screen
+- the moved pirate X/dig puffs sit a few units above the sand edge
+- the gem jar's top row overflows the rim at 29–30 gems
+- spec flavour not built — yard: Truffle flinch-then-laugh (only the 哇！ bubble); pirate: Truffle digging
+- SessionScreen's `!rec?.completed` hatch guard is always true (harmless)
