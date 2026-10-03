@@ -653,3 +653,14 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .misread-ch.is-on { background: var(--orange-soft); border-color: var(--red); color: var(--orange-ink); text-decoration: underline wavy var(--red); }
 .misreads__done { color: var(--green-ink); font-weight: 700; }
 .asr__sample, .asr__heard { font-family: var(--hanzi); font-size: 26px; } .asr__heard mark { background: var(--orange-soft); color: var(--orange-ink); }
+
+/* ===== 看图说话 story builder (spec §17) ===== */
+.kantu { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+.kantu__pic { width: min(560px, 100%); aspect-ratio: 4 / 3; border: var(--panel-border); box-shadow: var(--panel-shadow); border-radius: var(--radius-lg); background: var(--paper); }
+.kantu__q { margin: 0; font-size: 28px; }
+.kantu__starter { margin: 0; font-size: 30px; font-family: var(--hanzi); background: var(--gold-soft); border: 2.5px dashed var(--ink); border-radius: 14px; padding: 6px 18px; }
+.kantu__note { margin: 0; font-size: 22px; }
+.kantu__words { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 620px; }
+.kantu__word { font-size: 20px; padding: 4px 12px; }
+.kantu__model { margin: 0; max-width: 640px; font-size: 24px; font-family: var(--hanzi); background: var(--surface); border: var(--panel-border); border-radius: var(--radius); padding: 10px 16px; }
+.kantu__hint { font-size: 20px; }
