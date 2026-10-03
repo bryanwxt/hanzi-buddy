@@ -307,3 +307,31 @@ Fixed, each with a test that failed first:
 - a full storage froze 完成 on the last story screen (and the 朗读 step): the recording is lost, the lesson goes on
 
 Still deferred: reduced-motion fish fades in mostly off-screen; yard/pirate Truffle flavour; the always-true hatch guard; plan 8's recorder/oral-field/ASR minors.
+
+## Plan 10 — adaptive layouts (spec §18) and 看图说话 parked
+
+Every child screen fits one screen, with no page scrolling, on an upright iPhone (from SE size) and an iPad either way round. A sideways phone shows Truffle asking for upright. 看图说话 is parked behind `settings.story` (off). `npm run fit` walks every child screen and lesson step in WebKit at 375×667, 390×844, 768×1024, 1024×768, 1180×820 and 667×375. It fails on page scroll, controls off screen or under 44px (main actions under 64/52px), Chinese under 16px, overlapping solid elements, and covered world taps. Final sweep: 221 screens, 0 problems.
+
+### Rulings
+- Plan: Ruling: Task 0 added (park 看图说话) at the parent's request in the message that chose Native — not in spec §18; settings.story (default false) keeps the code switchable — cost if wrong: one setting to remove
+- Plan: Ruling: 看图说话 dropped from the fit sweep and from Task 6's acceptance (parked; its flow will be redesigned) — Task 6's .kantu CSS still lands so the parked screen isn't broken if switched on — cost if wrong: kantu layout unchecked on phones until the rethink
+- Task 2: Ruling: tsx/esbuild wraps functions in __name(), which page.evaluate can't see — an init script defines window.__name — cost if wrong: none
+- Task 2: Ruling: seed waits for '.screen:not(.loading)' (the loading screen appeared before the DB existed) — cost if wrong: none
+- Task 2: Ruling: walker checks each distinct screen once (seen-set), walks through repeats up to 150 taps at 450ms, sizes run in parallel — the plan's "stop after 5 repeats" quit 朗读 after 3 of 20 phrases; sweep now ~4 min — cost if wrong: a state seen once per flow, not per word
+- Task 2: Ruling: LONG_PASSAGE extended to ≥160 chars (plan's text was 126) and playwright-core pinned exactly to 1.52.0 (caret could pull a WebKit build that isn't installed) — cost if wrong: none
+- Task 3: Ruling: the path is a row of stops (two rows were never needed), not the plan's vertical zigzag — 5 vertical stops + labels can't fit an SE or iPad landscape beside the cards; the mockup's vertical zigzag is gone — cost if wrong: parent may prefer the vertical path on iPad upright
+- Task 3: Ruling: everything on the ground stays inside --band (the middle half of the scene, 50vw) because the world taps sit in the scene's outer quarters — iPad landscape keeps ONE centred column (spec's two-column Home dropped), cards/path ≤ band — cost if wrong: landscape Home is narrower than it could be
+- Task 3: Ruling: .world-scene height is min(100%, 133.33vw), anchored at the bottom with a soft top fade, so a tall phone never crops the world's sides (the race flag and gem block were off screen on iPhone 15) — cost if wrong: the very top of a tall phone shows plain paper sky
+- Task 3: Ruling: phone Home: the week strip sits in the top bar; the seal, 松露认识N个字 and the 今天的练习 title are hidden; the path is one full-width row in the sky (above the ground's targets); once today is done (.home--done) the all-ticked path is hidden — cost if wrong: the known-count isn't on a phone's Home (still in the parent area)
+- Task 3: Ruling: the reward goal is a single row everywhere; 多读一遍 sits beside the word card; the 今日一字 tag is a corner sticker; iPad landscape hides the 今天的练习 title — cost if wrong: none (layout only)
+- Task 3: Ruling: sweep gained an overlap check (solid elements incl. headings) and a FIT_ONLY filter, and world-tap reports carry coordinates — the eye caught a path drawn over the cards that no size/scroll check saw — cost if wrong: none
+- Task 4: Ruling: removed WorldStrip, STRIP_VIEW and their tests (strip-framing, see-through-strip-bar, grain selector), and the old `.home .world-scene { bottom: 80px }` test now pins var(--nav-h) — no users left; the full scene replaces them — cost if wrong: none
+- Task 4: Ruling: the sweep skips `.is-eaten` (the answer shrinking into Truffle mid-animation looked like a 54×15 button) — cost if wrong: none
+- Task 4: Ruling: phone feedback card: no badge, nowrap labels, fixed-width 继续, smaller 🔊; dimmed answers stay solid paper (opacity 1, muted ink) so scenery doesn't show through — cost if wrong: dimmed answers look slightly less faded
+- Task 5: Ruling: the 开始/继续 bubble on the current path stop let taps through (`.home .path__row > .path__bubble { pointer-events: none }`) — the sweep found it intercepting the tap on 钓鱼's stop; a child tapping the bubble now starts the step — cost if wrong: none
+- Task 5: Ruling: 钓鱼 on phones gets the 认一认 treatment (small Truffle top-left, bubble beside, smaller big character); the writing cue gets a paper card (it sat on bare scenery in landscape) — cost if wrong: layout only
+- Task 5: Ruling: sweep crash messages keep 900 chars (160 hid the intercepting element) — cost if wrong: none
+- Task 6: Ruling: 朗读 text that sits on the scene gets paper (the warm-up script as a card; title/step/ok/thanks as paper chips) and the phone warm-up gets the small-Truffle row — the landscape warm-up had the flag running through 我叫小明 — cost if wrong: layout only
+- Task 7: Ruling: the overlap probe clips each element to the scroll panel it sits in (cards scrolled out of 字卡's panel read as overlapping the tab bar) — cost if wrong: none
+- Task 7: Ruling: PetSetup's Truffle is 1.5× --pet (tiny on the SE with room to spare) — cost if wrong: none
+- Task 8: Ruling: 再玩一会儿 and 今天完成了 keep to one line (nowrap; smaller on phones) — the tall-iPhone screenshot showed 儿 on its own line — cost if wrong: none

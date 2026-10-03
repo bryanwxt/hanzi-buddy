@@ -961,3 +961,6 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
   .room > .room__tabs { grid-column: 2; }
   .room > [role="tabpanel"] { grid-column: 2; height: 100%; }
 }
+.home__cards .done-card .btn { flex: none; } .home__cards .done-card .label__cells { flex-wrap: nowrap; } /* 再玩一会儿 on one line */
+.home__cards .done-today { min-width: 0; }
+@media (max-width: 599px) { .home__cards .done-today .label__cells { flex-wrap: nowrap; } .home__cards .done-today { font-size: 17px; } }
