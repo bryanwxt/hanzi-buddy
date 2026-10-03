@@ -107,8 +107,11 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   const world = currentWorld(k);
   const canRead = !!pickPassage(k.reading, readingPool(data.parentPassages, PASSAGES, data.know.knownChars), today);
   // what the speaking stop is today: what he did, once done; otherwise what comes next (朗读 while 看图说话 is parked, or nothing to read)
-  const speakingKind = todaySession?.completedSteps.includes('speaking') ? k.speakingLast ?? 'langdu' : nextSpeaking(k.speakingLast, canRead, settings.story);
-  const steps = todaySession?.plan.steps ?? STEP_ORDER.filter((s) => settings.activities[s] && (s !== 'speaking' || speakingKind !== null));
+  // 看图说话 parked: the stop is 朗读 when there's something to read (or he read today), and left off the path otherwise (the lesson skips it)
+  const speakingKind = settings.story
+    ? todaySession?.completedSteps.includes('speaking') ? k.speakingLast ?? 'story' : nextSpeaking(k.speakingLast, canRead, true)
+    : canRead || k.reading.lastDay === today ? 'langdu' : null;
+  const steps = (todaySession?.plan.steps ?? STEP_ORDER.filter((s) => settings.activities[s])).filter((s) => s !== 'speaking' || speakingKind !== null);
   const nodes = pathNodes(steps, todaySession?.completedSteps ?? [], chestOpened, doneToday);
   const wotdWord = wotd ? data.know.wordsById.get(`b:${wotd}`) : undefined;
   const wotdExample = wotdWord ? pickExample(wotdWord)?.example ?? null : null;

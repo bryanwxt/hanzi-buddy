@@ -106,9 +106,36 @@ describe('看图说话 parked (the default)', () => {
   });
 });
 
-describe('the path after the day is done', () => {
-  it('names the activity he actually did today, not tomorrow\'s', async () => {
+describe('看图说话 parked: the path matches what the lesson does', () => {
+  const names = () => [...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent);
+  const plan = { steps: ['flashcards' as const, 'speaking' as const], reviewWordIds: [], newWordIds: [], flashTimeBoxMs: 0, writeCandidates: [], writeCount: 0 };
+  it('a started lesson with nothing to read shows no speaking stop (the lesson skips it)', async () => {
+    const app = await makeAppData({ now: () => new Date(2026, 9, 6, 18) });
+    await saveSession(app.db, { ...createSessionRecord(plan, '2026-10-06', 0) });
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(names()).not.toContain('朗读');
+    expect(names()).not.toContain('看图说话');
+  });
+  it('a skipped speaking step is never shown as a ticked 看图说话 (it is parked)', async () => {
     const app = await makeAppData({ kid: { ...DEFAULT_KID, speakingLast: 'story' }, now: () => new Date(2026, 9, 6, 18) });
+    await saveSession(app.db, { ...createSessionRecord(plan, '2026-10-06', 0), completed: true, completedSteps: ['flashcards', 'speaking'] });
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(names()).not.toContain('看图说话');
+  });
+  it('a 朗读 he read today stays on the path, named 朗读', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, speakingLast: 'langdu', reading: { ...DEFAULT_KID.reading, lastDay: '2026-10-06' } }, now: () => new Date(2026, 9, 6, 18) });
+    await saveSession(app.db, { ...createSessionRecord(plan, '2026-10-06', 0), completed: true, completedSteps: ['flashcards', 'speaking'] });
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(names()).toContain('朗读');
+  });
+});
+
+describe('the path after the day is done', () => {
+  it('names the activity he actually did today, not tomorrow\'s (看图说话 switched on)', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, speakingLast: 'story' }, now: () => new Date(2026, 9, 6, 18), settings: { ...DEFAULT_SETTINGS, placementDone: true, story: true } });
     await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
     const plan = { steps: ['speaking' as const], reviewWordIds: [], newWordIds: [], flashTimeBoxMs: 0, writeCandidates: [], writeCount: 0 };
     await saveSession(app.db, { ...createSessionRecord(plan, '2026-10-06', 0), completed: true, completedSteps: ['speaking'] });
