@@ -5,3 +5,4 @@ scripts/.cache/
 .DS_Store
 *.local
 .superpowers/
+fit-shots/
