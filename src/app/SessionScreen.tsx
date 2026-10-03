@@ -6,6 +6,7 @@ import { FlashcardStep, type FlashResult } from '../activities/flashcards/Flashc
 import { LangduStep, type LangduResult } from '../activities/langdu/LangduStep';
 import { StoryStep, type StoryResult } from '../activities/kantu/StoryStep';
 import { afterStory, nextSpeaking, sceneFor } from '../kantu/flow';
+import { hatchAfterLesson } from '../fun/finds';
 import { STORY_PARTS, type Scene } from '../kantu/scenes';
 import type { FinishedRecording } from '../audio/recorder';
 import { pickPassage, readingPool, finishDay, type ReadingPassage } from '../langdu/cycle';
@@ -90,6 +91,14 @@ export function SessionScreen({ free }: { free: boolean }) {
 
   const commit = async (next: SessionRecord) => {
     if (!next.free) await saveSession(db, next);
+    if (!next.free && next.completed && !rec?.completed) {
+      // a finished daily lesson hatches a dino egg he tapped in 恐龙谷
+      const fresh = await getKid(db);
+      if (fresh) {
+        const finds = hatchAfterLesson(fresh.finds);
+        if (finds !== fresh.finds) await saveKid(db, { ...fresh, finds });
+      }
+    }
     stepStartedAt.current = performance.now();
     setState((s) => (s ? { ...s, rec: next } : s));
   };

@@ -64,3 +64,21 @@ describe('speaking step alternation', () => {
     expect(screen.getByRole('img', { name: '捡到钱包' })).toBeTruthy();
   });
 });
+
+describe('the dino egg hatches after a finished lesson', () => {
+  it('a tapped egg hatches when today\'s lesson completes', async () => {
+    const app = await setup({ finds: { ...DEFAULT_KID.finds, eggTapped: true } });
+    renderWithApp(<SessionScreen free={false} />, app);
+    await screen.findByText('图上画的是什么？');
+    await tellStory();
+    await screen.findByText('太棒了！');
+    await waitFor(async () => expect((await getKid(app.db))!.finds.dinoHatched).toBe(true));
+  });
+  it('free play does not hatch it', async () => {
+    const app = await setup({ finds: { ...DEFAULT_KID.finds, eggTapped: true } });
+    await saveKid(app.db, { ...(await getKid(app.db))!, finds: { ...DEFAULT_KID.finds, eggTapped: true } });
+    renderWithApp(<SessionScreen free />, app);
+    await new Promise((r) => setTimeout(r, 300));
+    expect((await getKid(app.db))!.finds.dinoHatched).toBe(false);
+  });
+});
