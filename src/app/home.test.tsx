@@ -252,3 +252,19 @@ describe('HomeScreen week and word of the day', () => {
     expect(document.querySelector('.wotd__example .label')?.getAttribute('data-py')).toBe('tā men');
   });
 });
+
+describe("Truffle's room places", () => {
+  it('lists all eight worlds, picks a reached one, and shows how far the locked ones are', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, worldsSeen: ['yard', 'grass', 'race'] } });
+    renderWithApp(<Wardrobe />, app);
+    fireEvent.click(await screen.findByRole('tab', { name: '地方' }));
+    const places = [...document.querySelectorAll('button.place')];
+    expect(places).toHaveLength(8);
+    expect(places.filter((p) => (p as HTMLButtonElement).disabled)).toHaveLength(5);
+    expect(places[2]!.getAttribute('aria-pressed')).toBe('true'); // newest by default
+    expect(places[3]!.textContent).toContain('100');
+    fireEvent.click(places[1]!);
+    await waitFor(async () => expect((await getKid(app.db))?.world).toBe('grass'));
+    expect(places[1]!.getAttribute('aria-pressed')).toBe('true');
+  });
+});

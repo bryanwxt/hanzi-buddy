@@ -13,8 +13,10 @@ import { TabBar } from '../ui/TabBar';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 import { InkIcon } from '../ui/icons/InkIcon';
+import { currentWorld, WORLDS } from '../fun/worlds';
+import { SCENES } from '../ui/worlds/scenes';
 
-type RoomTab = 'outfits' | 'powers';
+type RoomTab = 'outfits' | 'powers' | 'places';
 
 const SLOT_TITLE = { face: '脸上', neck: '脖子上', held: '手里', back: '背上' } as const;
 
@@ -43,6 +45,7 @@ export function Wardrobe() {
         <div class="room__tabs" role="tablist" aria-label="松露的房间">
           <button type="button" role="tab" aria-selected={tab === 'outfits'} class={`chip ${tab === 'outfits' ? 'is-on' : ''}`} onClick={() => setTab('outfits')}>服装</button>
           <button type="button" role="tab" aria-selected={tab === 'powers'} class={`chip ${tab === 'powers' ? 'is-on' : ''}`} onClick={() => setTab('powers')}>能力</button>
+          <button type="button" role="tab" aria-selected={tab === 'places'} class={`chip ${tab === 'places' ? 'is-on' : ''}`} onClick={() => setTab('places')}>地方</button>
         </div>
         {tab === 'outfits' ? (
           <div class="outfits" role="tabpanel">
@@ -98,6 +101,28 @@ export function Wardrobe() {
                 </div>
               </section>
             ))}
+          </div>
+        ) : tab === 'places' ? (
+          <div class="places" role="tabpanel">
+            {WORLDS.map((w) => {
+              const reached = w.id === 'yard' || k.worldsSeen.includes(w.id);
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  class={`place ${reached ? '' : 'is-locked'}`}
+                  aria-pressed={currentWorld(k) === w.id}
+                  disabled={!reached}
+                  onClick={() => void save({ ...k, world: w.id })}
+                >
+                  <svg class="place__thumb" viewBox="0 160 360 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true" dangerouslySetInnerHTML={{ __html: SCENES[w.id] }} />
+                  <Label zh={w.zh} />
+                  {!reached && (
+                    <span class="place__lock"><InkIcon name="lock" size={20} /> <Label zh={`${w.at} 个字`} /></span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         ) : (
           <div class="powers" role="tabpanel">
