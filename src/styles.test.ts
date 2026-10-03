@@ -22,6 +22,16 @@ describe('ink layer contracts (paint rules jsdom cannot see)', () => {
   });
 });
 
+describe('pinyin labels', () => {
+  it('every character gets the same slot, so 完成 is not pushed apart by a long syllable', () => {
+    expect(css).toMatch(/\.label__cell--zh \{[^}]*min-width: 1\.3em/);
+    expect(css).not.toMatch(/\.label__py \{[^}]*margin: 0 -/); // no overhang: neighbouring syllables must never touch
+  });
+  it('the home corner lines labels up on their bottoms', () => {
+    expect(css).toMatch(/\.home__who \{[^}]*align-items: flex-end/);
+  });
+});
+
 describe('collection contrast', () => {
   it('stars on gold cards are ink, not gold-on-gold', () => {
     expect(css).toMatch(/\.card--gold \.zika__stars \{[^}]*color: var\(--ink\)/);

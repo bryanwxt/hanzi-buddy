@@ -142,9 +142,9 @@ describe("Truffle's room outfit details", () => {
   it('shows pinyin on costume and accessory names and toggles accessories', async () => {
     const app = await makeAppData({ kid: { ...DEFAULT_KID, ownedCostumes: ['tiger'], outfit: 'tiger', ownedAccessories: ['medal'], wearing: null } });
     renderWithApp(<Wardrobe />, app);
-    expect(screen.getByRole('button', { name: '虎' }).querySelector('.label__py')?.textContent).toBe('hǔ');
+    expect(screen.getByRole('button', { name: '虎' }).querySelector('.label')?.getAttribute('data-py')).toBe('hǔ');
     const crown = screen.getByRole('button', { name: '金牌' });
-    expect(crown.querySelector('.label__py')?.textContent).toBe('jīn pái');
+    expect(crown.querySelector('.label')?.getAttribute('data-py')).toBe('jīn pái');
     fireEvent.click(crown);
     await waitFor(async () => expect((await getKid(app.db))?.wearing).toBe('medal'));
     expect(crown.getAttribute('aria-pressed')).toBe('true');
@@ -181,6 +181,8 @@ describe('HomeScreen Truffle', () => {
     await screen.findByText('今天的练习');
     expect(document.querySelector('svg.truffle')?.getAttribute('data-mood')).toBe('sulk');
     expect(document.querySelector('.home__who')?.textContent).toContain('松露');
+    // name and count are both pinyin labels, so their two rows line up in the corner
+    expect([...document.querySelectorAll('.home__who .label')].map((l) => l.getAttribute('data-py'))).toEqual(['sōng lù', expect.stringMatching(/^rèn shi \d+ gè zì$/)]);
   });
   it('dozes off when left alone and wakes on a tap', async () => {
     const app = await makeAppData();

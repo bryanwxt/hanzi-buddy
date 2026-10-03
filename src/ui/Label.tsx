@@ -1,13 +1,36 @@
 import { pinyin } from 'pinyin-pro';
 import { useMemo } from 'preact/hooks';
 
-/** Chinese text with its pinyin shown small above it, for a P2 reader. */
+interface Cell {
+  py: string;
+  ch: string;
+}
+
+/** Chinese text with each syllable shown small directly above its own character, for a P2 reader. */
 export function Label({ zh }: { zh: string }) {
-  const py = useMemo(() => pinyin(zh, { nonZh: 'consecutive' }).replace(/\s+/g, ' ').trim(), [zh]);
+  const { cells, py } = useMemo(() => {
+    const out: Cell[] = [];
+    for (const d of pinyin(zh, { type: 'all' })) {
+      if (d.isZh) out.push({ py: d.pinyin, ch: d.origin });
+      else if (out.length && out[out.length - 1]!.py === '') out[out.length - 1]!.ch += d.origin; // keep "45" or "！" runs together
+      else out.push({ py: '', ch: d.origin });
+    }
+    // data-py: the syllables plus any numbers or Latin text, without punctuation
+    const py = out.map((c) => c.py || (/[\p{L}\p{N}]/u.test(c.ch) ? c.ch.trim() : '')).filter(Boolean).join(' ');
+    return { cells: out, py };
+  }, [zh]);
   return (
-    <span class="label">
-      <small class="label__py">{py}</small>
-      <span class="label__zh">{zh}</span>
+    <span class="label" data-py={py}>
+      {/* one cell already reads as the whole text; several get a single readable copy so 你好 isn't read 你…好 */}
+      {cells.length > 1 && <span class="sr-only">{zh}</span>}
+      <span class="label__cells" aria-hidden={cells.length > 1 ? 'true' : undefined}>
+        {cells.map((c, i) => (
+          <span key={i} class={c.py ? 'label__cell label__cell--zh' : 'label__cell'}>
+            <small class="label__py" aria-hidden="true">{c.py}</small>
+            <span class="label__ch">{c.ch}</span>
+          </span>
+        ))}
+      </span>
     </span>
   );
 }

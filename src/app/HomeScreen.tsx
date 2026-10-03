@@ -91,7 +91,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         <span class="stat stat--star" aria-label={`${stars} 颗星`}><Star size={24} strokeWidth={2.75} /> {stars}</span>
         <span class="spacer" />
         <span class="home__who">
-          <strong>松露</strong>
+          <strong><Label zh="松露" /></strong>
           <Label zh={`认识 ${data.know.known} 个字`} />
         </span>
       </header>

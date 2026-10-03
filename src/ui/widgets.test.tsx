@@ -10,10 +10,15 @@ vi.mock('../audio/speech', () => ({ speak: vi.fn() }));
 import { speak } from '../audio/speech';
 
 describe('widgets', () => {
-  it('Label shows pinyin above the Chinese', () => {
-    const { container } = render(<Label zh="你好" />);
-    expect(container.querySelector('.label__py')?.textContent).toBe('nǐ hǎo');
-    expect(screen.getByText('你好')).toBeTruthy();
+  it('Label puts each syllable directly above its own character', () => {
+    const { container } = render(<Label zh="你好！" />);
+    const cells = [...container.querySelectorAll('.label__cell')];
+    expect(cells.map((c) => [c.querySelector('.label__py')?.textContent, c.querySelector('.label__ch')?.textContent])).toEqual([
+      ['nǐ', '你'], ['hǎo', '好'], ['', '！'],
+    ]);
+    expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('nǐ hǎo');
+    expect(cells.map((c) => c.classList.contains('label__cell--zh'))).toEqual([true, true, false]);
+    expect(screen.getByText('你好！')).toBeTruthy(); // the whole phrase stays readable as one piece of text
   });
 
   it("Pet is Truffle wearing the kid's accessory, with a bubble", () => {
@@ -41,14 +46,15 @@ describe('widgets', () => {
 describe('Label digits', () => {
   it('keeps numbers together in the pinyin line', () => {
     const { container } = render(<Label zh="我认识 45 个字" />);
-    expect(container.querySelector('.label__py')?.textContent).toBe('wǒ rèn shi 45 gè zì');
+    expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('wǒ rèn shi 45 gè zì');
+    expect([...container.querySelectorAll('.label__ch')].map((c) => c.textContent)).toContain(' 45 ');
   });
 });
 
 describe('Pet bubble', () => {
   it('shows pinyin above the bubble words', () => {
     const { container } = render(<Pet kid={DEFAULT_KID} bubble="再想想" />);
-    expect(container.querySelector('.pet__bubble .label__py')?.textContent).toBe('zài xiǎng xiǎng');
+    expect(container.querySelector('.pet__bubble .label')?.getAttribute('data-py')).toBe('zài xiǎng xiǎng');
   });
 });
 

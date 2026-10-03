@@ -111,8 +111,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .icon-btn:active { transform: scale(0.92); }
 
 /* Text */
-.label { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; }
-.label__py { font-size: 0.55em; font-weight: 800; opacity: 0.7; letter-spacing: 0.01em; }
+.label { display: inline-flex; line-height: 1.15; }
+.label__cells { display: inline-flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; }
+.label__cell { display: inline-flex; flex-direction: column; align-items: center; }
+.label__cell--zh { min-width: 1.3em; } /* one slot per character, wide enough for syllables up to four letters, so spacing stays even */
+.label__ch { white-space: pre; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.label__py { font-size: 0.5em; font-weight: 700; opacity: 0.75; min-height: 1.15em; padding: 0 0.1em; white-space: nowrap; }
 .hanzi { font-family: var(--hanzi); font-weight: 400; }
 .hanzi--xl { font-family: var(--hanzi); font-size: 150px; line-height: 1.05; font-weight: 400; }
 .pinyin { color: var(--ink-soft); font-size: 24px; font-weight: 800; }
@@ -291,7 +296,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @keyframes prize-rise { from { transform: translateY(70px) scale(0.3); opacity: 0; } }
 
 /* Home */
-.home__who { display: flex; align-items: center; gap: 10px; font-size: 22px; }
+.home__who { display: flex; align-items: flex-end; gap: 10px; font-size: 22px; }
 .home__main { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .home__title { margin: 6px 0 0; font-size: 30px; }
 .goal { display: flex; align-items: center; gap: 16px; padding: 12px 22px; width: min(92vw, 520px); background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 var(--edge) 0 var(--line); }
