@@ -280,3 +280,15 @@ describe('HomeScreen word of the day reading', () => {
     expect(document.querySelector('.wotd__example .label')?.getAttribute('data-py')).toBe('zhǎng dà');
   });
 });
+
+describe('HomeScreen world tap fun', () => {
+  it('tapping the tall grass finds an animal, saves it, and Truffle says so', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, worldsSeen: ['yard', 'grass'] } });
+    await saveKid(app.db, app.kid!);
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    fireEvent.click(document.querySelector('.world-taps [aria-label="草丛"]')!);
+    await waitFor(async () => expect((await getKid(app.db))?.finds.animals).toEqual(['rat']));
+    expect(document.querySelector('.pet__bubble .sr-only')?.textContent).toBe('找到了！');
+  });
+});

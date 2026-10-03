@@ -1,5 +1,5 @@
 import { Flame, Star, Volume2 } from 'lucide-preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { enterSafeScreen } from '../pwa';
 import { pinyin } from 'pinyin-pro';
 import { primeSpeech, speak } from '../audio/speech';
@@ -20,6 +20,7 @@ import { celebrate } from '../ui/confetti';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
 import { WorldScene } from '../ui/worlds/WorldScene';
+import { WorldTaps } from '../ui/worlds/WorldTaps';
 import { SCENE_VIEWBOX, SCENES } from '../ui/worlds/scenes';
 import { currentWorld, timeOfDay, updateWorlds, worldById, worldLine, type WorldId } from '../fun/worlds';
 import { TabBar } from '../ui/TabBar';
@@ -42,6 +43,9 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   const [data, setData] = useState<HomeData | null>(null);
   const [sleepy, setSleepy] = useState(false);
   const [arrival, setArrival] = useState<WorldId | null>(null);
+  const [said, setSaid] = useState<string | null>(null); // Truffle's reaction to a tap, for a moment
+  const saidTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(saidTimer.current), []);
   const [journeyKid, setJourneyKid] = useState<KidState | null>(null); // the kid as saved by the journey update, until the app refreshes
 
   useEffect(() => enterSafeScreen(), []);
@@ -114,6 +118,20 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   return (
     <div class="screen home">
       <WorldScene world={world} time={timeOfDay(now())} />
+      <WorldTaps
+        world={world}
+        kid={k}
+        today={today}
+        onKid={(next) => {
+          setJourneyKid(next);
+          void saveKid(db, next).then(refresh);
+        }}
+        onSay={(line) => {
+          setSaid(line);
+          clearTimeout(saidTimer.current);
+          saidTimer.current = setTimeout(() => setSaid(null), 2200);
+        }}
+      />
       <header class="topbar">
         <span class="stat stat--fire" aria-label={`连续 ${days} 天`}><Flame size={24} strokeWidth={2.75} /> {days}</span>
         <span class="stat stat--star" aria-label={`${stars} 颗星`}><Star size={24} strokeWidth={2.75} /> {stars}</span>
@@ -180,7 +198,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
           onStart={() => play(false)}
           pet={
             <button type="button" class="pet-button" aria-label="换装" onClick={() => go({ name: 'wardrobe' })}>
-              <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} bubble={sleepy ? null : worldLine(world, today)} />
+              <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} bubble={said ?? (sleepy ? null : worldLine(world, today))} />
             </button>
           }
         />
