@@ -185,7 +185,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
           <>
             <h1><Label zh="新能力！" /></h1>
             <p class="power-intro">
-              <span class="hanzi">{radical}</span> = <Label zh={meaning?.zh ?? def.name} /> {meaning?.emoji}
+              <span class="hanzi">{radical}</span> = <Label zh={meaning?.zh ?? def.name} /> {meaning && <InkIcon name={meaning.icon} size={44} />}
             </p>
             <Truffle
               mood={powered ? 'cheer' : 'neutral'}
@@ -204,7 +204,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
           <>
             <h1><Label zh="新徽章！" /></h1>
             <div class="badges stagger">
-              {seq.badges.map((b) => <span key={b} class="badge"><InkIcon name="medal" size={24} /> {b} {radicalMeaning(b)?.emoji}</span>)}
+              {seq.badges.map((b) => <span key={b} class="badge"><InkIcon name="medal" size={24} /> {b} {radicalMeaning(b) && <InkIcon name={radicalMeaning(b)!.icon} size={24} />}</span>)}
             </div>
           </>
         )}

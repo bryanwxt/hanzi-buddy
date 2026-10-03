@@ -93,7 +93,7 @@ export function ComponentsStep({ questions, kid, resting, onDone }: Props) {
             <div class="pond-q">
               <Label zh="钓出有" />
               <span class="pond-q__part hanzi">{q.component}</span>
-              {m && <span class="pond-q__meaning">{m.emoji} {m.zh}</span>}
+              {m && <span class="pond-q__meaning"><InkIcon name={m.icon} size={26} /> {m.zh}</span>}
               <Label zh="的字" />
             </div>
             <div class="pond">
@@ -121,7 +121,7 @@ export function ComponentsStep({ questions, kid, resting, onDone }: Props) {
             <button type="button" class="whichpart__char hanzi" onClick={() => speak(q.char)}>{q.char}</button>
             <div class="pond-q">
               <Label zh="哪个部分是" />
-              {m && <span class="pond-q__meaning">{m.emoji} {m.zh}</span>}
+              {m && <span class="pond-q__meaning"><InkIcon name={m.icon} size={26} /> {m.zh}</span>}
               <Label zh="的意思？" />
             </div>
             <div class="bubbles stagger">
@@ -153,7 +153,7 @@ export function ComponentsStep({ questions, kid, resting, onDone }: Props) {
           detail={
             !checked && q.kind === 'whichPart' ? (
               <>
-                <span class="hanzi">{q.component}</span> {m?.emoji} {m?.zh}
+                <span class="hanzi">{q.component}</span> {m && <InkIcon name={m.icon} size={26} />} {m?.zh}
               </>
             ) : undefined
           }

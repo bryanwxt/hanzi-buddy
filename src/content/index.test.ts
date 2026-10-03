@@ -18,6 +18,6 @@ describe('content module', () => {
     expect(wordComponents('汉河')).toEqual(expect.arrayContaining(['氵', '又', '可']));
   });
   it('explains common radicals for children', () => {
-    expect(radicalMeaning('氵')).toEqual({ zh: '水', en: 'water', emoji: '💧' });
+    expect(radicalMeaning('氵')).toEqual({ zh: '水', en: 'water', icon: 'drop' });
   });
 });

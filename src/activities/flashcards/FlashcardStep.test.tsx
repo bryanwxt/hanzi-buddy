@@ -59,10 +59,10 @@ describe('intro meanings', () => {
   it('labels only the radical with a meaning', () => {
     const ri = pool.find((w) => w.text === '日')!;
     render(<FlashcardStep {...base} word={ri} item={{ wordId: ri.id, isNew: true, retry: false }} voice={false} onDone={vi.fn()} />);
-    expect(document.querySelector('.intro')!.textContent).not.toContain('👄');
+    expect(document.querySelector('.intro svg[data-icon="mouth"]')).toBeNull();
     cleanup();
     render(<FlashcardStep {...base} item={{ wordId: he.id, isNew: true, retry: false }} voice={false} onDone={vi.fn()} />);
-    expect(document.querySelector('.intro')!.textContent).toContain('💧');
+    expect(document.querySelector('.intro svg[data-icon="drop"]')).toBeTruthy();
   });
 });
 

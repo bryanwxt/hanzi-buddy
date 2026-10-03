@@ -6,3 +6,11 @@ describe('power radicals', () => {
     expect(radicalMeaning('金')?.en).toBe('metal');
   });
 });
+
+describe('radical icons', () => {
+  it('every radical meaning has an ink icon', async () => {
+    const { RADICALS } = await import('./radicals');
+    const { ICONS } = await import('../ui/icons/icons');
+    for (const [r, m] of Object.entries(RADICALS)) expect(ICONS[(m as { icon: keyof typeof ICONS }).icon], r).toBeTruthy();
+  });
+});

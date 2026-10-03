@@ -14,6 +14,7 @@ import { Pet } from '../../ui/Pet';
 import type { TruffleMood } from '../../ui/truffle/Truffle';
 import { SpeakButton } from '../../ui/SpeakButton';
 import { pickCharacterDistractors, pickPinyinDistractors } from './distractors';
+import { InkIcon } from '../../ui/icons/InkIcon';
 
 export interface FlashResult {
   correct: boolean;
@@ -177,7 +178,7 @@ function Intro({ word }: { word: Word }) {
                   <span key={p} class={m ? 'part--radical' : ''}>
                     {i > 0 ? '+ ' : ''}
                     {p}
-                    {m ? ` ${m.emoji}` : ''}
+                    {m ? <> <InkIcon name={m.icon} size={24} /></> : ''}
                   </span>
                 );
               })}
