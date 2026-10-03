@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { useApp } from '../app/AppContext';
 import { PASSAGES } from '../content';
 import { applyMisreads } from '../langdu/misreads';
+import { SCENES_KT } from '../kantu/scenes';
 import { displayText } from '../langdu/phrases';
 import { deleteRecording, listParentPassages, listRecordings } from '../store/repo';
 import type { ParentPassage, Recording } from '../types';
@@ -11,6 +12,34 @@ const KEEP = 100;
 const HAN = /\p{Script=Han}/u;
 
 type Texts = Map<string, { title: string; text: string }>;
+
+type Group = { kind: 'single'; rec: Recording } | { kind: 'story'; sceneId: string; recs: Recording[] };
+const GROUP_GAP_MS = 30 * 60_000;
+
+/** Story parts and answers from one telling of a scene (same scene, within 30 minutes) become one group, oldest first. */
+export function groupRecordings(recs: Recording[]): Group[] {
+  const out: Group[] = [];
+  for (const r of recs) {
+    const p = r.prompt;
+    if (p.kind !== 'story' && p.kind !== 'answer') {
+      out.push({ kind: 'single', rec: r });
+      continue;
+    }
+    const last = out[out.length - 1];
+    if (last?.kind === 'story' && last.sceneId === p.sceneId && Math.abs(last.recs[0]!.createdAt - r.createdAt) <= GROUP_GAP_MS) last.recs.unshift(r);
+    else out.push({ kind: 'story', sceneId: p.sceneId, recs: [r] });
+  }
+  return out;
+}
+
+const PART_LABEL: Record<string, string> = { opening: '开场白', setting: '时间地点人物', events: '经过', ending: '结果', opinion: '看法', whole: '讲一讲 (whole story)' };
+const sceneTitle = (id: string) => SCENES_KT.find((s) => s.id === id)?.title ?? id;
+const partLabel = (r: Recording) => {
+  const p = r.prompt;
+  if (p.kind === 'story') return PART_LABEL[p.part] ?? p.part;
+  if (p.kind === 'answer') return `Q${p.question + 1} ${SCENES_KT.find((s) => s.id === p.sceneId)?.questions[p.question]?.q ?? ''}`;
+  return '';
+};
 
 const describe = ({ prompt }: Recording, texts: Texts) => {
   if (prompt.kind === 'picture') return '📷 Picture talk';
@@ -59,6 +88,7 @@ export function RecordingsPanel() {
   const [recs, setRecs] = useState<Recording[]>([]);
   const [parent, setParent] = useState<ParentPassage[]>([]);
   const [open, setOpen] = useState<string | null>(null);
+  const [openStory, setOpenStory] = useState<string | null>(null);
   const reload = async () => {
     const [r, p] = await Promise.all([listRecordings(db), listParentPassages(db)]);
     setRecs(r);
@@ -68,8 +98,14 @@ export function RecordingsPanel() {
   useEffect(() => {
     void reload();
   }, []);
-  const urls = useMemo(() => recs.map((r) => URL.createObjectURL(r.blob)), [recs]);
+  const urls = useMemo(() => new Map(recs.map((r) => [r.id, URL.createObjectURL(r.blob)])), [recs]);
   useEffect(() => () => urls.forEach((u) => URL.revokeObjectURL(u)), [urls]);
+  const groups = useMemo(() => groupRecordings(recs), [recs]);
+  const removeStory = async (g: Recording[]) => {
+    if (!confirm('Delete this picture story and all its parts?')) return;
+    for (const r of g) await deleteRecording(db, r.id);
+    await reload();
+  };
 
   const remove = async (r: Recording) => {
     if (!confirm('Delete this recording?')) return;
@@ -97,11 +133,41 @@ export function RecordingsPanel() {
       ) : (
         <table class="table">
           <tbody>
-            {recs.map((r, i) => {
+            {groups.map((g) => {
+              if (g.kind === 'story') {
+                const first = g.recs[0]!;
+                const key = `story-${first.id}`;
+                return (
+                  <Fragment key={key}>
+                    <tr class="rec-row">
+                      <td>{new Date(first.createdAt).toLocaleString()}</td>
+                      <td>
+                        {`🖼️ ${sceneTitle(g.sceneId)}`}{' '}
+                        <button type="button" class="small-btn" onClick={() => setOpenStory(openStory === key ? null : key)}>Show parts</button>
+                      </td>
+                      <td>{g.recs.reduce((t, r) => t + r.durationSec, 0)}s</td>
+                      <td>{g.recs.length} parts</td>
+                      <td><button type="button" class="small-btn" onClick={() => void removeStory(g.recs)}>Delete</button></td>
+                    </tr>
+                    {openStory === key && (
+                      <tr>
+                        <td colSpan={5}>
+                          <ol class="story-parts">
+                            {g.recs.map((r) => (
+                              <li key={r.id}><span>{partLabel(r)}</span> <audio controls preload="none" src={urls.get(r.id)} /></li>
+                            ))}
+                          </ol>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              }
+              const r = g.rec;
               const text = r.prompt.kind === 'passage' ? texts.get(r.prompt.passageId)?.text : undefined;
               return (
               <Fragment key={r.id}>
-              <tr>
+              <tr class="rec-row">
                 <td>{new Date(r.createdAt).toLocaleString()}</td>
                 <td>
                   {describe(r, texts)}
@@ -109,7 +175,7 @@ export function RecordingsPanel() {
                   {text && <> <button type="button" class="small-btn" onClick={() => setOpen(open === r.id ? null : r.id)}>Mark misreads</button></>}
                 </td>
                 <td>{r.durationSec}s</td>
-                <td><audio controls preload="none" src={urls[i]} /></td>
+                <td><audio controls preload="none" src={urls.get(r.id)} /></td>
                 <td><button type="button" class="small-btn" onClick={() => void remove(r)}>Delete</button></td>
               </tr>
               {open === r.id && text && (
