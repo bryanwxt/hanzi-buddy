@@ -49,7 +49,7 @@ export function Wardrobe() {
           <button type="button" role="tab" aria-selected={tab === 'places'} class={`chip ${tab === 'places' ? 'is-on' : ''}`} onClick={() => setTab('places')}>地方</button>
         </div>
         {tab === 'outfits' ? (
-          <div class="outfits" role="tabpanel">
+          <div class="outfits scroll-panel" role="tabpanel">
             {([['生肖', ONESIES], ['衣服', OUTFITS]] as const).map(([title, list]) => (
               <section key={title}>
                 <h2><Label zh={title} /></h2>
@@ -104,7 +104,7 @@ export function Wardrobe() {
             ))}
           </div>
         ) : tab === 'places' ? (
-          <div class="places" role="tabpanel">
+          <div class="places scroll-panel" role="tabpanel">
             <div class="gem-jar" aria-label={`${k.finds.gems} 颗宝石`}>
               <svg class="gem-jar__glass" viewBox="-60 -70 120 140" aria-hidden="true">
                 <path d="M-40 -46 h80 v8 h-6 v86 a16 16 0 0 1 -16 16 h-36 a16 16 0 0 1 -16 -16 v-86 h-6Z" fill="#e4efff" stroke="#2a2630" stroke-width="3" stroke-linejoin="round" />
@@ -135,7 +135,7 @@ export function Wardrobe() {
             })}
           </div>
         ) : (
-          <div class="powers" role="tabpanel">
+          <div class="powers scroll-panel" role="tabpanel">
             {POWERS.map((p) => {
               const pr = progress?.find((x) => x.id === p.id);
               const tier = k.powerTiersSeen[p.id] ?? 0;

@@ -61,60 +61,62 @@ export function CollectionScreen() {
           </button>
         ))}
       </div>
-      {filter === 'animals' && (
-        <div class="animals" aria-label="找到的动物">
-          <p class="animals__note"><Label zh="在草丛里找一找！" /></p>
-          <div class="animals__grid">
-            {ZODIAC_ORDER.map((a) => {
-              const found = (kid ?? DEFAULT_KID).finds.animals.includes(a);
-              const name = ONESIES.find((o) => o.id === a)?.zh ?? a;
-              return found ? (
-                <div key={a} class="animal-slot is-found">
-                  <svg viewBox="-28 -30 56 58" aria-hidden="true" dangerouslySetInnerHTML={{ __html: ANIMAL_FACES[a] ?? '' }} />
-                  <Label zh={name} />
-                </div>
-              ) : (
-                <div key={a} class="animal-slot"><span class="animal-slot__q">？</span></div>
-              );
-            })}
+      <div class="scroll-panel">
+        {filter === 'animals' && (
+          <div class="animals" aria-label="找到的动物">
+            <p class="animals__note"><Label zh="在草丛里找一找！" /></p>
+            <div class="animals__grid">
+              {ZODIAC_ORDER.map((a) => {
+                const found = (kid ?? DEFAULT_KID).finds.animals.includes(a);
+                const name = ONESIES.find((o) => o.id === a)?.zh ?? a;
+                return found ? (
+                  <div key={a} class="animal-slot is-found">
+                    <svg viewBox="-28 -30 56 58" aria-hidden="true" dangerouslySetInnerHTML={{ __html: ANIMAL_FACES[a] ?? '' }} />
+                    <Label zh={name} />
+                  </div>
+                ) : (
+                  <div key={a} class="animal-slot"><span class="animal-slot__q">？</span></div>
+                );
+              })}
+            </div>
           </div>
+        )}
+        <div class="zika-grid" hidden={filter === 'animals'}>
+          {visible.map((c) =>
+            c.caught ? (
+              <button key={c.char} type="button" class={`zika${c.gold ? ' card--gold' : ''}${c.rarity === 'rare' ? ' card--rare' : ''}`} aria-label={c.char} onClick={() => show(c)}>
+                <span class="zika__py">{c.pinyin}</span>
+                <span class="zika__char hanzi">{c.char}</span>
+                <span class="zika__foot">
+                  <span class="zika__stars">{Array.from({ length: c.stars }, (_, i) => <InkIcon key={i} name="star" size={14} />)}</span>
+                  {c.power && <InkIcon name={powerDef(c.power)!.mark} size={16} />}
+                </span>
+              </button>
+            ) : (
+              <button key={c.char} type="button" class="zika card--back" aria-label="未收集" disabled>
+                {c.power ? <InkIcon name={powerDef(c.power)!.mark} size={30} /> : '？'}
+              </button>
+            ),
+          )}
         </div>
-      )}
-      <div class="zika-grid" hidden={filter === 'animals'}>
-        {visible.map((c) =>
-          c.caught ? (
-            <button key={c.char} type="button" class={`zika${c.gold ? ' card--gold' : ''}${c.rarity === 'rare' ? ' card--rare' : ''}`} aria-label={c.char} onClick={() => show(c)}>
-              <span class="zika__py">{c.pinyin}</span>
-              <span class="zika__char hanzi">{c.char}</span>
-              <span class="zika__foot">
-                <span class="zika__stars">{Array.from({ length: c.stars }, (_, i) => <InkIcon key={i} name="star" size={14} />)}</span>
-                {c.power && <InkIcon name={powerDef(c.power)!.mark} size={16} />}
-              </span>
-            </button>
-          ) : (
-            <button key={c.char} type="button" class="zika card--back" aria-label="未收集" disabled>
-              {c.power ? <InkIcon name={powerDef(c.power)!.mark} size={30} /> : '？'}
-            </button>
-          ),
+        <h2><Label zh="徽章" /></h2>
+        <div class="badges">
+          {badges.length ? badges.map((b) => <span key={b} class="badge"><InkIcon name="medal" size={22} /> {b}</span>) : <Label zh="集齐一个家族就能得到徽章！" />}
+        </div>
+        {myWords.length > 0 && (
+          <>
+            <h2><Label zh="我的字" /></h2>
+            <div class="zika-grid">
+              {myWords.map((w) => (
+                <button key={w.id} type="button" class="zika" aria-label={w.text} onClick={() => speak(w.text)}>
+                  <span class="zika__py">{w.pinyin}</span>
+                  <span class="zika__char hanzi" style={{ fontSize: w.text.length > 2 ? '28px' : '44px' }}>{w.text}</span>
+                </button>
+              ))}
+            </div>
+          </>
         )}
       </div>
-      <h2><Label zh="徽章" /></h2>
-      <div class="badges">
-        {badges.length ? badges.map((b) => <span key={b} class="badge"><InkIcon name="medal" size={22} /> {b}</span>) : <Label zh="集齐一个家族就能得到徽章！" />}
-      </div>
-      {myWords.length > 0 && (
-        <>
-          <h2><Label zh="我的字" /></h2>
-          <div class="zika-grid">
-            {myWords.map((w) => (
-              <button key={w.id} type="button" class="zika" aria-label={w.text} onClick={() => speak(w.text)}>
-                <span class="zika__py">{w.pinyin}</span>
-                <span class="zika__char hanzi" style={{ fontSize: w.text.length > 2 ? '28px' : '44px' }}>{w.text}</span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
       {shown && (
         <div class="zika-big" role="dialog" aria-label={`字卡：${shown.char}`} onClick={() => setShown(null)}>
           <div class={`zika zika--big${shown.gold ? ' card--gold' : ''}`} onClick={(e) => e.stopPropagation()}>

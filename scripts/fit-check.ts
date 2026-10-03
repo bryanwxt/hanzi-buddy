@@ -53,10 +53,19 @@ function probe(args: { main: string; scrollers: string }): string[] {
   const solid = [...document.querySelectorAll('button, h1, h2, .card, .goal, .pet__bubble, svg.truffle, .path__name, .week, .stat, .home__who, .passage, .tianzige, .intro__card, .hanzi--xl, .langdu__phrase, .kantu__pic')]
     .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !el.closest('[aria-hidden="true"]:not(.truffle):not(.pet), .arrival, .zika-big, .closeup, .rotate-hint, .world-taps, .particles, .is-eaten') && getComputedStyle(el).visibility !== 'hidden'; });
   const seenPair = new Set<string>();
+  // what's actually visible: clipped to the scroll panel an element sits in (cards scrolled out of a panel are hidden, not overlapping)
+  const shown = (el: Element) => {
+    const r = el.getBoundingClientRect();
+    const box = el.parentElement?.closest(args.scrollers)?.getBoundingClientRect();
+    const left = Math.max(r.left, box?.left ?? -Infinity), right = Math.min(r.right, box?.right ?? Infinity);
+    const top = Math.max(r.top, box?.top ?? -Infinity), bottom = Math.min(r.bottom, box?.bottom ?? Infinity);
+    return right - left > 0 && bottom - top > 0 ? { left, right, top, bottom } : null;
+  };
   for (let a = 0; a < solid.length; a++) for (let b = a + 1; b < solid.length; b++) {
     const A = solid[a]!, B = solid[b]!;
     if (A.contains(B) || B.contains(A)) continue;
-    const ra = A.getBoundingClientRect(), rb = B.getBoundingClientRect();
+    const ra = shown(A), rb = shown(B);
+    if (!ra || !rb) continue;
     const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
     if (w > 6 && h > 6) { const key = `${name(A)} × ${name(B)}`; if (!seenPair.has(key)) { seenPair.add(key); out.push(`overlap: ${key}`); } }
   }

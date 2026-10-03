@@ -929,3 +929,35 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
   .langdu__line { font-size: 21px; }
   .langdu__script { padding: 10px 14px; }
 }
+
+/* 字卡 and 松露's room: the lists scroll, the bars stay */
+.scroll-panel { width: 100%; }
+.room { min-height: 0; flex: 1; justify-content: flex-start; }
+.room .pet { position: static; background: none; }
+.room .pet .truffle { width: var(--pet); height: auto; }
+.room [role="tabpanel"] { align-content: start; padding: 4px 4px 12px; }
+.zika-grid { grid-template-columns: repeat(auto-fill, minmax(clamp(84px, 22vw, 104px), 1fr)); }
+.error__msg { max-height: 40dvh; overflow: auto; white-space: pre-wrap; font-size: 14px; }
+
+/* Parent area: may scroll down, never sideways */
+.parent__body { min-width: 0; }
+.parent .panel { min-width: 0; overflow-x: auto; }
+
+/* First run and the PIN pad */
+.setup { min-height: 0; }
+.setup__pet .truffle { width: calc(var(--pet) * 1.5); height: auto; } /* the first meeting: room to spare, so a bigger Truffle */
+.pinpad button { height: clamp(56px, 8dvh, 76px); }
+@media (max-width: 599px) {
+  .pinpad { grid-template-columns: repeat(3, 72px); gap: 10px; }
+  .setup { gap: 12px; align-content: center; }
+  .seal--big { font-size: 48px; gap: 6px; padding: 12px 10px; }
+  .room__tabs .chip { min-width: 0; padding: 6px 14px; font-size: 18px; }
+  .zika--big { min-height: 0; }
+  .zika--big .zika__char { font-size: 120px; }
+}
+@media (orientation: landscape) and (min-height: 600px) {
+  .room { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto 1fr; column-gap: 24px; align-items: start; }
+  .room > .pet { grid-row: 1 / span 2; align-self: center; }
+  .room > .room__tabs { grid-column: 2; }
+  .room > [role="tabpanel"] { grid-column: 2; height: 100%; }
+}

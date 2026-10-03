@@ -19,7 +19,7 @@ export function ErrorScreen({ message, dbName }: { message: string; dbName: stri
         <InkIcon name="sleepyCat" size={110} />
         <h1>Something went wrong opening the app</h1>
         <p>Your child's progress has not been deleted. Please don't remove the app. Save an emergency copy of the data, then try reopening.</p>
-        <p><small>{message}</small></p>
+        <pre class="error__msg">{message}</pre>
         <button type="button" class="btn btn--primary" onClick={() => void save()}>Save emergency copy</button>
         {status && <p>{status}</p>}
       </div>

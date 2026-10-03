@@ -142,4 +142,12 @@ describe('adaptive layouts (spec §18)', () => {
     expect(adaptive).toMatch(/\.kantu__word \{[^}]*min-height: 44px;/);
     expect(adaptive).toMatch(/@media \(max-width: 599px\) \{[^@]*\.kantu__words \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/);
   });
+  it('the parent area never overflows sideways on a phone: wide tables scroll inside their panel', () => {
+    expect(adaptive).toMatch(/\.parent \.panel \{[^}]*min-width: 0;[^}]*overflow-x: auto;/);
+    expect(adaptive).toMatch(/\.parent__body \{[^}]*min-width: 0;/);
+  });
+  it('the PIN pad and setup shrink on a phone instead of scrolling', () => {
+    expect(adaptive).toMatch(/@media \(max-width: 599px\) \{[^@]*\.pinpad \{[^}]*grid-template-columns: repeat\(3, 72px\);/);
+    expect(adaptive).toMatch(/\.room \{[^}]*min-height: 0;/);
+  });
 });

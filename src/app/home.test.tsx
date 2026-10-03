@@ -334,6 +334,20 @@ describe('找到的动物 and the gem jar', () => {
     expect(slots.filter((s) => s.classList.contains('is-found')).map((s) => s.querySelector('.label__ch')?.textContent)).toEqual(['鼠', '牛']);
     expect(slots.filter((s) => !s.classList.contains('is-found')).every((s) => s.textContent?.includes('？'))).toBe(true);
   });
+  it('字卡 and 松露的房间 scroll inside a panel; the bar, filters and tabs stay put', async () => {
+    const app = await makeAppData();
+    const { unmount } = renderWithApp(<CollectionScreen />, app);
+    await screen.findByRole('group', { name: '筛选' });
+    expect(document.querySelector('.screen > .scroll-panel .zika-grid')).toBeTruthy();
+    expect(document.querySelector('.scroll-panel .filters')).toBeNull();
+    unmount();
+    renderWithApp(<Wardrobe />, app);
+    for (const name of ['服装', '能力', '地方']) {
+      fireEvent.click(await screen.findByRole('tab', { name }));
+      expect(document.querySelector('[role="tabpanel"]')!.classList.contains('scroll-panel')).toBe(true);
+    }
+    expect(document.querySelector('.scroll-panel .room__tabs, .scroll-panel .pet')).toBeNull();
+  });
   it("Truffle's room shows his gems in a jar", async () => {
     const app = await makeAppData({ kid: { ...DEFAULT_KID, finds: { ...DEFAULT_KID.finds, gems: 3 } } });
     renderWithApp(<Wardrobe />, app);
