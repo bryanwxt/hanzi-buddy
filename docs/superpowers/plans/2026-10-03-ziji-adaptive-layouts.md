@@ -71,6 +71,113 @@ Pixel values in the CSS below are **starting values**. Task 8's sweep and screen
 
 ---
 
+### Task 0: Park 看图说话 (added at the parent's request, same message as "native")
+
+The parent isn't happy with the story flow and will rethink it. Until then:
+- every speaking step is 朗读;
+- with nothing to read, the step is skipped (plan 8's behaviour);
+- the code, scenes and tests stay behind a setting the parent can't see yet: `settings.story`, default `false`. That way it comes back with one switch.
+
+**Files:**
+- Modify: `src/types.ts` (`Settings.story: boolean`, `DEFAULT_SETTINGS.story = false`), `src/kantu/flow.ts`, `src/app/SessionScreen.tsx:73-80`, `src/app/HomeScreen.tsx`
+- Test: `src/kantu/kantu.test.tsx`, `src/app/kantuSession.test.tsx`, `src/app/langduExtra.test.tsx`
+
+**Interfaces:**
+- Produces: `nextSpeaking(last: SpeakingKind | null, langduAvailable: boolean, storyOn = false): SpeakingKind | null`. With `storyOn` false it returns `'langdu'` when available, otherwise `null`.
+
+- [ ] **Step 1: Write the failing tests**
+
+In `src/kantu/kantu.test.tsx`, replace the alternation assertions with:
+
+```ts
+    // parked (the default): always 朗读; nothing to read → no speaking activity
+    expect(nextSpeaking(null, true)).toBe('langdu');
+    expect(nextSpeaking('langdu', true)).toBe('langdu');
+    expect(nextSpeaking(null, false)).toBeNull();
+    // switched back on: the old alternation
+    expect(nextSpeaking(null, true, true)).toBe('story');
+    expect(nextSpeaking('story', true, true)).toBe('langdu');
+    expect(nextSpeaking('langdu', true, true)).toBe('story');
+    expect(nextSpeaking('story', false, true)).toBe('story');
+```
+
+In `src/app/kantuSession.test.tsx`:
+- `setup()` turns the story on (`updateSettings(app.db, { activities: speakingOnly, story: true })`), so the existing story tests keep covering the parked code.
+- Add:
+
+```tsx
+describe('看图说话 is parked by default', () => {
+  it('a fresh profile gets 朗读, not a story', async () => {
+    const app = await makeAppData({ now: () => new Date(2026, 9, 6, 17) });
+    await updateSettings(app.db, { activities: speakingOnly });
+    await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
+    await saveKid(app.db, { ...DEFAULT_KID });
+    renderWithApp(<SessionScreen free={false} />, app);
+    expect(await screen.findByText('老师好！')).toBeTruthy();
+    expect(screen.queryByText('图上画的是什么？')).toBeNull();
+  });
+  it('with nothing to read, the speaking step is skipped', async () => {
+    const app = await makeAppData({ now: () => new Date(2026, 9, 6, 17) });
+    await updateSettings(app.db, { activities: speakingOnly });
+    await saveKid(app.db, { ...DEFAULT_KID });
+    renderWithApp(<SessionScreen free={false} />, app);
+    expect(await screen.findByText('太棒了！')).toBeTruthy();
+  });
+});
+```
+
+In `src/app/langduExtra.test.tsx`, the two tests expecting the path to name 看图说话 set `story: true` in their settings first. Add one that expects 朗读 with the default settings.
+
+- [ ] **Step 2: Run them to verify they fail**
+
+Run: `npx vitest run src/kantu src/app/kantuSession.test.tsx src/app/langduExtra.test.tsx`
+Expected: FAIL. The new nextSpeaking cases fail, a fresh profile gets the story, and `story` isn't a settings key (TS only; vitest still runs).
+
+- [ ] **Step 3: Implement**
+
+`src/types.ts`: add `story: boolean; // 看图说话 is parked until the parent rethinks it (spec §17)` to `Settings` and `story: false` to `DEFAULT_SETTINGS`. Check whether `getSettings` merging covers it; it spreads the defaults, so it does.
+
+`src/kantu/flow.ts`:
+
+```ts
+/** 看图说话 is parked (settings.story off): the speaking step is 朗读, or nothing when there's nothing to read.
+ *  Switched on, it alternates 朗读 and 看图说话, starting with a story; 朗读 with nothing to read hands over to a story. */
+export function nextSpeaking(last: SpeakingKind | null, langduAvailable: boolean, storyOn = false): SpeakingKind | null {
+  if (!storyOn) return langduAvailable ? 'langdu' : null;
+  if (!langduAvailable) return 'story';
+  return last === 'story' ? 'langdu' : 'story';
+}
+```
+
+`src/app/SessionScreen.tsx` speaking chooser:
+
+```ts
+          const kind = nextSpeaking(k.speakingLast, !!passage, settings.story);
+          return kind === 'langdu' && passage ? { kind: 'langdu' as const, passage, oral: settings.oral } : kind === 'story' ? { kind: 'story' as const, scene: sceneFor(k.story) } : null;
+```
+
+`src/app/HomeScreen.tsx`:
+- compute `const speakingKind = todaySession?.completedSteps.includes('speaking') ? k.speakingLast ?? 'langdu' : nextSpeaking(k.speakingLast, canRead, settings.story);`;
+- pass `speakingName={speakingKind === 'story' ? '看图说话' : '朗读'}`;
+- when there's no session yet and `speakingKind === null`, leave `speaking` out of the planned steps shown on the path: `STEP_ORDER.filter((s) => settings.activities[s] && (s !== 'speaking' || speakingKind !== null))`.
+
+- [ ] **Step 4: Run the tests**
+
+Run: `npx vitest run src/kantu src/app`
+Expected: PASS.
+
+- [ ] **Step 5: Run the whole suite, then commit**
+
+Run: `npm test`
+Expected: all pass.
+
+```bash
+git add src/types.ts src/kantu/flow.ts src/app/SessionScreen.tsx src/app/HomeScreen.tsx src/kantu/kantu.test.tsx src/app/kantuSession.test.tsx src/app/langduExtra.test.tsx
+git commit -m "feat: park 看图说话; the speaking step is 朗读 until the parent rethinks the story flow"
+```
+
+---
+
 ### Task 1: Layout foundation: one-screen `.screen`, tokens, arrangements, rotate overlay
 
 **Files:**
@@ -580,7 +687,6 @@ async function sweep(browser: Browser, size: Size) {
   await run('writing', AFTERNOON, { activities: only('writing') }, async (p) => { await startLesson(p); await walkLesson(p, size, 'writing', { firstOnly: true }); });
   await run('components', AFTERNOON, { activities: only('components') }, async (p) => { await startLesson(p); await walkLesson(p, size, 'components'); });
   await run('langdu', AFTERNOON, { activities: only('speaking'), speakingLast: 'story' }, async (p) => { await startLesson(p); await walkLesson(p, size, 'langdu'); });
-  await run('kantu', AFTERNOON, { activities: only('speaking'), speakingLast: 'langdu' }, async (p) => { await startLesson(p); await walkLesson(p, size, 'kantu'); });
   await run('langdu-extra', AFTERNOON, { doneToday: true }, async (p) => { await p.click('.langdu-btn'); await walkLesson(p, size, 'langdu-extra'); });
 }
 
