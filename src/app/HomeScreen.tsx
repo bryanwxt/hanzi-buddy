@@ -1,4 +1,4 @@
-import { Flame, Star } from 'lucide-preact';
+import { Flame, Star, Volume2 } from 'lucide-preact';
 import { useEffect, useState } from 'preact/hooks';
 import { enterSafeScreen } from '../pwa';
 import { pinyin } from 'pinyin-pro';
@@ -8,7 +8,9 @@ import { wordOfTheDay } from '../fun/wordOfDay';
 import { goalProgress, nextGoal } from '../fun/rewards';
 import { localDateKey } from '../lib/date';
 import { STEP_ORDER } from '../session/plan';
-import { streak, totalStars } from '../stats/stats';
+import { streak, totalStars, weekDays } from '../stats/stats';
+import { pickExample } from '../activities/writing/cue';
+import { WeekStrip } from './WeekStrip';
 import { allSessions, listRewards, saveKid } from '../store/repo';
 import { DEFAULT_KID, type KidState, type RewardGoal, type SessionRecord } from '../types';
 import { celebrate } from '../ui/confetti';
@@ -97,6 +99,8 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
     date: today,
   });
   const world = currentWorld(k);
+  const wotdWord = wotd ? data.know.wordsById.get(`b:${wotd}`) : undefined;
+  const wotdExample = wotdWord ? pickExample(wotdWord)?.example ?? null : null;
   const play = (free: boolean) => {
     primeSpeech();
     go({ name: 'session', free });
@@ -114,6 +118,10 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
           <Label zh={`认识 ${data.know.known} 个字`} />
         </span>
       </header>
+      <div class="home__week">
+        <span class="seal" aria-hidden="true">字己</span>
+        <WeekStrip days={weekDays(data.sessions, today)} />
+      </div>
       <main class="home__main">
         {goal && progress && (
           <div class={`goal ${progress.reached ? 'goal--reached' : ''}`}>
@@ -140,11 +148,19 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
           </div>
         )}
         {wotd && (
-          <button type="button" class="card wotd" aria-label={`今日一字：${wotd}`} onClick={() => speak(wotd)}>
-            <span class="label-tag">今日一字</span>
-            <span class="wotd__grid" aria-hidden="true">{wotd}</span>
-            <span class="wotd__py" aria-hidden="true">{pinyin(wotd)}</span>
-          </button>
+          <div class="card wotd">
+            <button type="button" class="wotd__main" aria-label={`今日一字：${wotd}`} onClick={() => speak(wotd)}>
+              <span class="label-tag">今日一字</span>
+              <span class="wotd__grid" aria-hidden="true">{wotd}</span>
+              <span class="wotd__py" aria-hidden="true">{pinyin(wotd)}</span>
+            </button>
+            {wotdExample && (
+              <button type="button" class="wotd__example" aria-label={`听：${wotdExample.text}`} onClick={() => speak(wotdExample.text)}>
+                <Label zh={wotdExample.text} py={wotdExample.pinyin} />
+                <Volume2 size={22} strokeWidth={2.75} aria-hidden="true" />
+              </button>
+            )}
+          </div>
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>
         <TodayPath

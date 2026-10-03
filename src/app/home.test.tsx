@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { BUILTIN, builtinWords } from '../content';
 import { createSessionRecord } from '../session/runner';
 import { getKid, putCards, putWords, saveKid, saveReward, saveSession } from '../store/repo';
-import { makeCard } from '../test/fixtures';
+import { makeCard, makeWord } from '../test/fixtures';
 import { makeAppData, renderWithApp } from '../test/renderWithApp';
 import { DEFAULT_KID, type SessionPlan } from '../types';
 import { HomeScreen } from './HomeScreen';
@@ -232,5 +232,23 @@ describe('HomeScreen journey', () => {
     await screen.findByText('今天的练习');
     expect(document.querySelector('.world-scene')?.getAttribute('data-world')).toBe('race');
     expect(screen.queryByRole('dialog', { name: '新地方' })).toBeNull();
+  });
+});
+
+/** Only 他, known, with the example word 他们 — so the word of the day is 他. */
+async function seedKnownWithExample(app: Awaited<ReturnType<typeof makeAppData>>) {
+  await putWords(app.db, [makeWord('他', { pinyin: 'tā', meaning: 'he', examples: [{ text: '他们', pinyin: 'tā men' }] })]);
+  await putCards(app.db, [makeCard('b:他', 'recognise', new Date(2030, 0, 1), true)]);
+}
+
+describe('HomeScreen week and word of the day', () => {
+  it('shows this week with the seal, and an example word under the word of the day', async () => {
+    const app = await makeAppData();
+    await seedKnownWithExample(app); // 他 known, with example 他们 tā men
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(document.querySelectorAll('.week__day')).toHaveLength(7);
+    expect(document.querySelector('.seal')?.textContent).toBe('字己');
+    expect(document.querySelector('.wotd__example .label')?.getAttribute('data-py')).toBe('tā men');
   });
 });

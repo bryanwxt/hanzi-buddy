@@ -3,7 +3,7 @@ import { Rating } from 'ts-fsrs';
 import { createSessionRecord } from '../session/runner';
 import { makeCard, makeWord } from '../test/fixtures';
 import type { ReviewLog, SessionPlan, SessionRecord } from '../types';
-import { dueTomorrow, minutesPerDay, streak, summarize, totalStars, troubleWords, weeklyAccuracy } from './stats';
+import { dueTomorrow, minutesPerDay, streak, summarize, totalStars, troubleWords, weekDays, weeklyAccuracy } from './stats';
 
 const emptyPlan: SessionPlan = { steps: [], reviewWordIds: [], newWordIds: [], flashTimeBoxMs: 0, writeCandidates: [], writeCount: 0 };
 const session = (date: string, over: Partial<SessionRecord> = {}): SessionRecord => ({ ...createSessionRecord(emptyPlan, date, 0), completed: true, ...over });
@@ -87,5 +87,18 @@ describe('earned progress never goes backwards', () => {
     const k = summarize([makeWord('大')], [relearning]);
     expect(k.known).toBe(1);
     expect(k.knownChars.has('大')).toBe(true);
+  });
+});
+
+describe('weekDays', () => {
+  it('Monday to Sunday of this week, filled where a lesson was finished', () => {
+    const s = (date: string, over = {}) => session(date, over);
+    const days = weekDays([s('2026-09-28'), s('2026-09-29'), s('2026-10-01'), s('2026-10-02', { free: true }), s('2026-09-30', { completed: false }), s('2026-09-27')], '2026-10-03');
+    expect(days.map((d) => d.label).join('')).toBe('一二三四五六日');
+    expect(days.map((d) => d.done)).toEqual([true, true, false, true, false, false, false]);
+    expect(days.findIndex((d) => d.today)).toBe(5);
+  });
+  it('a Sunday is the end of its week', () => {
+    expect(weekDays([], '2026-10-04').findIndex((d) => d.today)).toBe(6);
   });
 });

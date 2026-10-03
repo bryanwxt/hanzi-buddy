@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeWord } from '../../test/fixtures';
-import { writingCue } from './cue';
+import { pickExample, writingCue } from './cue';
 
 describe('writingCue', () => {
   it('gives the first meaning, a blanked word that uses it, and says which character', () => {
@@ -55,5 +55,13 @@ describe('writingCue example word', () => {
   it('a neutral-tone use of the same syllable still counts (儿子 for 子)', () => {
     const zi = makeWord('子', { pinyin: 'zǐ', examples: [{ text: '儿子', pinyin: 'ér zi' }] });
     expect(writingCue(zi)).toMatchObject({ blanked: '儿＿', speech: '子，儿子的子' });
+  });
+});
+
+describe('pickExample', () => {
+  it('shares the writing rules: matching reading, one occurrence preferred', () => {
+    const nai = makeWord('奶', { pinyin: 'nǎi', examples: [{ text: '奶奶', pinyin: 'nǎi nai' }, { text: '牛奶', pinyin: 'niú nǎi' }] });
+    expect(pickExample(nai)).toEqual({ example: { text: '牛奶', pinyin: 'niú nǎi' }, once: true });
+    expect(pickExample(makeWord('八', { examples: [] }))).toBeNull();
   });
 });

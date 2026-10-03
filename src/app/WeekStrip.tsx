@@ -1,0 +1,17 @@
+import type { WeekDay } from '../stats/stats';
+import { Label } from '../ui/Label';
+
+/** 一 to 日: a filled ink circle for each day a lesson was finished this week. */
+export function WeekStrip({ days }: { days: WeekDay[] }) {
+  const n = days.filter((d) => d.done).length;
+  return (
+    <div class="week" role="img" aria-label={`这个星期练了 ${n} 天`}>
+      {days.map((d) => (
+        <span key={d.date} class={`week__day${d.done ? ' is-done' : ''}${d.today ? ' is-today' : ''}`}>
+          <i class="week__dot" />
+          <Label zh={d.label} />
+        </span>
+      ))}
+    </div>
+  );
+}

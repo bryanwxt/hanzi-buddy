@@ -10,13 +10,19 @@ export interface WritingCue {
 }
 
 /** What tells a child which character to write when several share the same sound. */
-export function writingCue(word: Word): WritingCue {
-  const meaning = kidMeaning(word);
-  // only words that use the reading being written; a word where it appears once makes the best blank
+/** The example word to show for a character: one that uses this reading, preferring one where it appears once. */
+export function pickExample(word: Word): { example: Example; once: boolean } | null {
   const usable = (word.examples ?? []).filter((e) => e.text.length > word.text.length && e.text.includes(word.text) && sameReading(e, word));
   const once = usable.find((e) => e.text.split(word.text).length === 2);
   const example = once ?? usable[0];
-  if (!example) return { meaning, blanked: null, blankedPy: null, speech: word.text };
+  return example ? { example, once: !!once } : null;
+}
+
+export function writingCue(word: Word): WritingCue {
+  const meaning = kidMeaning(word);
+  const picked = pickExample(word);
+  if (!picked) return { meaning, blanked: null, blankedPy: null, speech: word.text };
+  const { example, once } = picked;
   const speech = `${word.text}，${example.text}的${word.text}`;
   if (!once) return { meaning, blanked: null, blankedPy: null, speech }; // 爸爸 → two empty boxes would tell him nothing
   return {

@@ -88,3 +88,16 @@ export function dueTomorrow(cards: CardRecord[], words: Word[], now: Date): numb
   const to = endOfLocalDay(addDays(now, 1)).getTime();
   return cards.filter((c) => active.has(c.wordId) && c.fsrs.due.getTime() > from && c.fsrs.due.getTime() <= to).length;
 }
+
+export interface WeekDay { label: string; date: string; done: boolean; today: boolean }
+
+/** This week, Monday first: which days a (non-free) lesson was finished. */
+export function weekDays(sessions: SessionRecord[], today: string): WeekDay[] {
+  const done = new Set(sessions.filter((s) => s.completed && !s.free).map((s) => s.date));
+  const day = parseDateKey(today);
+  const monday = addDays(day, -((day.getDay() + 6) % 7));
+  return [...'一二三四五六日'].map((label, i) => {
+    const date = localDateKey(addDays(monday, i));
+    return { label, date, done: done.has(date), today: date === today };
+  });
+}
