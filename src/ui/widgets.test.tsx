@@ -10,6 +10,14 @@ vi.mock('../audio/speech', () => ({ speak: vi.fn() }));
 import { speak } from '../audio/speech';
 
 describe('widgets', () => {
+  it('Label can take the syllables from context, so 子 in 儿子 reads zi, not zǐ', () => {
+    const { container } = render(<Label zh="＿子" py="zi" />);
+    expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('zi');
+  });
+  it('Label falls back to its own reading when the given syllables do not fit', () => {
+    const { container } = render(<Label zh="儿子" py="zi" />);
+    expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('ér zi');
+  });
   it('Label puts each syllable directly above its own character', () => {
     const { container } = render(<Label zh="你好！" />);
     const cells = [...container.querySelectorAll('.label__cell')];

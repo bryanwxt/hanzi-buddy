@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { makeWord } from '../../test/fixtures';
 import { DEFAULT_KID } from '../../types';
+import { speak } from '../../audio/speech';
 import { WritingStep } from './WritingStep';
 
 type QuizOpts = { onComplete: (s: { totalMistakes: number }) => void };
@@ -36,6 +37,25 @@ describe('WritingStep', () => {
     render(<WritingStep word={makeWord('大')} kid={DEFAULT_KID} resting="sulk" isNew={false} onDone={onDone} />);
     act(() => loadError!());
     expect(onDone).toHaveBeenCalledWith(null);
+  });
+});
+
+describe('WritingStep cue', () => {
+  it('shows the meaning and a blanked word, and says which 儿 is meant', () => {
+    const er = makeWord('儿', { pinyin: 'ér', meaning: 'son, child', examples: [{ text: '儿子', pinyin: 'ér zi' }] });
+    vi.mocked(speak).mockClear();
+    render(<WritingStep word={er} kid={DEFAULT_KID} resting="sulk" isNew={false} onDone={vi.fn()} />);
+    expect(document.querySelector('.write__meaning')?.textContent).toBe('son');
+    expect(document.querySelector('.write__blank .label')?.getAttribute('data-py')).toBe('zi');
+    expect(screen.getByText('＿子')).toBeTruthy();
+    expect(speak).toHaveBeenLastCalledWith('儿，儿子的儿');
+    fireEvent.click(screen.getByLabelText('听'));
+    expect(speak).toHaveBeenLastCalledWith('儿，儿子的儿');
+  });
+  it('a word with no cue shows neither line', () => {
+    render(<WritingStep word={makeWord('大人', { pinyin: 'dà rén', source: 'parent' })} kid={DEFAULT_KID} resting="sulk" isNew={false} onDone={vi.fn()} />);
+    expect(document.querySelector('.write__meaning')).toBeNull();
+    expect(document.querySelector('.write__blank')).toBeNull();
   });
 });
 

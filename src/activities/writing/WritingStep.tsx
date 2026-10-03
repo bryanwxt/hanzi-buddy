@@ -10,7 +10,9 @@ import { burst } from '../../ui/motion';
 import { isHardWrite } from '../../fun/mood';
 import { Pet } from '../../ui/Pet';
 import type { TruffleMood } from '../../ui/truffle/Truffle';
+import { Label } from '../../ui/Label';
 import { SpeakButton } from '../../ui/SpeakButton';
+import { writingCue } from './cue';
 
 export interface WriteResult {
   totalMisses: number;
@@ -27,6 +29,7 @@ interface Props {
 
 export function WritingStep({ word, kid, resting, isNew, onDone }: Props) {
   const chars = useMemo(() => hanChars(word.text), [word.id]);
+  const cue = useMemo(() => writingCue(word), [word.id]);
   const [index, setIndex] = useState(0);
   const [misses, setMisses] = useState(0);
   const [charMisses, setCharMisses] = useState<number | null>(null);
@@ -34,7 +37,7 @@ export function WritingStep({ word, kid, resting, isNew, onDone }: Props) {
   const startedAt = useRef(performance.now());
 
   useEffect(() => {
-    speak(word.text);
+    speak(cue.speech);
   }, [word.id]);
 
   useEffect(() => {
@@ -92,9 +95,13 @@ export function WritingStep({ word, kid, resting, isNew, onDone }: Props) {
             mood={charMisses === null ? resting : charMisses > 3 ? 'neutral' : last && isHardWrite(isNew, misses) ? 'wow' : 'pleased'}
             bubble={charMisses === null ? '写一写！' : null}
           />
-          <div class="write__prompt">
-            <span class="pinyin">{word.pinyin}</span>
-            <SpeakButton text={word.text} />
+          <div class="write__cue">
+            <div class="write__prompt">
+              <span class="pinyin">{word.pinyin}</span>
+              <SpeakButton text={cue.speech} />
+            </div>
+            {cue.blanked && <div class="write__blank"><Label zh={cue.blanked} py={cue.blankedPy ?? undefined} /></div>}
+            {cue.meaning && <div class="write__meaning" lang="en">{cue.meaning}</div>}
           </div>
         </div>
         <div class="dots">

@@ -227,6 +227,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .write { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .write__head { gap: 24px; }
 .write__prompt { display: flex; align-items: center; gap: 16px; font-size: 36px; }
+.write__cue { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.write__blank { font-size: 30px; font-weight: 700; }
+.write__meaning { font-size: 18px; font-weight: 700; color: var(--ink); opacity: 0.65; }
 .tianzige {
   background-color: #fffdf8; border: 3px solid var(--orange); border-radius: 16px; touch-action: none; box-shadow: 0 6px 0 var(--line);
   background-image:
