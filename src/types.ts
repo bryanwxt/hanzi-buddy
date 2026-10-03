@@ -104,7 +104,9 @@ export interface SessionRecord {
 export type RecordingPrompt =
   | { kind: 'picture'; promptId: string }
   | { kind: 'passage'; passageId: string }
-  | { kind: 'intro' }; // the exam-etiquette self-introduction
+  | { kind: 'intro' } // the exam-etiquette self-introduction
+  | { kind: 'story'; sceneId: string; part: 'opening' | 'setting' | 'events' | 'ending' | 'opinion' | 'whole' } // 看图说话
+  | { kind: 'answer'; sceneId: string; question: number }; // Truffle asks
 
 export interface Recording {
   id: string;
@@ -207,6 +209,8 @@ export interface KidState {
   worldsSeen: string[]; // journey worlds reached; never shrinks
   world: string | null; // the child's pick in the room; null = newest reached
   reading: ReadingState;
+  speakingLast: 'langdu' | 'story' | null; // which activity the speaking step ran last (they alternate)
+  story: { next: number; told: number }; // 看图说话: next scene, stories told (drives starter fading)
 }
 
 export const DEFAULT_KID: KidState = {
@@ -225,6 +229,8 @@ export const DEFAULT_KID: KidState = {
   worldsSeen: [],
   world: null,
   reading: DEFAULT_READING,
+  speakingLast: null,
+  story: { next: 0, told: 0 },
 };
 
 export interface RewardGoal {

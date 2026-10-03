@@ -31,7 +31,10 @@ export function normalizeKid(raw: Partial<KidState> | null | undefined): KidStat
   const worldList = Array.isArray(kid.worldsSeen) ? kid.worldsSeen.filter((w): w is string => typeof w === 'string' && !!worldById(w)) : [];
   const worldsSeen = WORLDS.map((w) => w.id as string).filter((id) => worldList.includes(id));
   const world = typeof kid.world === 'string' && worldsSeen.includes(kid.world) ? kid.world : null;
-  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null), worldsSeen, world, reading: normalizeReading(kid.reading) };
+  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null), worldsSeen, world, reading: normalizeReading(kid.reading),
+    speakingLast: kid.speakingLast === 'langdu' || kid.speakingLast === 'story' ? kid.speakingLast : null,
+    story: normalizeStory(kid.story),
+  };
 }
 
 export async function getKid(db: AppDb): Promise<KidState | null> {
@@ -148,4 +151,10 @@ export const deleteParentPassage = (db: AppDb, id: string) => db.delete('passage
 
 export async function updateRecording(db: AppDb, r: Recording): Promise<void> {
   await db.put('recordings', r);
+}
+
+function normalizeStory(v: unknown): { next: number; told: number } {
+  const x = (v && typeof v === 'object' ? v : {}) as { next?: unknown; told?: unknown };
+  const n = (a: unknown) => (typeof a === 'number' && Number.isInteger(a) && a >= 0 ? a : 0);
+  return { next: n(x.next), told: n(x.told) };
 }

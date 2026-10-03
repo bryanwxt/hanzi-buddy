@@ -15,6 +15,7 @@ type Texts = Map<string, { title: string; text: string }>;
 const describe = ({ prompt }: Recording, texts: Texts) => {
   if (prompt.kind === 'picture') return '📷 Picture talk';
   if (prompt.kind === 'intro') return '🙋 Self-introduction';
+  if (prompt.kind === 'story' || prompt.kind === 'answer') return '🖼️ Picture story';
   const t = texts.get(prompt.passageId);
   return t ? `📖 ${t.title}` : '📖 (deleted text)';
 };

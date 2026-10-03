@@ -126,3 +126,11 @@ describe('plan 8 data', () => {
     expect(normalizeKid({ reading: 'x' } as never)?.reading.warmups).toBe(0);
   });
 });
+
+describe('plan 9 data', () => {
+  it('fills story progress and the speaking rotation for old or malformed records', () => {
+    expect(normalizeKid({ petName: '松露' } as never)).toMatchObject({ speakingLast: null, story: { next: 0, told: 0 } });
+    expect(normalizeKid({ speakingLast: 'x', story: 'y' } as never)).toMatchObject({ speakingLast: null, story: { next: 0, told: 0 } });
+    expect(normalizeKid({ speakingLast: 'story', story: { next: 3, told: -1 } } as never)).toMatchObject({ speakingLast: 'story', story: { next: 3, told: 0 } });
+  });
+});
