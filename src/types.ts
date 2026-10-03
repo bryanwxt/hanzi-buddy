@@ -170,6 +170,8 @@ export interface KidState {
   powerTiersSeen: Record<string, number>;
   ownedCostumes: string[];
   outfit: string | null;
+  worldsSeen: string[]; // journey worlds reached; never shrinks
+  world: string | null; // the child's pick in the room; null = newest reached
 }
 
 export const DEFAULT_KID: KidState = {
@@ -185,6 +187,8 @@ export const DEFAULT_KID: KidState = {
   powerTiersSeen: {},
   ownedCostumes: [],
   outfit: null,
+  worldsSeen: [],
+  world: null,
 };
 
 export interface RewardGoal {

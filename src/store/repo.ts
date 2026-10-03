@@ -1,3 +1,4 @@
+import { WORLDS, worldById } from '../fun/worlds';
 import { migrateAccessory } from '../fun/accessories';
 import { DEFAULT_KID, DEFAULT_SETTINGS, type CardRecord, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
 import type { AppDb } from './db';
@@ -26,7 +27,11 @@ export function normalizeKid(raw: Partial<KidState> | null | undefined): KidStat
   // Accessories v2: dragon-era emoji map one-to-one onto the new add-ons; unknown values are dropped.
   const list = Array.isArray(kid.ownedAccessories) ? kid.ownedAccessories : [];
   const owned = [...new Set(list.map((v) => migrateAccessory(typeof v === 'string' ? v : null)).filter((x): x is string => !!x))];
-  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null) };
+  // Journey worlds: known ids only, in unlock order; a pick must be a reached world.
+  const worldList = Array.isArray(kid.worldsSeen) ? kid.worldsSeen.filter((w): w is string => typeof w === 'string' && !!worldById(w)) : [];
+  const worldsSeen = WORLDS.map((w) => w.id as string).filter((id) => worldList.includes(id));
+  const world = typeof kid.world === 'string' && worldsSeen.includes(kid.world) ? kid.world : null;
+  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null), worldsSeen, world };
 }
 
 export async function getKid(db: AppDb): Promise<KidState | null> {

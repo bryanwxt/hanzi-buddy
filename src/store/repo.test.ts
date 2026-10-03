@@ -5,7 +5,7 @@ import { freshDb, makeCard, makeWord } from '../test/fixtures';
 import { DEFAULT_SETTINGS, DEFAULT_KID } from '../types';
 import {
   addRecording, addReviewLog, allCards, allWords, deleteWord, getKid, getSettings, listRecordings,
-  logsSince, putCards, putWords, saveKid, seedBuiltinWords, updateSettings,
+  logsSince, normalizeKid, putCards, putWords, saveKid, seedBuiltinWords, updateSettings,
 } from './repo';
 
 describe('repo', () => {
@@ -95,6 +95,13 @@ describe('normalizeKid accessories v2', () => {
 });
 
 describe('normalizeKid hardening', () => {
+  it('normalizes world fields from old or malformed data', () => {
+    expect(normalizeKid({ petName: '松露' } as never)).toMatchObject({ worldsSeen: [], world: null });
+    expect(normalizeKid({ worldsSeen: 'race', world: 7 } as never)).toMatchObject({ worldsSeen: [], world: null });
+    expect(normalizeKid({ worldsSeen: ['race', 'bogus', 'yard', 'race'], world: 'bogus' } as never)).toMatchObject({ worldsSeen: ['yard', 'race'], world: null });
+    expect(normalizeKid({ worldsSeen: ['yard', 'grass'], world: 'grass' } as never)?.world).toBe('grass');
+  });
+
   it('does not crash on a malformed accessory list', async () => {
     const db = await freshDb();
     await db.put('kid', { ...DEFAULT_KID, ownedAccessories: null, wearing: 42 } as never, 'main');
