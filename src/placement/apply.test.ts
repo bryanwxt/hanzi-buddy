@@ -13,7 +13,7 @@ describe('applyPlacement', () => {
     const words = builtinWords(0).slice(0, 10);
     await putWords(db, words);
     await putCards(db, [makeCard(words[0]!.id, 'recognise', now)]);
-    expect(await applyPlacement(db, 5, now)).toBe(4);
+    expect(await applyPlacement(db, words.slice(0, 5).map((w) => w.id), now)).toBe(4);
     const first = (await allCards(db)).find((c) => c.wordId === words[0]!.id)!;
     expect(isKnown(first.fsrs)).toBe(false);
     expect((await getSettings(db)).placementDone).toBe(true);
