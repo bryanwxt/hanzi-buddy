@@ -581,6 +581,9 @@ follows the §13 ink rules: outline `#2a2630`, palette fills, no gradients.
 - **Arrival moment:** when Home finds a newly reached world, it shows a card
   once: the scene, "到草丛了！" ("we've reached the tall grass!") with pinyin,
   and a 走吧！ ("let's go!") button.
+  - If several worlds are reached at once (e.g. right after placement), only
+    the newest gets the card; all of them are recorded as reached.
+  - The backyard is the starting place and never gets a card.
 - **Which world shows:**
   - the newest reached, by default;
   - he can pick any reached world in Truffle's room, on a new 地方 ("places")
