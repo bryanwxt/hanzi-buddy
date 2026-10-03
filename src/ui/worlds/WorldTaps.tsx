@@ -42,7 +42,7 @@ const TARGET: Record<WorldId, { label: string; shape: string }> = {
   dino: { label: '恐龙蛋', shape: '<rect x="54" y="408" width="54" height="48" rx="10"/>' },
   sea: { label: '潜水艇', shape: '<rect x="22" y="320" width="86" height="70" rx="12"/>' },
   space: { label: '火箭', shape: '<rect x="30" y="282" width="66" height="96" rx="10"/>' },
-  pirate: { label: '宝藏', shape: '<rect x="74" y="392" width="34" height="36" rx="8"/>' },
+  pirate: { label: '宝藏', shape: '<rect x="62" y="396" width="36" height="36" rx="8"/>' },
 };
 
 const DURATION: Record<Effect['kind'], number> = { spray: 1200, animal: 2200, lap: 1700, crack: 500, wobble: 800, hop: 900, bubbles: 1600, launch: 4300, dig: 1400 };
@@ -153,8 +153,8 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
     fx = `<path d="M26 278 H100 V368 H26Z" fill="#e4e1f5"/>` + (still ? `<g class="tap-rocket">${ROCKET}${fade(4300)}</g>` : `<g class="tap-rocket">${ROCKET}<animateTransform attributeName="transform" type="translate" values="0 0;0 -420;0 -420;0 0" keyTimes="0;0.4;0.55;1" begin="1500ms" dur="2800ms" fill="freeze"/></g>`);
   }
   if (effect?.kind === 'dig') {
-    fx = `<g fill="#f1e1b0" stroke="${INK}" stroke-width="1.6"><circle cx="82" cy="400" r="4"/><circle cx="100" cy="398" r="3.5"/><circle cx="91" cy="394" r="3"/></g>`;
-    if (effect.star) fx += `<g transform="translate(91 384)"><path d="${STAR}" fill="#efc472" stroke="${INK}" stroke-width="2"/>${rise(20, 1400)}</g>`;
+    fx = `<g fill="#f1e1b0" stroke="${INK}" stroke-width="1.6"><circle cx="71" cy="404" r="4"/><circle cx="89" cy="402" r="3.5"/><circle cx="80" cy="398" r="3"/></g>`;
+    if (effect.star) fx += `<g transform="translate(80 388)"><path d="${STAR}" fill="#efc472" stroke="${INK}" stroke-width="2"/>${rise(20, 1400)}</g>`;
   }
   const baby = world === 'dino' && kid.finds.dinoHatched && effect?.kind !== 'hop' ? `<g class="tap-baby-dino" transform="translate(94 424) scale(0.9)">${BABY_DINO}</g>` : '';
 
