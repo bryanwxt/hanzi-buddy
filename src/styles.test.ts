@@ -51,3 +51,11 @@ describe('no dragon left in what people see', () => {
     expect(html).toContain('content="#fbf6ea"');
   });
 });
+
+describe('world layers never get in the way', () => {
+  it('scene and strip ignore taps and sit behind content', () => {
+    expect(css).toMatch(/\.world-scene \{[^}]*pointer-events: none/);
+    expect(css).toMatch(/\.world-scene \{[^}]*z-index: -1/);
+    expect(css).toMatch(/\.world-strip \{[^}]*pointer-events: none/);
+  });
+});
