@@ -140,7 +140,7 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - emoji contract test scans .ts/.tsx only (JSON/CSS/index.html clean today but unguarded)
 - leftover CSS (.loading font-size, .fishtile__badge font-size, .zika__stars letter-spacing, .prize 130px line box)
 - wings / jetpack room thumbnails are two separate small shapes
-- 一 offers yí as a wrong pinyin option though tone sandhi makes yí a real reading
+- 一 offers yí as a wrong pinyin option though tone sandhi makes yí a real reading (fixed in plan 5)
 
 ## Plan 5 — fairer placement, writing cues, pinyin over each character
 
