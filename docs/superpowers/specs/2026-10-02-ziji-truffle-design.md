@@ -547,3 +547,108 @@ Under the pinyin and the speak button, the writing step shows:
 
 This relaxes the earlier rule that child-facing meanings come only from
 radicals, for writing prompts only.
+
+## 15. The journey: ink worlds behind Home (added 2026-10-03 at the parent's request)
+
+The parent found the app "a little bare": too much plain paper, not enough
+going on, sparse lesson screens. They chose the ink-landscape direction, with
+scenes that change as he progresses, and asked for places kids find exciting
+(he likes Pokémon, Bluey, Hot Wheels, Minecraft).
+
+**No IP:** each world borrows the *kind* of fun (hidden creatures, backyard
+play, race tracks, digging blocks), never names, characters or art. All art
+follows the §13 ink rules: outline `#2a2630`, palette fills, no gradients.
+
+### The eight worlds
+
+"Known" is the Home count (认识 N 个字). Thresholds:
+
+| id | World | Unlocks at | Scene |
+|---|---|---|---|
+| `yard` | 后院 Backyard | 0 | picket fence, treehouse, swing, sprinkler, paddling pool, ball |
+| `grass` | 草丛探险 Tall-grass hunt | 30 | tall grass tufts, eyes and ears peeking out, a butterfly |
+| `race` | 赛车山 Race-track hills | 60 | an orange track with a loop over the hills, two little cars, a chequered flag |
+| `blocks` | 方块世界 Block world | 100 | hills of square blocks, a cube tree, a cave with gem blocks, a pickaxe |
+| `dino` | 恐龙谷 Dino valley | 150 | a smoking volcano, ferns, a friendly long-neck dinosaur, a nest with eggs |
+| `sea` | 海底 Under the sea | 200 | a wavy waterline, a submarine, coral, fish, an octopus |
+| `space` | 月球基地 Moon base | 300 | a lavender sky, a ringed planet, a rocket on its pad, craters, a rover |
+| `pirate` | 海盗岛 Treasure island | 400 | sea, an island with a palm tree, a ship with a red sail, an X in the sand |
+
+### Unlocking and choosing
+
+- **Unlocks never go back.** `kid.worldsSeen` records every world he has
+  reached, like `powerTiersSeen`, even if a lapse drops his known count.
+- **Arrival moment:** when Home finds a newly reached world, it shows a card
+  once: the scene, "到草丛了！" ("we've reached the tall grass!") with pinyin,
+  and a 走吧！ ("let's go!") button.
+- **Which world shows:**
+  - the newest reached, by default;
+  - he can pick any reached world in Truffle's room, on a new 地方 ("places")
+    tab next to 服装 and 能力;
+  - unreached worlds show there as locked, with their word count.
+  - `kid.world` holds his pick (null = newest).
+- **Truffle wears what he chose.** Worlds don't change his outfit; the mockup
+  outfits were only illustrations.
+
+### Home
+
+- **The world fills the background,** behind unchanged panels and path:
+  - scenery stays at the edges and the bottom, so panels and text keep full
+    contrast;
+  - panels stay opaque.
+- **Truffle's bubble** says a short line that fits the world, with pinyin,
+  e.g. 嘘……草里有什么？ ("shh… what's in the grass?"). There are 2–3 lines
+  per world, picked by date.
+- **This week:** a strip of 一 to 日 (Mon–Sun) beside a red 字己 seal; a day is
+  filled when a lesson was finished that day.
+- **Word of the day** adds one example word with pinyin and a speak button,
+  when the character has one. There is no example sentence: the content has
+  none.
+
+### Lessons
+
+Lesson screens show a slim strip of the current world's ground along the
+bottom, above the bottom bar. It is decorative and never covers the work
+area.
+
+### Time of day
+
+A light wash over any world, by the device clock:
+- morning (before 12:00): cool;
+- afternoon: warm;
+- evening (from 18:00): an indigo wash across the top, with a moon, a few
+  stars and a lantern string.
+
+The ground and panels keep their contrast.
+
+### Tap fun: one thing per world
+
+| World | Tap | Result |
+|---|---|---|
+| yard | the sprinkler | water sprays; Truffle flinches (wow), then laughs |
+| grass | the rustling grass | one of the 12 zodiac animals pops out (a new one at most once a day, otherwise one he has found waves); found animals fill a 找到的动物 ("animals found") page in 字卡 |
+| race | a car | it drives one lap of the loop |
+| blocks | a gem block | three taps crack it, then a gem pops out (at most one a day); gems sit in a jar on the room shelf |
+| dino | the egg | it wobbles; after his next finished lesson it has hatched, and the baby stays in the scene |
+| sea | the submarine | it dives; fish follow for a moment |
+| space | the rocket | 三、二、一 is spoken, then lift-off; it lands back after a few seconds |
+| pirate | the X | Truffle digs; the first dig each day gives one bonus star |
+
+- **Saved state:** `kid.finds`, shaped
+  `{ animals: string[]; gems: number; dinoHatched: boolean; lastAnimalDate,
+  lastGemDate, lastDigDate: string | null }`.
+- **Reduced motion:** animations become simple fades.
+- **Taps never block practice:** no tap gates the path, and nothing is
+  required.
+
+### Build order
+
+- **Plan 6, worlds:**
+  - scene art for all eight worlds;
+  - unlocks, `worldsSeen`, the arrival card and the room 地方 tab;
+  - time of day;
+  - the lesson strip;
+  - the week strip with the seal, and the word-of-the-day example;
+  - Truffle's world lines.
+- **Plan 7, tap fun:** the eight interactions, `kid.finds`, the animals page,
+  the gem jar, the dino hatch and the pirate star.
