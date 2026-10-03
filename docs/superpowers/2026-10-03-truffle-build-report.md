@@ -240,3 +240,29 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - if new MediaRecorder()/start() throws, the stream and meter context aren't released
 - an older oral-field save resolving late can briefly revert a just-typed character
 - leaving Settings mid speech-recognition test doesn't stop recognition (it times out)
+
+## Plan 9 — 看图说话 story builder + Truffle asks
+
+### Rulings
+- Task 1: Ruling: gallery found the canteen worker standing on the counter and the shared sandwich floating — counter now drawn in front of a taller worker, sandwich in the boy's hand; the wallet owner's '?' is SVG text — cost if wrong: art polish
+- Task 2: Ruling: model stories use Chinese quotation marks “…” (the plan wrote ASCII quotes); RecordingsPanel labels story/answer recordings '🖼️ Picture story' until Task 6 groups them — cost if wrong: none
+- Task 4: Ruling: the 讲一讲 whole-story screen also offers 听松露说 (the full model story) after he tries — plan only specified it for parts and answers — cost if wrong: he may lean on the model; the parts already gave it piecewise
+- Task 4: Ruling: the 听松露说 button uses the speech-bubble ink icon; each screen is keyed so it gets a fresh recorder; onDone is ref-guarded — cost if wrong: none
+- Task 5: Ruling: story recordings get createdAt = base + index so they sort and group in order; the langdu session test's kid now starts with speakingLast 'story' — cost if wrong: none
+- Task 6: Ruling: recording URLs keyed by id (not list index) now that rows are grouped; a story row shows total seconds and 'N parts' — cost if wrong: none
+- Task 7: Ruling: the path names the speaking node by today's activity (看图说话 / 朗读, via nextSpeaking on Home); the picture is height-capped (min(34vh, 420px)) so the model sentence stays above the bottom bar; Truffle-asks screens keep a small copy of the picture beside him (tests RED→GREEN) — cost if wrong: none
+- Final: Ruling: art look, the scraped knee/tears in 'fall', lunch in the classroom (declined) — the parent sees the gallery before release — cost if wrong: a redraw
+- Final: Ruling: iPad mic re-prompting and how the iPad voice reads 还给 (declined: device-only) — cost if wrong: an iPad-only quirk
+- Final: Ruling: Home vs session disagreeing past midnight (declined: negligible) — cost if wrong: one mislabelled path node
+
+### Fixed in the final review
+- wrong pinyin (还给 hái, 得 dé, 了 liǎo, 地 dì) — kantu 'pinyin above the stories reads them right…' RED→GREEN (narrow customPinyin phrases in src/content/pinyinFixes.ts, loaded by Label), suite 419/419
+- content — kantu 'every theme word is used…' + '打翻 always takes what was knocked over…' RED→GREEN (vase/spill events and spill opening rewritten, 她很饿, 等一等 and 红绿灯 added), suite 419/419
+- the finished day's path label — 'names the activity he actually did today…' RED→GREEN, suite 419/419
+- refused mic per screen — StoryStep 'a refused microphone is remembered…' RED→GREEN (blocked carried with the 继续 tap, not a deferred effect), suite 419/419
+- Truffle's voice in recordings — recording 'starting a recording silences Truffle first…' RED→GREEN (stopSpeaking on record start; StoryStep also stops speech on unmount), suite 419/419
+
+### Deferred minors
+- a failed save (storage full) leaves 完成 dead on the last screen; partial parts saved
+- KEEP=100 counts parts, so the 'too many recordings' warning shows after ~12 stories; pruneOld can split a story group
+- test gaps — leaving mid-story (focus 3) and a double tap on 继续 aren't tested (both hold by construction)
