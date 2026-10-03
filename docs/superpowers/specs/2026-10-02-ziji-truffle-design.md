@@ -655,3 +655,112 @@ The ground and panels keep their contrast.
   - Truffle's world lines.
 - **Plan 7, tap fun:** the eight interactions, `kid.finds`, the animals page,
   the gem jar, the dino hatch and the pirate star.
+
+## 16. 朗读 coach and exam-etiquette warm-up (added 2026-10-03 at the parent's request)
+
+### Why
+
+His P2 oral-exam sheet (看图说话 口试评估表) rated every 朗读短文 (reading
+aloud) criterion 待改进 (needs improvement): pronunciation, clarity, pauses,
+pace and expression. The teacher noted 太小声了 (too quiet) and 错字较多
+(quite a few misread characters), and marked 口试礼仪 (exam etiquette) ✗: no
+greeting, no self-introduction. 看图说话 (describing a picture) and 会话
+(conversation) were 中等 (average); they get their own plan next.
+
+The coach targets the evidence-backed levers:
+- **repeated reading** of the same passage;
+- **model-then-echo** reading by phrase;
+- **phrase chunking**, for pauses and pace;
+- **instant loudness feedback**;
+- **targeted retrieval** of the characters he misreads.
+
+### The daily 朗读 step (replaces 说一说 in the lesson)
+
+The speaking step becomes the 朗读 coach. The step id `speaking` and the
+parent's activity toggle stay the same. It runs in four parts, about 5
+minutes in all:
+
+1. **口试礼仪 warm-up.**
+   - Truffle, as the examiner, says 你好！.
+   - The child reads his self-introduction and records it: 老师好！我叫{name}。我今年{age}岁。我在{school}读{class}。…谢谢老师！ (fields from Settings, below).
+   - **Pinyin fades by warm-ups recorded:**
+     - first 5: full pinyin;
+     - next 5: pinyin only on characters he doesn't know (not known in his cards);
+     - after that: none.
+   - If the parent hasn't filled in the Settings fields, the warm-up skips the self-introduction. It then practises only 老师好！ and 谢谢老师！.
+2. **Listen and echo.**
+   - Today's passage is shown one phrase at a time. Phrases split at punctuation, and at `/` marks the parent added.
+   - Each phrase is spoken by TTS, then he says it back. A 再听 ("listen again") button replays it.
+   - There is no recording and no grading in this part.
+3. **Read it all.**
+   - The whole passage, with pinyin per character (the `Label` style, toggleable as now).
+   - He records while a **loudness meter** shows the microphone level:
+     - Truffle's ears perk up above the target level;
+     - "大声一点！" ("a bit louder!") appears after 2 s below it.
+   - The target is a fixed RMS threshold, tuned on a real iPad.
+   - Loudness is shown, never scored against him.
+4. **Listen back.**
+   - He plays his recording.
+   - One star for finishing.
+   - A second star if, compared with his previous recording of the same passage, he was louder on average or 10% quicker.
+
+### Passages and the 3-day cycle
+
+- **Sources:**
+  - **Parent passages first:** added in the parent area as a title and text, with optional `/` phrase breaks; each can be edited or deleted.
+  - **Then the 20 built-ins,** eligible by the existing 90%-known rule.
+- **Cycle:** a passage stays "today's passage" for 3 practice days in a row (days on which the 朗读 step was finished), then the next one takes over.
+  - Parent passages go in the order added.
+  - Built-ins go in list order, skipping ones read in the last 30 days.
+- **An extra day:** when the parent confirms misread characters on a passage's recording, that passage gets one more day (at most 2 extra days per passage).
+
+### Extra rounds from Home
+
+A 朗读 button on Home (beside the path) runs parts 2–4 for today's passage,
+with no warm-up. Its recordings are kept like any other. Extra rounds don't
+count as cycle days and give no stars, so the button is for practice, not
+farming stars.
+
+### Misread characters
+
+- **Parent review:** 录音 (Recordings) shows each 朗读 recording with its passage text, every Han character tappable. Tapping toggles a "misread" mark.
+- **Confirming** (保存) does two things:
+  - Each marked character becomes a priority word:
+    - with a recognise card: that card is due today;
+    - without one: the built-in word is pulled to the front of new words (`listedAt` = now), as parent word lists already do.
+  - The passage gets its extra day.
+- **Auto-hints:**
+  - If iPad speech recognition works for him, its mismatches show pre-marked in a lighter style ("建议", suggested). The parent confirms or clears each one. Nothing reaches his practice until the parent saves.
+  - Hints are **off by default.** They are offered in Settings only if the build-time spike finds recognition usable. If it sends audio off the device, the switch says so plainly ("uses Apple's speech service").
+  - If the spike finds recognition unusable, there is no switch, and review is manual.
+
+### Settings
+
+A new 口试 (oral exam) section stores:
+- 中文名字 (Chinese name), 年龄 (age), 学校 (school, e.g. "XX小学") and 班级 (class, e.g. "二年级").
+- Optionally, a custom self-introduction that replaces the standard one.
+
+These are stored only in the local database and included in backups.
+
+### Pictures
+
+Parent-uploaded 看图说话 pictures leave the daily lesson until the
+story-builder plan; they stay listed in the parent area. `chooseSpeakingPrompt`
+is retired.
+
+### Build order
+
+- **Plan 8, 朗读 coach (this section):**
+  - a speech-recognition spike first (on-device or not, how accurate for a child);
+  - then the passages store and the parent passage editor;
+  - phrase splitting and the 3-day cycle;
+  - the warm-up with pinyin fading;
+  - the echo part;
+  - the read-all part with the loudness meter;
+  - the listen-back stars;
+  - the Home 朗读 button;
+  - parent misread review and priority words;
+  - the Settings fields;
+  - hints if the spike says yes.
+- **Plan 9:** the 看图说话 story builder and Truffle asks (会话).
+- **Plan 7:** the world tap fun, scheduled after these.
