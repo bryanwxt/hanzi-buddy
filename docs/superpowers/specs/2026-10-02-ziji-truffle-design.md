@@ -457,3 +457,51 @@ with tests:
    - no flashing close-ups;
    - the grain filter is not applied to large areas;
    - smooth on Home with Truffle plus the swashes.
+
+## 13. Ink icons and accessories v2 (added 2026-10-03 at the parent's request)
+
+The parent asked for the remaining emoji to be replaced with art in the app's
+style, and for the accessories to be "cooler and coherent with the costume
+options".
+
+### Accessories v2: add-ons in four slots
+
+Every costume already has its own hat, so accessories become add-ons that
+combine with any onesie or outfit. Nothing is ever hidden: this replaces the
+§7 "a onesie hides the accessory" rule and the plan-3 "no hat on a hat" rule.
+There are still 16, so the chest economy is unchanged.
+
+| Slot | Accessories |
+|---|---|
+| face | 墨镜 sunglasses, 星星眼镜 star glasses, 爱心眼镜 heart glasses, 小胡子 moustache |
+| neck | 围巾 scarf, 领结 bow tie, 金牌 gold medal, 耳机 headphones |
+| held (in a paw) | 毛笔 calligraphy brush, 红灯笼 red lantern, 风筝 kite, 气球 balloon, 魔法棒 magic wand |
+| back | 书包 backpack, 翅膀 wings, 喷气背包 jetpack |
+
+- **Stored values:** accessories are stored by id. Legacy emoji in
+  `ownedAccessories` and `wearing` are mapped one-to-one by `normalizeKid`:
+  - 🎩 moustache, 👑 medal, 🕶️ sunglasses, 🎀 bow tie;
+  - 🧢 backpack, 🎓 brush, ⛑️ jetpack, 🌸 heart glasses;
+  - ⭐ star glasses, 🎈 balloon, 🍀 lantern, 🦋 wings;
+  - 🌈 wand, 🎧 headphones, 🧣 scarf, 🪁 kite.
+
+  Nothing earned is lost, and unknown values are dropped.
+- **Room:** shows each accessory's ink art and its name with pinyin, grouped
+  by slot.
+
+### Ink icon set
+
+`InkIcon` draws icons in the app's ink style: 3px outlines and flat palette
+fills on a 48×48 grid. The same markup is reused inside Truffle's SVG. It
+replaces every child-facing emoji:
+- power marks;
+- path and progress-bar step icons;
+- stars, the medal, the lock and sparkles;
+- the fishing fish;
+- the placement buttons and the combo flame;
+- the loading paw and the error screen;
+- the radical meaning icons used in intro cards, fishing, badges and the power
+  intro.
+
+The parent area keeps its emoji, including the reward-goal emoji the parent
+chooses.
