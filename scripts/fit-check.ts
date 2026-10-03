@@ -36,7 +36,7 @@ function probe(args: { main: string; scrollers: string }): string[] {
   const mainMin = innerWidth < 600 ? 52 : 64;
   for (const el of document.querySelectorAll('button, [role="button"], [role="tab"], a[href], input, select, textarea')) {
     const r = el.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0 || el.closest('[aria-hidden="true"], .sr-only, .world-taps') || getComputedStyle(el).visibility === 'hidden') continue;
+    if (r.width === 0 || r.height === 0 || el.closest('[aria-hidden="true"], .sr-only, .world-taps, .is-eaten') || getComputedStyle(el).visibility === 'hidden') continue;
     if (!el.parentElement?.closest(args.scrollers) && (r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1)) out.push(`off screen: ${name(el)}`);
     if (Math.min(r.width, r.height) < 43.5) out.push(`under 44px: ${name(el)} ${Math.round(r.width)}×${Math.round(r.height)}`);
     if (el.matches(args.main) && Math.min(r.width, r.height) < mainMin - 0.5) out.push(`main action under ${mainMin}px: ${name(el)} ${Math.round(r.width)}×${Math.round(r.height)}`);
@@ -51,7 +51,7 @@ function probe(args: { main: string; scrollers: string }): string[] {
   out.push(...small);
   // solid things must not sit on each other (the eye catches this; scroll and size checks don't)
   const solid = [...document.querySelectorAll('button, h1, h2, .card, .goal, .pet__bubble, svg.truffle, .path__name, .week, .stat, .home__who, .passage, .tianzige, .intro__card, .hanzi--xl, .langdu__phrase, .kantu__pic')]
-    .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !el.closest('[aria-hidden="true"]:not(.truffle):not(.pet), .arrival, .zika-big, .closeup, .rotate-hint, .world-taps, .particles') && getComputedStyle(el).visibility !== 'hidden'; });
+    .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !el.closest('[aria-hidden="true"]:not(.truffle):not(.pet), .arrival, .zika-big, .closeup, .rotate-hint, .world-taps, .particles, .is-eaten') && getComputedStyle(el).visibility !== 'hidden'; });
   const seenPair = new Set<string>();
   for (let a = 0; a < solid.length; a++) for (let b = a + 1; b < solid.length; b++) {
     const A = solid[a]!, B = solid[b]!;

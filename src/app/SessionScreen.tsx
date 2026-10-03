@@ -34,8 +34,8 @@ import { useApp } from './AppContext';
 import { Celebration } from './Celebration';
 import { loadKnowledge, type Knowledge } from './knowledge';
 import { newId } from '../lib/id';
-import { WorldStrip } from '../ui/worlds/WorldStrip';
-import { currentWorld } from '../fun/worlds';
+import { WorldScene } from '../ui/worlds/WorldScene';
+import { currentWorld, timeOfDay } from '../fun/worlds';
 import { InkIcon } from '../ui/icons/InkIcon';
 
 
@@ -213,7 +213,7 @@ export function SessionScreen({ free }: { free: boolean }) {
 
   return (
     <div class="screen">
-      <WorldStrip world={currentWorld(kid)} />
+      <WorldScene world={currentWorld(kid)} time={timeOfDay(now())} />
       <header class="lessonbar">
         <button type="button" class="icon-btn" aria-label="回家" onClick={() => go({ name: 'home' })}>
           <X size={34} strokeWidth={3} />

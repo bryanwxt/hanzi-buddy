@@ -8,8 +8,8 @@ import { newId } from '../lib/id';
 import { addRecording, getKid, getSettings, listParentPassages } from '../store/repo';
 import { DEFAULT_KID, type KidState, type OralInfo } from '../types';
 import { InkIcon } from '../ui/icons/InkIcon';
-import { currentWorld } from '../fun/worlds';
-import { WorldStrip } from '../ui/worlds/WorldStrip';
+import { currentWorld, timeOfDay } from '../fun/worlds';
+import { WorldScene } from '../ui/worlds/WorldScene';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
@@ -43,7 +43,7 @@ export function LangduScreen() {
 
   return (
     <div class="screen">
-      <WorldStrip world={currentWorld(state.kid)} />
+      <WorldScene world={currentWorld(state.kid)} time={timeOfDay(now())} />
       <header class="lessonbar">
         <button type="button" class="icon-btn" aria-label="回家" onClick={() => go({ name: 'home' })}>
           <X size={34} strokeWidth={3} />

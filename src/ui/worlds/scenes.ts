@@ -17,17 +17,6 @@ export const SCENES: Record<WorldId, string> = {
 };
 
 /** Where each lesson strip looks: the lively band of its ground (sprinkler and pool, the track, the gem cave…). */
-export const STRIP_VIEW: Record<WorldId, string> = {
-  yard: '0 330 360 120',
-  grass: '0 340 360 120',
-  race: '0 350 360 120',
-  blocks: '0 350 360 120',
-  dino: '0 340 360 120',
-  sea: '0 320 360 120',
-  space: '0 290 360 120',
-  pirate: '0 300 360 120',
-};
-
 const STARS = '<path data-part="star" d="M60 120 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z" fill="#efc472" stroke="#2a2630" stroke-width="1.2"/><path data-part="star" d="M150 170 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z" fill="#efc472" stroke="#2a2630" stroke-width="1.2"/><path data-part="star" d="M210 100 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z" fill="#efc472" stroke="#2a2630" stroke-width="1.2"/><path data-part="star" d="M110 70 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z" fill="#efc472" stroke="#2a2630" stroke-width="1.2"/>';
 const MOON = '<g data-part="moon"><circle cx="300" cy="80" r="28" fill="#f6ecd2" stroke="#2a2630" stroke-width="2.4"/><circle cx="290" cy="72" r="5" fill="#f1e1b0"/><circle cx="310" cy="90" r="4" fill="#f1e1b0"/></g>';
 const LANTERNS = '<path d="M0 210 Q90 234 180 216 T360 220" fill="none" stroke="#2a2630" stroke-width="1.6"/><g data-part="lantern" stroke="#2a2630" stroke-width="2"><ellipse cx="40" cy="226" rx="9" ry="11" fill="#e2705d"/><path d="M34 215 h12 M34 237 h12"/></g><g data-part="lantern" stroke="#2a2630" stroke-width="2"><ellipse cx="120" cy="232" rx="9" ry="11" fill="#e2705d"/><path d="M114 221 h12 M114 243 h12"/></g><g data-part="lantern" stroke="#2a2630" stroke-width="2"><ellipse cx="200" cy="224" rx="9" ry="11" fill="#e2705d"/><path d="M194 213 h12 M194 235 h12"/></g><g data-part="lantern" stroke="#2a2630" stroke-width="2"><ellipse cx="280" cy="224" rx="9" ry="11" fill="#e2705d"/><path d="M274 213 h12 M274 235 h12"/></g>';

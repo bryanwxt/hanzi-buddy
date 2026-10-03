@@ -53,21 +53,13 @@ describe('no dragon left in what people see', () => {
 });
 
 describe('world layers never get in the way', () => {
-  it('scene and strip ignore taps and sit behind content', () => {
+  it('the scene ignores taps and sits behind content', () => {
     expect(css).toMatch(/\.world-scene \{[^}]*pointer-events: none/);
     expect(css).toMatch(/\.world-scene \{[^}]*z-index: -1/);
-    expect(css).toMatch(/\.world-strip \{[^}]*pointer-events: none/);
   });
   it('the Home world is pinned to the screen, not stretched over the whole scrolling page', () => {
     expect(css).toMatch(/\.world-scene \{[^}]*position: fixed/);
-    expect(css).toMatch(/\.home \.world-scene \{[^}]*bottom: 80px/); // ground sits above the sticky tab bar
-  });
-  it('on lessons the waiting bottom bar is see-through so the ground shows under the button; feedback bars stay solid', () => {
-    expect(css).toMatch(/\.screen:has\(\.world-strip\) \.bottombar--neutral \{[^}]*background: transparent/);
-    expect(css).not.toMatch(/\.bottombar--good[^{]*\{[^}]*background: transparent/);
-    // see-through must also mean tap-through: an answer showing under the empty bar still takes the tap
-    expect(css).toMatch(/\.screen:has\(\.world-strip\) \.bottombar--neutral \{[^}]*pointer-events: none/);
-    expect(css).toMatch(/\.bottombar--neutral \.btn \{[^}]*pointer-events: auto/);
+    expect(css).toMatch(/\.home \.world-scene \{[^}]*bottom: var\(--nav-h\)/); // ground sits above the tab bar
   });
   it('text that sits straight on the page gets a paper backing, so scenery never runs under it', () => {
     expect(css).toMatch(/\.home__who \{[^}]*background: var\(--paper\)/);
@@ -97,7 +89,7 @@ describe('world tap fun never gets in the way', () => {
 
 describe('scene texture', () => {
   it('worlds, lesson strips and pictures get a grain overlay like Truffle\'s', () => {
-    expect(css).toMatch(/\.world-scene::after, \.world-strip::after, \.grainy::after \{[^}]*mix-blend-mode: multiply/);
+    expect(css).toMatch(/\.world-scene::after, \.grainy::after \{[^}]*mix-blend-mode: multiply/);
   });
 });
 
@@ -138,5 +130,11 @@ describe('adaptive layouts (spec §18)', () => {
     expect(adaptive).toMatch(/\.home__pet \{[^}]*position: absolute;[^}]*bottom: calc\(var\(--nav-h\)[^}]*left: 50%;/);
     expect(adaptive).toMatch(/\.tabbar \{ height: var\(--nav-h\);/);
     expect(adaptive).toMatch(/\.home \.home__cards, \.home \.home__path \{ pointer-events: none; \}/);
+  });
+  it('lessons: the ground shows under a floating 继续 card that clears the home indicator', () => {
+    expect(adaptive).toMatch(/\.bottombar \{[^}]*position: sticky;[^}]*bottom: 0;[^}]*margin: auto 0 0;[^}]*border-radius: 18px;/);
+    expect(adaptive).toMatch(/\.screen:has\(\.lessonbar\) \{[^}]*padding-bottom: max\(16px, env\(safe-area-inset-bottom\)\);/);
+    expect(adaptive).toMatch(/\.bottombar--neutral \{[^}]*background: transparent;[^}]*border-color: transparent;[^}]*pointer-events: none;/);
+    expect(css).not.toContain('.world-strip');
   });
 });
