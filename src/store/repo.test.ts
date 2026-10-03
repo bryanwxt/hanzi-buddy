@@ -93,3 +93,11 @@ describe('normalizeKid accessories v2', () => {
     expect(await getKid(db)).toMatchObject({ ownedAccessories: ['medal', 'brush'], wearing: 'brush' });
   });
 });
+
+describe('normalizeKid hardening', () => {
+  it('does not crash on a malformed accessory list', async () => {
+    const db = await freshDb();
+    await db.put('kid', { ...DEFAULT_KID, ownedAccessories: null, wearing: 42 } as never, 'main');
+    expect(await getKid(db)).toMatchObject({ ownedAccessories: [], wearing: null });
+  });
+});

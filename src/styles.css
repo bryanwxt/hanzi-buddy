@@ -588,3 +588,5 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .inkicon { display: inline-block; vertical-align: middle; flex: none; overflow: visible; }
 .acc-thumb { display: block; overflow: visible; }
 .outfit__name .label { font-size: 16px; }
+.outfits__none { display: flex; align-items: center; gap: 14px; }
+.outfits__none .outfit { width: 96px; }

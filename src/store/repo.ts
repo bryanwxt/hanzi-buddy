@@ -24,8 +24,9 @@ export function normalizeKid(raw: Partial<KidState> | null | undefined): KidStat
   if (!raw) return null;
   const kid = { ...DEFAULT_KID, ...raw };
   // Accessories v2: dragon-era emoji map one-to-one onto the new add-ons; unknown values are dropped.
-  const owned = [...new Set(kid.ownedAccessories.map(migrateAccessory).filter((x): x is string => !!x))];
-  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(kid.wearing) };
+  const list = Array.isArray(kid.ownedAccessories) ? kid.ownedAccessories : [];
+  const owned = [...new Set(list.map((v) => migrateAccessory(typeof v === 'string' ? v : null)).filter((x): x is string => !!x))];
+  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null) };
 }
 
 export async function getKid(db: AppDb): Promise<KidState | null> {

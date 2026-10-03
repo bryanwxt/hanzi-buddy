@@ -58,8 +58,8 @@ const ART: Record<string, () => Partial<AccessoryLayer>> = {
   }),
   medal: () => ({
     under:
-      `<path d="M140 188 L154 226 L166 226 L180 188 L168 188 L160 210 L152 188 Z" fill="#4aa3ff" ${s2}/>` +
-      `<circle cx="160" cy="236" r="18" fill="${GOLD}" ${S}/><path d="${star(160, 236, 10)}" fill="${CREAM}" ${s2}/>`,
+      `<path d="M142 188 L154 206 L166 206 L178 188 L168 188 L160 200 L152 188 Z" fill="#4aa3ff" ${s2}/>` +
+      `<circle cx="160" cy="214" r="13" fill="${GOLD}" ${S}/><path d="${star(160, 214, 7.5)}" fill="${CREAM}" ${s2}/>`,
   }),
   headphones: () => ({
     under:
@@ -127,10 +127,17 @@ export function accessoryLayer(id: string | null | undefined): AccessoryLayer | 
   return { back: art.back ?? '', under: art.under ?? '', face: art.face ?? '', over: art.over ?? '' };
 }
 
-/** Where each slot's art sits in Truffle's coordinates, for drawing an accessory on its own (room tiles). */
-export const SLOT_VIEW: Record<'face' | 'neck' | 'held' | 'back', string> = {
-  face: '56 84 208 100',
-  neck: '86 176 148 80',
-  held: '172 40 118 240',
-  back: '30 172 260 120',
+/** A tight crop around each accessory, for drawing it on its own (room tiles). */
+const THUMB_VIEW: Record<string, string> = {
+  sunglasses: '58 90 204 56', starglasses: '56 82 208 74', heartglasses: '56 88 208 64', moustache: '104 140 112 42',
+  scarf: '90 180 140 82', bowtie: '126 180 68 40', medal: '136 184 48 46', headphones: '80 178 160 46',
+  brush: '176 164 88 116', lantern: '184 186 94 84', kite: '226 42 64 112', balloon: '222 60 68 80',
+  wand: '186 156 96 104', backpack: '72 168 176 110', wings: '32 178 256 88', jetpack: '54 190 212 100',
 };
+
+/** An accessory drawn on its own (no paw), with a viewBox cropped to it. */
+export function accessoryThumb(id: string): { viewBox: string; markup: string } | null {
+  const l = accessoryLayer(id);
+  if (!l) return null;
+  return { viewBox: THUMB_VIEW[id]!, markup: (l.back + l.under + l.face + l.over).replace(PAW, '') };
+}

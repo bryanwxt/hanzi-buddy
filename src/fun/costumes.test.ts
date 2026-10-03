@@ -52,3 +52,18 @@ describe('costume input hardening', () => {
     expect(openChest({ ...DEFAULT_KID, ownedCostumes: ['bogus'] }, '2026-10-02', 'pig').result).toEqual({ kind: 'costume', id: 'pig' });
   });
 });
+
+describe('chest after migrating a dragon-era profile', () => {
+  it('never re-awards a migrated accessory and still ends in stars', async () => {
+    const { normalizeKid } = await import('../store/repo');
+    let kid = normalizeKid({ ...DEFAULT_KID, ownedAccessories: ['👑', '🎓', '⭐'], wearing: '👑', ownedCostumes: ['tiger'] })!;
+    const owned = new Set(kid.ownedAccessories);
+    for (let d = 0; d < COSTUMES.length + ACCESSORIES.length; d++) {
+      const { kid: next, result } = openChest(kid, localDateKey(addDays(new Date(2027, 0, 1), d)), 'dog');
+      if (result.kind === 'accessory') expect(owned.has(result.item)).toBe(false);
+      if (result.kind === 'accessory') owned.add(result.item);
+      kid = next;
+    }
+    expect(openChest(kid, '2027-06-01', 'dog').result).toEqual({ kind: 'stars', amount: 3 });
+  });
+});

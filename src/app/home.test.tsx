@@ -160,6 +160,7 @@ describe("Truffle's room accessory tiles", () => {
     const wand = screen.getByRole('button', { name: '魔法棒' });
     expect(wand.querySelector('svg.acc-thumb')).toBeTruthy();
     expect(wand.closest('section')?.querySelector('h2')?.textContent).toContain('手里');
+    expect(screen.getByRole('button', { name: '不戴' }).closest('section')?.querySelector('h2')).toBeNull(); // one accessory at a time, not one per slot
   });
 });
 

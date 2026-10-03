@@ -106,3 +106,29 @@ describe('Truffle accessories v2', () => {
     expect(container.querySelector('.truffle__accessory')).toBeNull();
   });
 });
+
+describe('accessories never hide earned powers', () => {
+  const circles = (html: string) => [...html.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"/g)].map((m) => m.slice(1).map(Number));
+  it('the gold medal and the tier-3 power emblem do not overlap', async () => {
+    const { accessoryLayer } = await import('./accessories');
+    const { powerLayer } = await import('./powers');
+    const [mx, my, mr] = circles(accessoryLayer('medal')!.under).find(([, , r]) => r >= 12)!;
+    const [ex, ey, er] = circles(powerLayer('fire', 3).front).find(([, , r]) => r >= 15)!;
+    expect(Math.hypot(mx! - ex!, my! - ey!)).toBeGreaterThan(mr! + er!);
+  });
+  it('the power mark sits on the left, clear of held items on the right', async () => {
+    const { powerLayer } = await import('./powers');
+    for (const id of ['water', 'fire', 'wood', 'sun', 'roar'] as const) {
+      const x = Number(/<svg x="([\d.]+)"/.exec(powerLayer(id, 1).front)![1]);
+      expect(x).toBeLessThan(120);
+    }
+  });
+  it('room thumbnails are cropped tightly to each accessory, without the paw', async () => {
+    const { accessoryThumb } = await import('./accessories');
+    for (const id of ['lantern', 'kite', 'balloon', 'wand', 'brush']) {
+      const t = accessoryThumb(id)!;
+      expect(Number(t.viewBox.split(' ')[3])).toBeLessThanOrEqual(120);
+      expect(t.markup).not.toContain('rx="16" ry="11"');
+    }
+  });
+});
