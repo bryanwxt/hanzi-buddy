@@ -8,7 +8,7 @@ import { displayText } from '../langdu/phrases';
 import { deleteRecording, listParentPassages, listRecordings } from '../store/repo';
 import type { ParentPassage, Recording } from '../types';
 
-const KEEP = 100;
+const KEEP = 100; // a picture story (all its parts) counts as one
 const HAN = /\p{Script=Han}/u;
 
 type Texts = Map<string, { title: string; text: string }>;
@@ -113,8 +113,8 @@ export function RecordingsPanel() {
     await reload();
   };
   const pruneOld = async () => {
-    const old = recs.slice(KEEP);
-    if (!confirm(`Delete the ${old.length} oldest recordings?`)) return;
+    const old = groups.slice(KEEP).flatMap((g) => (g.kind === 'story' ? g.recs : [g.rec])); // a story goes as a whole
+    if (!confirm(`Delete the ${groups.length - KEEP} oldest recordings?`)) return;
     for (const r of old) await deleteRecording(db, r.id);
     await reload();
   };
@@ -122,10 +122,10 @@ export function RecordingsPanel() {
   return (
     <section class="panel">
       <h2>Recordings</h2>
-      {recs.length > KEEP && (
+      {groups.length > KEEP && (
         <p class="warning">
-          {recs.length} recordings saved.{' '}
-          <button type="button" class="small-btn" onClick={() => void pruneOld()}>Delete the oldest {recs.length - KEEP}</button>
+          {groups.length} recordings saved.{' '}
+          <button type="button" class="small-btn" onClick={() => void pruneOld()}>Delete the oldest {groups.length - KEEP}</button>
         </p>
       )}
       {recs.length === 0 ? (

@@ -45,4 +45,19 @@ describe('RecordingsPanel stories', () => {
     await waitFor(async () => expect((await listRecordings(app.db)).map((x) => x.id)).toEqual(['p']));
     vi.unstubAllGlobals();
   });
+  it('counts a story as one recording for the too-many warning, and prunes whole stories', async () => {
+    const app = await makeAppData();
+    for (let s = 0; s < 13; s++) for (const x of story('vase', base + s * 86_400_000)) await addRecording(app.db, x);
+    const { unmount } = renderWithApp(<RecordingsPanel />, app);
+    await waitFor(() => expect(document.querySelectorAll('tr.rec-row')).toHaveLength(13));
+    expect(document.querySelector('.warning')).toBeNull(); // 13 stories (104 parts) is not "too many"
+    unmount();
+    for (let i = 0; i < 88; i++) await addRecording(app.db, r(`p${i}`, base + 14 * 86_400_000 + i * 60 * 60_000, { kind: 'passage', passageId: 'p01' }));
+    renderWithApp(<RecordingsPanel />, app);
+    expect(await screen.findByText('Delete the oldest 1')).toBeTruthy(); // 101 recordings: 13 stories + 88 reads
+    vi.stubGlobal('confirm', () => true);
+    fireEvent.click(screen.getByText('Delete the oldest 1'));
+    await waitFor(async () => expect(await listRecordings(app.db)).toHaveLength(12 * 8 + 88)); // the oldest story goes as a whole
+    vi.unstubAllGlobals();
+  });
 });
