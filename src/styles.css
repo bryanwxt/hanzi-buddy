@@ -880,3 +880,52 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
   .whichpart__char { font-size: clamp(80px, 13dvh, 120px); }
 }
 .write__cue { background: var(--surface); border: var(--panel-border); border-radius: 16px; box-shadow: 3px 3px 0 var(--ink); padding: 8px 14px; } /* paper behind the cue: it sits on the scene */
+
+/* 朗读 */
+.langdu { min-height: 0; gap: clamp(8px, 1.6dvh, 18px); }
+.passage, .langdu__passage { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.langdu .passage { flex: 0 1 auto; max-height: 46dvh; font-size: clamp(24px, 3.6dvh, 36px); padding: 14px 22px; }
+.langdu__phrase { font-size: clamp(34px, 5.4dvh, 52px); }
+.langdu__line { font-size: clamp(24px, 3.6dvh, 34px); }
+.mic-btn { min-height: var(--tap-main); padding: 12px 24px; }
+@media (max-width: 599px) {
+  .langdu .passage { padding: 10px 14px; max-height: 40dvh; }
+  .meter__msg { font-size: 18px; }
+}
+@media (orientation: landscape) and (min-height: 600px) {
+  .langdu { display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; column-gap: 28px; text-align: left; }
+  .langdu > .passage, .langdu > .langdu__script, .langdu > .langdu__phrase { grid-column: 1; grid-row: 1 / span 4; max-height: 70dvh; }
+  .langdu > :not(.passage):not(.langdu__script):not(.langdu__phrase) { grid-column: 2; justify-self: center; }
+}
+
+/* 看图说话 */
+.kantu { min-height: 0; gap: clamp(6px, 1.4dvh, 14px); }
+.kantu__pic { height: min(30dvh, 420px); }
+.kantu__pic--small { height: min(18dvh, 220px); }
+.kantu__q { font-size: clamp(20px, 3dvh, 28px); }
+.kantu__starter { font-size: clamp(20px, 3dvh, 30px); }
+.kantu__word { min-height: 44px; font-size: 18px; }
+.kantu__model { font-size: clamp(18px, 2.6dvh, 24px); max-height: 18dvh; overflow-y: auto; }
+.kantu__ask .truffle { width: calc(var(--pet) * 0.8); height: auto; }
+@media (max-width: 599px) {
+  .kantu__frame, .kantu__pic { width: 100%; height: auto; }
+  .kantu__words { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; max-width: 100%; padding-bottom: 4px; }
+  .kantu__word { flex: none; }
+}
+@media (orientation: landscape) and (min-height: 600px) {
+  .kantu { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; column-gap: 28px; }
+  .kantu > .kantu__frame, .kantu > .kantu__ask { grid-column: 1; grid-row: 1 / span 6; }
+  .kantu > :not(.kantu__frame):not(.kantu__ask) { grid-column: 2; }
+  .kantu__pic { height: auto; width: 100%; max-height: 60dvh; }
+}
+/* text on the scene gets paper behind it */
+.langdu__script { background: var(--surface); border: var(--panel-border); border-radius: var(--radius-lg); box-shadow: var(--panel-shadow); padding: 12px 20px; }
+.langdu__title, .langdu__step, .langdu__ok, .langdu__thanks { background: var(--paper); border-radius: 12px; padding: 2px 12px 4px; width: fit-content; justify-self: center; align-self: center; }
+.langdu > .pet .truffle { width: var(--pet); height: auto; }
+@media (max-width: 599px) {
+  .langdu > .pet { flex-direction: row-reverse; align-items: center; gap: 8px; align-self: flex-start; }
+  .langdu > .pet .pet__bubble { margin-bottom: 0; font-size: 17px; }
+  .langdu > .pet .pet__bubble::after { left: -7px; bottom: auto; top: 50%; transform: translateY(-50%) rotate(135deg); }
+  .langdu__line { font-size: 21px; }
+  .langdu__script { padding: 10px 14px; }
+}

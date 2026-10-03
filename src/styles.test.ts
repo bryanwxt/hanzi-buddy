@@ -137,4 +137,9 @@ describe('adaptive layouts (spec §18)', () => {
     expect(adaptive).toMatch(/\.bottombar--neutral \{[^}]*background: transparent;[^}]*border-color: transparent;[^}]*pointer-events: none;/);
     expect(css).not.toContain('.world-strip');
   });
+  it('朗读: a long passage scrolls inside its card; 看图说话: theme words never push the page, and stay tappable', () => {
+    expect(adaptive).toMatch(/\.passage, \.langdu__passage \{[^}]*min-height: 0;[^}]*overflow-y: auto;/);
+    expect(adaptive).toMatch(/\.kantu__word \{[^}]*min-height: 44px;/);
+    expect(adaptive).toMatch(/@media \(max-width: 599px\) \{[^@]*\.kantu__words \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/);
+  });
 });
