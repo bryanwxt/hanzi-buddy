@@ -505,3 +505,42 @@ replaces every child-facing emoji:
 
 The parent area keeps its emoji, including the reward-goal emoji the parent
 chooses.
+
+## 14. Fairer placement and clearer writing prompts (added 2026-10-03 at the parent's request)
+
+### Placement by difficulty bands
+
+The old check showed 40 characters from easiest to hardest and stopped at the
+first "不认识"; one slip on an easy character sank everything after it. It is
+replaced by:
+
+- **Bands:** the built-in characters, in rank order, are split into bands of
+  60 (10 bands).
+- **Questions:** 8 characters are asked from each band, evenly spaced through
+  it, easiest band first.
+- **Each question is a quiz, not self-report:**
+  - the character with 4 pinyin options (the flashcard distractor rules);
+  - plus a 不知道 ("don't know") button, which counts as wrong.
+  - No right/wrong feedback is shown, and Truffle stays neutral.
+- **A band passes at 6 of 8.** The check stops at the 3rd wrong answer in a
+  band (the moment 6/8 becomes impossible), or after the last band.
+- **Credit:**
+  - every character in a passed band is seeded as known;
+  - in the band where it stopped, only the characters answered correctly are
+    seeded.
+  - Characters he missed are not seeded, so they come up early as new words.
+- The parent can re-run placement from Settings, as now.
+
+### Writing (听写) prompts
+
+Under the pinyin and the speak button, the writing step shows:
+
+1. **The meaning:** the word's own meaning, first sense only (text before the
+   first comma or semicolon). Parent words show their meaning if the parent
+   entered one.
+2. **The source word, for a single built-in character with an example word:**
+   that word with the character blanked, e.g. ＿子 for 儿. The speak button
+   reads "儿，儿子的儿", the way teachers dictate 听写.
+
+This relaxes the earlier rule that child-facing meanings come only from
+radicals, for writing prompts only.
