@@ -17,7 +17,9 @@ child's own zodiac, set in the parent area — plus 8 outfits and 16 add-on acce
 any costume. Home sits in an ink-drawn world that changes as he learns: a journey of eight places unlocked by
 the number of characters he knows (后院 backyard, 草丛 tall grass, 赛车山 race-track hills, 方块世界 block world,
 恐龙谷 dino valley, 海底 under the sea, 月球基地 moon base, 海盗岛 treasure island), washed by the time of day, with a
-week strip, a richer word of the day, and a strip of the world under each lesson. Everything the child sees is drawn in the app's own ink style; there are no emoji on child screens. Parents use the 🔒 PIN-protected area for
+week strip, a richer word of the day, and a strip of the world under each lesson. Each world has one thing to tap:
+zodiac animals hide in the tall grass (collected in 字卡), gems are dug in the block world (a jar in Truffle's room), a
+dinosaur egg hatches after his next lesson, and the island's X gives a bonus star a day. Everything the child sees is drawn in the app's own ink style; there are no emoji on child screens. Parents use the 🔒 PIN-protected area for
 progress, school word lists, recordings, reward goals, settings and backups. All data stays on the iPad.
 
 Design: `docs/superpowers/specs/2026-10-02-hanzi-buddy-design.md`, redesign `docs/superpowers/specs/2026-10-02-ziji-truffle-design.md`
