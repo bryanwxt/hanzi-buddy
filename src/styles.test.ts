@@ -66,6 +66,11 @@ describe('world layers never get in the way', () => {
     expect(css).toMatch(/\.screen:has\(\.world-strip\) \.bottombar--neutral \{[^}]*background: transparent/);
     expect(css).not.toMatch(/\.bottombar--good[^{]*\{[^}]*background: transparent/);
   });
+  it('text that sits straight on the page gets a paper backing, so scenery never runs under it', () => {
+    expect(css).toMatch(/\.home__who \{[^}]*background: var\(--paper\)/);
+    expect(css).toMatch(/\.home__title \{[^}]*background: var\(--paper\)/);
+    expect(css).toMatch(/\.path__name \{[^}]*background: var\(--paper\)/);
+  });
   it("Truffle's bubble keeps its line on one row", () => {
     expect(css).toMatch(/\.pet__bubble \.label__cells \{[^}]*flex-wrap: nowrap/);
   });
