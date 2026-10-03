@@ -50,4 +50,9 @@ describe('world scenes', () => {
     expect(container.querySelectorAll('[data-part="lantern"]')).toHaveLength(0);
     expect(container.querySelectorAll('[data-part="star"]').length).toBeGreaterThan(0);
   });
+  it('the race flag stands on the hill, not in mid-air', () => {
+    const m = SCENES.race.match(/data-part="flag"[^>]*>\s*<path d="M40 (\d+) v-(\d+)"/);
+    expect(m).toBeTruthy();
+    expect(Number(m![1])).toBeGreaterThanOrEqual(395); // the ground line near x=40
+  });
 });
