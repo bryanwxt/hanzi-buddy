@@ -5,6 +5,7 @@ import { setSfxEnabled } from '../audio/sfx';
 import { setSpeechRate, speak } from '../audio/speech';
 import { ONESIES, type ZodiacId } from '../fun/costumes';
 import { introLines } from '../langdu/intro';
+import { AsrTest } from './AsrTest';
 import { updateSettings } from '../store/repo';
 import type { OralInfo, Settings, StepKind } from '../types';
 
@@ -70,6 +71,10 @@ export function SettingsPanel() {
           </label>
         ))}
       </fieldset>
+      <details class="field">
+        <summary>Advanced: test speech recognition (for future auto-hints on misread characters)</summary>
+        <AsrTest />
+      </details>
       <div class="field">
         <label for="st-rate">Speech speed ({s.speechRate.toFixed(2)})</label>
         <div class="row" style={{ justifyContent: 'flex-start' }}>
