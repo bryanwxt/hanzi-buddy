@@ -25,6 +25,7 @@ describe('HomeScreen', () => {
     renderWithApp(<HomeScreen />, app);
     expect(await screen.findByLabelText('连续 1 天')).toBeTruthy();
     expect(screen.getByLabelText('2 颗星')).toBeTruthy();
+    expect([...document.querySelectorAll('.home__week .seal > span')].map((s) => s.textContent)).toEqual(['字', '己']);
     fireEvent.click(screen.getByRole('button', { name: '开始：认一认' }));
     expect(app.go).toHaveBeenCalledWith({ name: 'session', free: false });
   });
@@ -309,5 +310,14 @@ describe('找到的动物 and the gem jar', () => {
     fireEvent.click(await screen.findByRole('tab', { name: '地方' }));
     expect(screen.getByText('3 颗宝石')).toBeTruthy();
     expect(document.querySelectorAll('.gem-jar .gem')).toHaveLength(3);
+  });
+  it('a full jar keeps every gem below the rim', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, finds: { ...DEFAULT_KID.finds, gems: 30 } } });
+    renderWithApp(<Wardrobe />, app);
+    fireEvent.click(await screen.findByRole('tab', { name: '地方' }));
+    expect(screen.getByText('30 颗宝石')).toBeTruthy();
+    const ys = [...document.querySelectorAll('.gem-jar .gem')].map((g) => Number(/translate\([-\d.]+ ([-\d.]+)\)/.exec(g.getAttribute('transform')!)![1]));
+    expect(ys.length).toBeGreaterThan(0);
+    expect(Math.min(...ys) - 7).toBeGreaterThan(-38); // a gem is about 14 tall at this scale; the rim's lower edge is y -38
   });
 });
