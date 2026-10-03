@@ -51,6 +51,17 @@ describe('speaking step alternation', () => {
     expect(recs.filter((r) => r.prompt.kind === 'answer')).toHaveLength(2);
   });
 
+  it('a full storage still finishes the story (the recordings are lost, the lesson is not)', async () => {
+    const app = await setup({});
+    const put = app.db.put.bind(app.db);
+    app.db.put = ((store: string, ...rest: unknown[]) => (store === 'recordings' ? Promise.reject(new DOMException('full', 'QuotaExceededError')) : (put as (...a: unknown[]) => unknown)(store, ...rest))) as typeof app.db.put;
+    renderWithApp(<SessionScreen free={false} />, app);
+    await screen.findByText('图上画的是什么？');
+    await tellStory();
+    expect(await screen.findByText('太棒了！')).toBeTruthy();
+    expect((await getKid(app.db))!.story.told).toBe(1);
+  });
+
   it('after a story day, the next lesson is 朗读', async () => {
     const app = await setup({ speakingLast: 'story' });
     renderWithApp(<SessionScreen free={false} />, app);

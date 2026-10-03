@@ -53,6 +53,16 @@ describe('daily 朗读 step', () => {
     expect(recs.find((r) => r.prompt.kind === 'passage')!.level).toBe(0.1);
   });
 
+  it('a full storage still finishes the 朗读 step and counts the day', async () => {
+    const app = await setup();
+    const put = app.db.put.bind(app.db);
+    app.db.put = ((store: string, ...rest: unknown[]) => (store === 'recordings' ? Promise.reject(new DOMException('full', 'QuotaExceededError')) : (put as (...a: unknown[]) => unknown)(store, ...rest))) as typeof app.db.put;
+    renderWithApp(<SessionScreen free={false} />, app);
+    await readThrough();
+    expect(await screen.findByText('太棒了！')).toBeTruthy();
+    expect((await getKid(app.db))!.reading.days).toBe(1);
+  });
+
   it('a louder read than last time earns a bonus star; the first read of a passage does not', async () => {
     const app = await setup();
     await addRecording(app.db, { id: 'old', createdAt: 1, prompt: { kind: 'passage', passageId: 'pp:1' }, blob: new Blob(['o']), mime: 'audio/mp4', durationSec: 5, level: 0.05 });
