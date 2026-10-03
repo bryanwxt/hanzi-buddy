@@ -268,3 +268,15 @@ describe("Truffle's room places", () => {
     expect(places[1]!.getAttribute('aria-pressed')).toBe('true');
   });
 });
+
+describe('HomeScreen word of the day reading', () => {
+  it('shows the content reading, so it matches the example word (长 zhǎng, 长大)', async () => {
+    const app = await makeAppData();
+    await putWords(app.db, [makeWord('长', { pinyin: 'zhǎng', examples: [{ text: '长大', pinyin: 'zhǎng dà' }] })]);
+    await putCards(app.db, [makeCard('b:长', 'recognise', new Date(2030, 0, 1), true)]);
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(document.querySelector('.wotd__py')?.textContent).toBe('zhǎng');
+    expect(document.querySelector('.wotd__example .label')?.getAttribute('data-py')).toBe('zhǎng dà');
+  });
+});

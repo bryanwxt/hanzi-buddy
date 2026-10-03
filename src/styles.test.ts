@@ -65,6 +65,9 @@ describe('world layers never get in the way', () => {
   it('on lessons the waiting bottom bar is see-through so the ground shows under the button; feedback bars stay solid', () => {
     expect(css).toMatch(/\.screen:has\(\.world-strip\) \.bottombar--neutral \{[^}]*background: transparent/);
     expect(css).not.toMatch(/\.bottombar--good[^{]*\{[^}]*background: transparent/);
+    // see-through must also mean tap-through: an answer showing under the empty bar still takes the tap
+    expect(css).toMatch(/\.screen:has\(\.world-strip\) \.bottombar--neutral \{[^}]*pointer-events: none/);
+    expect(css).toMatch(/\.bottombar--neutral \.btn \{[^}]*pointer-events: auto/);
   });
   it('text that sits straight on the page gets a paper backing, so scenery never runs under it', () => {
     expect(css).toMatch(/\.home__who \{[^}]*background: var\(--paper\)/);
