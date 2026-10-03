@@ -964,3 +964,23 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
 .home__cards .done-card .btn { flex: none; } .home__cards .done-card .label__cells { flex-wrap: nowrap; } /* 再玩一会儿 on one line */
 .home__cards .done-today { min-width: 0; }
 @media (max-width: 599px) { .home__cards .done-today .label__cells { flex-wrap: nowrap; } .home__cards .done-today { font-size: 17px; } }
+
+/* Review fixes: what the child must read sits on paper, never on scenery; nothing Chinese under 16px */
+.flash__prompt .hanzi--xl, .whichpart__char, .pond-q { background: var(--surface); border: var(--panel-border); border-radius: 22px; box-shadow: var(--panel-shadow); }
+.flash__prompt .hanzi--xl, .whichpart__char { padding: 0.04em 0.18em 0.08em; line-height: 1.05; }
+.pond-q { padding: 4px 16px; }
+@media (orientation: portrait) and (min-width: 600px) {
+  .bottombar { width: min(100%, 680px); align-self: center; } /* tablet portrait: the card is centred, not full width */
+}
+.label-tag { font-size: 16px; }
+.hold__label { font-size: 16px; }
+/* the celebration's prize screens on a phone: the headline on one line, a smaller dressed-up Truffle and chest, 继续 on screen */
+.celebrate .truffle { width: min(calc(var(--pet) * 1.6), 22dvh); height: auto; }
+.prize__stars svg { width: clamp(44px, 8dvh, 72px); height: auto; }
+@media (max-width: 599px) {
+  .celebrate h1 { font-size: clamp(26px, 4.4dvh, 40px); }
+  .celebrate h1 .label__cells { flex-wrap: nowrap; }
+  .celebrate .label__cell--zh { min-width: 1.1em; }
+  .chest svg { width: clamp(110px, 17dvh, 200px); }
+  .prize__costume { font-size: 30px; margin-bottom: 8px; }
+}

@@ -150,4 +150,10 @@ describe('adaptive layouts (spec §18)', () => {
     expect(adaptive).toMatch(/@media \(max-width: 599px\) \{[^@]*\.pinpad \{[^}]*grid-template-columns: repeat\(3, 72px\);/);
     expect(adaptive).toMatch(/\.room \{[^}]*min-height: 0;/);
   });
+  it('the review fixes: paper behind the big character and the 钓鱼 question; a centred feedback card on an upright iPad; no Chinese under 16px', () => {
+    expect(adaptive).toMatch(/\.flash__prompt \.hanzi--xl, \.whichpart__char, \.pond-q \{[^}]*background: var\(--surface\);[^}]*border: var\(--panel-border\);/);
+    expect(adaptive).toMatch(/@media \(orientation: portrait\) and \(min-width: 600px\) \{[^@]*\.bottombar \{[^}]*width: min\(100%, 680px\);[^}]*align-self: center;/);
+    expect(adaptive).toMatch(/\.label-tag \{ font-size: 16px; \}/);
+    expect(adaptive).toMatch(/\.hold__label \{ font-size: 16px; \}/);
+  });
 });

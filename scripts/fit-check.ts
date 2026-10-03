@@ -32,6 +32,18 @@ function probe(args: { main: string; scrollers: string }): string[] {
   const de = document.documentElement;
   if (de.scrollHeight > innerHeight + 1) out.push(`page scrolls ${de.scrollHeight - innerHeight}px`);
   if (de.scrollWidth > innerWidth + 1) out.push(`page scrolls sideways ${de.scrollWidth - innerWidth}px`);
+  // a .screen clips its own overflow (height: 100dvh; overflow: hidden), so the document never scrolls: look for content past the screen's edges
+  const cut = new Set<string>();
+  const past = (el: Element) => {
+    if (el.closest('[aria-hidden="true"], .sr-only, .world-taps, [hidden], .scene') || el.parentElement?.closest(args.scrollers)) return;
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height || getComputedStyle(el).visibility === 'hidden') return;
+    if (r.bottom > innerHeight + 1 || r.top < -1 || r.right > innerWidth + 1 || r.left < -1) cut.add(`content cut off: ${(el.textContent ?? el.className.toString()).trim().slice(0, 16)}`);
+  };
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = tw.nextNode(); n; n = tw.nextNode()) if ((n.textContent ?? '').trim() && n.parentElement) past(n.parentElement);
+  for (const el of document.querySelectorAll('svg.truffle, .card, .goal, .tianzige, .passage, img')) past(el);
+  out.push(...cut);
   const name = (el: Element) => (el.getAttribute('aria-label') || el.textContent || el.className.toString()).trim().slice(0, 24);
   const mainMin = innerWidth < 600 ? 52 : 64;
   for (const el of document.querySelectorAll('button, [role="button"], [role="tab"], a[href], input, select, textarea')) {
@@ -42,11 +54,15 @@ function probe(args: { main: string; scrollers: string }): string[] {
     if (el.matches(args.main) && Math.min(r.width, r.height) < mainMin - 0.5) out.push(`main action under ${mainMin}px: ${name(el)} ${Math.round(r.width)}×${Math.round(r.height)}`);
   }
   const small = new Set<string>();
-  for (const el of document.querySelectorAll('.label__ch')) {
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (!/\p{Script=Han}/u.test(n.textContent ?? '')) continue;
+    const el = n.parentElement!;
+    if (el.closest('[aria-hidden="true"], .sr-only, .world-taps, [hidden]')) continue;
     const r = el.getBoundingClientRect();
-    if (!r.width || el.closest('[aria-hidden="true"], .world-taps, .sr-only')) continue;
+    if (!r.width || getComputedStyle(el).visibility === 'hidden') continue;
     const fs = parseFloat(getComputedStyle(el).fontSize);
-    if (fs < 15.5) small.add(`Chinese text under 16px: ${(el.parentElement?.closest('.label')?.textContent ?? el.textContent ?? '').slice(0, 12)} ${fs}px`);
+    if (fs < 15.5) small.add(`Chinese text under 16px: ${(el.closest('.label')?.textContent ?? n.textContent ?? '').trim().slice(0, 12)} ${fs}px`);
   }
   out.push(...small);
   // solid things must not sit on each other (the eye catches this; scroll and size checks don't)
@@ -61,11 +77,11 @@ function probe(args: { main: string; scrollers: string }): string[] {
     const top = Math.max(r.top, box?.top ?? -Infinity), bottom = Math.min(r.bottom, box?.bottom ?? Infinity);
     return right - left > 0 && bottom - top > 0 ? { left, right, top, bottom } : null;
   };
-  for (let a = 0; a < solid.length; a++) for (let b = a + 1; b < solid.length; b++) {
-    const A = solid[a]!, B = solid[b]!;
+  const boxes = solid.map((el) => ({ el, r: shown(el) })).filter((x): x is { el: Element; r: NonNullable<ReturnType<typeof shown>> } => x.r !== null); // measure each once
+  for (let a = 0; a < boxes.length; a++) for (let b = a + 1; b < boxes.length; b++) {
+    const { el: A, r: ra } = boxes[a]!, { el: B, r: rb } = boxes[b]!;
+    if (ra.right <= rb.left || rb.right <= ra.left || ra.bottom <= rb.top || rb.bottom <= ra.top) continue;
     if (A.contains(B) || B.contains(A)) continue;
-    const ra = shown(A), rb = shown(B);
-    if (!ra || !rb) continue;
     const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
     if (w > 6 && h > 6) { const key = `${name(A)} × ${name(B)}`; if (!seenPair.has(key)) { seenPair.add(key); out.push(`overlap: ${key}`); } }
   }
@@ -97,7 +113,7 @@ function advance(): boolean {
   if (!document.querySelector('.kantu__model') && tap(byText('听松露说'))) return true; // show the model once: the tallest state
   if (tap(first('.bottombar .btn'))) return true;
   if (tap(byText('开始录音'))) return true;
-  for (const t of ['我记住了', '下一句', '开始朗读', '听听你自己', '开始！', '走吧']) if (tap(byText(t))) return true;
+  for (const t of ['我记住了', '下一句', '开始朗读', '听听你自己', '开始！', '走吧', '继续', '回家']) if (tap(byText(t))) return true;
   if (tap(first('.choice'))) return true;
   if (tap(first('.fishtile, .bubble-opt, .whichpart__char'))) return true;
   if (tap(first('.chest'))) return true;
@@ -125,7 +141,7 @@ async function seed(page: Page, json: string) {
   await page.waitForTimeout(600);
 }
 
-async function open(browser: Browser, size: Size, now: Date, profile: Omit<FitProfileOptions, 'now'>): Promise<Page> {
+async function open(browser: Browser, size: { name: string; width: number; height: number }, now: Date, profile: Omit<FitProfileOptions, 'now'>, errors: string[] = []): Promise<Page> {
   const ctx = await browser.newContext({ viewport: { width: size.width, height: size.height }, hasTouch: true, serviceWorkers: 'block' });
   await ctx.clock.setFixedTime(now);
   await ctx.addInitScript({ content: 'window.__name = (f) => f;' }); // tsx (esbuild keepNames) wraps functions in __name(); in-page code needs it to exist
@@ -146,11 +162,13 @@ async function open(browser: Browser, size: Size, now: Date, profile: Omit<FitPr
     Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream() } });
   });
   const page = await ctx.newPage();
+  page.on('pageerror', (e) => errors.push(String(e).slice(0, 300)));
   await seed(page, await buildFitProfile({ now, ...profile }));
   return page;
 }
 
 async function check(page: Page, size: Size, flow: string, step: number) {
+  console.error(`[${new Date().toTimeString().slice(0, 8)}] ${size.name} ${flow}-${step}`); // progress, so a hang shows where
   await page.waitForTimeout(500);
   const sig = await page.evaluate(signature);
   const problems = await page.evaluate(probe, { main: MAIN, scrollers: SCROLLERS });
@@ -167,6 +185,9 @@ async function walkLesson(page: Page, size: Size, flow: string, opts: { firstOnl
     const sig = await page.evaluate(signature);
     if (!seen.has(sig)) { seen.add(sig); await check(page, size, flow, i); }
     if (opts.firstOnly) return;
+    const hold = await page.$('.hold:not(.is-done)'); // the chest opens on press-and-hold, which a click can't do
+    const box = hold && (await hold.isVisible()) ? await hold.boundingBox() : null;
+    if (box) { await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down(); await page.waitForTimeout(1500); await page.mouse.up(); continue; }
     if (!(await page.evaluate(advance))) return;
   }
 }
@@ -174,9 +195,17 @@ async function walkLesson(page: Page, size: Size, flow: string, opts: { firstOnl
 async function sweep(browser: Browser, size: Size) {
   const run = async (flow: string, now: Date, profile: Omit<FitProfileOptions, 'now'>, then: (p: Page) => Promise<void>) => {
     if (ONLY && !ONLY.test(flow)) return;
-    const page = await open(browser, size, now, profile);
-    try { await then(page); } catch (e) { results.push({ size: size.name, flow, step: -1, sig: '', problems: [`flow crashed: ${String(e).slice(0, 900)}`] }); }
-    await page.context().close();
+    let page: Page | null = null;
+    const errors: string[] = [];
+    try {
+      const limit = new Promise<never>((_, no) => setTimeout(() => no(new Error('flow took over 3 minutes (stuck?)')), 180_000));
+      page = await Promise.race([open(browser, size, now, profile, errors), limit]);
+      const p = page;
+      await Promise.race([then(p), limit]); // one stuck screen can't stall the whole sweep
+    } catch (e) {
+      results.push({ size: size.name, flow, step: -1, sig: '', problems: [`flow crashed: ${String(e).slice(0, 900)}`, ...errors.map((m) => `page error: ${m}`)] });
+    }
+    await page?.context().close();
   };
   const tabTo = (p: Page, label: string) => p.click(`.tabbar__item:has-text("${label}")`);
   const startLesson = async (p: Page) => { await p.click('.path__node--current'); };
@@ -214,7 +243,7 @@ async function main() {
   try {
     for (let i = 0; i < 60; i++) { try { if ((await fetch(BASE)).ok) break; } catch { /* starting */ } await new Promise((r) => setTimeout(r, 250)); }
     let browser: Browser;
-    try { browser = await webkit.launch(); } catch (e) { console.error(`WebKit is missing: run  npx playwright-core install webkit  (ask first: it downloads ~100 MB)\n${e}`); process.exit(2); }
+    try { browser = await webkit.launch(); } catch (e) { console.error(`WebKit is missing: run  npx playwright-core install webkit  (ask first: it downloads ~100 MB)\n${e}`); process.exitCode = 2; return; }
     await Promise.all(SIZES.map((size) => sweep(browser, size))); // sizes in parallel, each in its own contexts
     // A phone turned sideways: the overlay covers the screen
     const side = { name: 'iphone-sideways', width: 667, height: 375 };
