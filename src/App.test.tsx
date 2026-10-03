@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/preact';
+import { fireEvent, render, screen, waitFor } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
@@ -22,7 +22,10 @@ describe('App', () => {
     type('1234');
     fireEvent.click(await screen.findByRole('button', { name: '叫醒松露' }));
     fireEvent.click(await screen.findByText('好！'));
-    for (let i = 0; i < 3; i++) fireEvent.click(await screen.findByText('不知道'));
+    for (let i = 0; i < 3; i++) {
+      await waitFor(() => expect(document.querySelector('[data-ready="true"]')).toBeTruthy()); // taps are ignored for a moment after each question
+      fireEvent.click(screen.getByText('不知道'));
+    }
     fireEvent.click(await screen.findByText('开始！'));
     expect(await screen.findByText('今天的练习')).toBeTruthy();
     expect(screen.getByText('认识 0 个字')).toBeTruthy();

@@ -13,7 +13,8 @@ import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
 
 /** First-run check: a pinyin quiz in difficulty bands (8 each, pass at 6, stop at the 3rd miss). No right/wrong shown. */
-export function PlacementScreen() {
+/** tapGuardMs: taps are ignored this long after each question appears, so a double tap can't answer the next one. */
+export function PlacementScreen({ tapGuardMs = 350 }: { tapGuardMs?: number } = {}) {
   const { db, now, go, refresh, kid } = useApp();
   const [words, setWords] = useState<Word[] | null>(null);
   const [state, setState] = useState(startPlacement);
@@ -31,8 +32,17 @@ export function PlacementScreen() {
     return shuffle([current.pinyin, ...pickPinyinDistractors(current, words, rng)], rng);
   }, [current?.id]);
 
+  const [ready, setReady] = useState(tapGuardMs <= 0);
+  useEffect(() => {
+    if (tapGuardMs <= 0) return;
+    setReady(false);
+    const t = setTimeout(() => setReady(true), tapGuardMs);
+    return () => clearTimeout(t);
+  }, [state, tapGuardMs]);
+
   const answer = async (correct: boolean) => {
-    if (!current || known !== null) return;
+    if (!current || known !== null || !ready) return;
+    if (tapGuardMs > 0) setReady(false);
     const next = placementStep(state, bands, correct, current.id);
     setState(next);
     if (next.done) {
@@ -61,7 +71,7 @@ export function PlacementScreen() {
   }
 
   return (
-    <div class="screen">
+    <div class="screen" data-ready={ready ? 'true' : 'false'}>
       <Scene kind="home" />
       <div class="center">
         <Pet kid={k} mood="neutral" bubble="这个字怎么读？" size={100} />

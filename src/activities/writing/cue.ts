@@ -1,4 +1,6 @@
-import type { Word } from '../../types';
+import type { Example, Word } from '../../types';
+import { syllableTone } from '../flashcards/distractors';
+import { KID_MEANING } from './meanings';
 
 export interface WritingCue {
   meaning: string | null; // first sense only: "son, child" → "son"
@@ -9,15 +11,43 @@ export interface WritingCue {
 
 /** What tells a child which character to write when several share the same sound. */
 export function writingCue(word: Word): WritingCue {
-  const meaning = word.meaning?.split(/[,;]/)[0]?.trim() || null;
-  const example = word.examples?.find((e) => e.text.length > word.text.length && e.text.includes(word.text));
+  const meaning = kidMeaning(word);
+  // only words that use the reading being written; a word where it appears once makes the best blank
+  const usable = (word.examples ?? []).filter((e) => e.text.length > word.text.length && e.text.includes(word.text) && sameReading(e, word));
+  const once = usable.find((e) => e.text.split(word.text).length === 2);
+  const example = once ?? usable[0];
   if (!example) return { meaning, blanked: null, blankedPy: null, speech: word.text };
+  const speech = `${word.text}，${example.text}的${word.text}`;
+  if (!once) return { meaning, blanked: null, blankedPy: null, speech }; // 爸爸 → two empty boxes would tell him nothing
   return {
     meaning,
     blanked: example.text.split(word.text).join('＿'.repeat(word.text.length)),
     blankedPy: blankedSyllables(example.text, example.pinyin, word.text),
-    speech: `${word.text}，${example.text}的${word.text}`,
+    speech,
   };
+}
+
+/** The first sense, unless it misleads (curated), is a grammar label, or is too long to read at a glance. */
+function kidMeaning(word: Word): string | null {
+  if (word.text in KID_MEANING) return KID_MEANING[word.text]!;
+  const first = word.meaning?.split(/[,;，；]/)[0]?.trim();
+  if (!first || /particle|marker|measure word|classifier|surname|\(|\?/i.test(first) || first.split(/\s+/).length > 3) return null;
+  return first.replace(/^to /, '');
+}
+
+/** Does the example say the character the way the prompt does? A neutral tone of the same syllable counts (儿子 zi for 子 zǐ). */
+function sameReading(e: Example, word: Word): boolean {
+  const syl = e.pinyin.trim().split(/\s+/);
+  const want = word.pinyin.trim().split(/\s+/);
+  const at = e.text.indexOf(word.text);
+  if (syl.length !== [...e.text].length || at < 0) return true; // can't line them up: trust the data
+  return want.every((w, j) => {
+    const got = syl[at + j];
+    if (!got) return false;
+    if (got === w) return true;
+    const a = syllableTone(got), b = syllableTone(w);
+    return a.base === b.base && a.tone === 5;
+  });
 }
 
 /** The example's syllables minus the hidden character's, or null when they don't line up one per character. */

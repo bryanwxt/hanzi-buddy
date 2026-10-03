@@ -49,7 +49,7 @@ describe('first launch', () => {
     const app = await makeAppData();
     const words = builtinWords(0);
     await putWords(app.db, words);
-    renderWithApp(<PlacementScreen />, app);
+    renderWithApp(<PlacementScreen tapGuardMs={0} />, app);
     const answerRight = async () => {
       const ch = (await screen.findByTestId('placement-char')).textContent!;
       fireEvent.click(screen.getByRole('button', { name: words.find((w) => w.text === ch)!.pinyin }));
@@ -65,4 +65,18 @@ describe('first launch', () => {
     await waitFor(() => expect(app.go).toHaveBeenCalledWith({ name: 'home' }));
   });
 
+  it('Placement quiz: a double tap answers once, not the next question too', async () => {
+    const app = await makeAppData();
+    await putWords(app.db, builtinWords(0));
+    renderWithApp(<PlacementScreen tapGuardMs={120} />, app);
+    const ready = () => waitFor(() => expect(document.querySelector('[data-ready="true"]')).toBeTruthy());
+    await ready();
+    fireEvent.click(screen.getByText('不知道'));
+    fireEvent.click(screen.getByText('不知道')); // lands on the next question straight away: ignored
+    await ready();
+    fireEvent.click(screen.getByText('不知道'));
+    await ready();
+    expect(screen.getByTestId('placement-char')).toBeTruthy(); // only 2 misses so far, so still asking
+    expect(screen.queryByText(/你已经认识/)).toBeNull();
+  });
 });
