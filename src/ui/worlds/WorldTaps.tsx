@@ -52,7 +52,7 @@ const GEM_POP_MS = 1400; // the day's gem stays up even if he keeps tapping
 export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
   const [effect, setEffect] = useState<Effect | null>(null);
   const busy = useRef(false);
-  const gemTaps = useRef(0);
+  const gemTaps = useRef({ day: today, n: 0 }); // taps count toward one day's gem only
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const [run, setRun] = useState(0);
   const still = reducedMotion();
@@ -91,8 +91,9 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
         play({ kind: 'lap' });
         return;
       case 'blocks': {
-        gemTaps.current += 1;
-        const r = tapGem(f, today, gemTaps.current);
+        if (gemTaps.current.day !== today) gemTaps.current = { day: today, n: 0 };
+        gemTaps.current.n += 1;
+        const r = tapGem(f, today, gemTaps.current.n);
         if (r.gem) {
           onKid({ ...kid, finds: r.finds });
           onSay('宝石！');
@@ -153,7 +154,7 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
     fx = `<path d="M26 278 H100 V368 H26Z" fill="#e4e1f5"/>` + (still ? `<g class="tap-rocket">${ROCKET}${fade(4300)}</g>` : `<g class="tap-rocket">${ROCKET}<animateTransform attributeName="transform" type="translate" values="0 0;0 -420;0 -420;0 0" keyTimes="0;0.4;0.55;1" begin="1500ms" dur="2800ms" fill="freeze"/></g>`);
   }
   if (effect?.kind === 'dig') {
-    fx = `<g fill="#f1e1b0" stroke="${INK}" stroke-width="1.6"><circle cx="71" cy="404" r="4"/><circle cx="89" cy="402" r="3.5"/><circle cx="80" cy="398" r="3"/></g>`;
+    fx = `<g fill="#f1e1b0" stroke="${INK}" stroke-width="1.6"><circle cx="68" cy="408" r="4"/><circle cx="92" cy="404" r="3.5"/><circle cx="80" cy="403" r="3"/></g>`;
     if (effect.star) fx += `<g transform="translate(80 388)"><path d="${STAR}" fill="#efc472" stroke="${INK}" stroke-width="2"/>${rise(20, 1400)}</g>`;
   }
   const baby = world === 'dino' && kid.finds.dinoHatched && effect?.kind !== 'hop' ? `<g class="tap-baby-dino" transform="translate(94 424) scale(0.9)">${BABY_DINO}</g>` : '';

@@ -124,4 +124,30 @@ describe('WorldTaps', () => {
     fireEvent.click(shapes[1]!);
     expect(document.querySelector('.tap-car')).toBeTruthy();
   });
+  it("yesterday's taps don't count toward today's gem (Home left open past midnight)", () => {
+    const onKid = vi.fn();
+    const { rerender } = render(<WorldTaps world="blocks" kid={kid()} today="2026-10-06" onKid={onKid} onSay={vi.fn()} />);
+    for (let i = 0; i < 4; i++) {
+      tap('宝石');
+      act(() => { vi.advanceTimersByTime(1500); });
+    }
+    const after = onKid.mock.calls[0]![0] as KidState;
+    onKid.mockClear();
+    rerender(<WorldTaps world="blocks" kid={after} today="2026-10-07" onKid={onKid} onSay={vi.fn()} />);
+    tap('宝石');
+    expect(onKid).not.toHaveBeenCalled(); // the first tap of a new day is a crack, not a gem
+  });
+  it('the dig throws sand around the X, inside the island outline', () => {
+    render(<WorldTaps world="pirate" kid={kid()} today="2026-10-06" onKid={vi.fn()} onSay={vi.fn()} />);
+    tap('宝藏');
+    // the island's top edge (M24 434 C34 398 110 386 180 388) is at y ≈ 399 at x 71, 396.6 at x 80, 394.6 at x 89
+    const edge = (x: number) => 399.1 + ((x - 71) * (394.6 - 399.1)) / 18;
+    const puffs = [...document.querySelectorAll('.world-taps__fx circle')];
+    expect(puffs.length).toBeGreaterThan(0);
+    for (const c of puffs) {
+      const [x, y, r] = ['cx', 'cy', 'r'].map((a) => Number(c.getAttribute(a)));
+      expect(y - r, `puff at ${x},${y}`).toBeGreaterThan(edge(x) + 2); // clear of the outline
+      expect(Math.abs(x - 80)).toBeLessThanOrEqual(16); // beside the X (x 73–87)
+    }
+  });
 });
