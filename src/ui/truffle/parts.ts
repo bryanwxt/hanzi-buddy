@@ -21,10 +21,3 @@ export const FACES: Record<TruffleMood, string> = {
   cheer: "<path d=\"M98 124 C106 110 130 110 138 124 M182 124 C190 110 214 110 222 124\" stroke=\"#2a2630\" stroke-width=\"4.5\" fill=\"none\" stroke-linecap=\"round\"/> <ellipse cx=\"96\" cy=\"148\" rx=\"18\" ry=\"10\" fill=\"#ff9f9f\" opacity=\".55\"/><ellipse cx=\"224\" cy=\"148\" rx=\"18\" ry=\"10\" fill=\"#ff9f9f\" opacity=\".55\"/> <path d=\"M142 160 C146 184 174 184 178 160 C170 165 165 165 160 161 C155 165 150 165 142 160Z\" fill=\"#2a2630\"/><path d=\"M150 172 C154 178 166 178 170 172 C164 174 156 174 150 172Z\" fill=\"#ff9fa0\"/> <circle cx=\"44\" cy=\"70\" r=\"5\" fill=\"#7fdc7a\"/><rect x=\"266\" y=\"60\" width=\"9\" height=\"9\" rx=\"2\" fill=\"#ffc94a\" transform=\"rotate(20 270 64)\"/><circle cx=\"282\" cy=\"106\" r=\"4\" fill=\"#ff7f6a\"/><rect x=\"30\" y=\"104\" width=\"8\" height=\"8\" rx=\"2\" fill=\"#7fb8ff\" transform=\"rotate(-15 34 108)\"/>",
   sleepy: "<path d=\"M98 122 C106 130 130 130 138 122 M182 122 C190 130 214 130 222 122\" stroke=\"#2a2630\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M151 165 C155 162.5 165 162.5 169 165\" stroke=\"#2a2630\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\"/> <ellipse cx=\"160\" cy=\"167.2\" rx=\"4.6\" ry=\"2.4\" fill=\"#f4a6a8\"/><text x=\"236\" y=\"70\" font-family=\"Nunito\" font-weight=\"900\" font-size=\"26\" fill=\"#2a2630\">z</text><text x=\"256\" y=\"48\" font-family=\"Nunito\" font-weight=\"900\" font-size=\"18\" fill=\"#2a2630\">z</text>",
 };
-
-/** Where an accessory emoji sits: glasses on the eyes, scarf at the neck, everything else on top of the head. */
-export function accessoryPlacement(emoji: string): { x: number; y: number; size: number } {
-  if (emoji === '🕶️') return { x: 160, y: 132, size: 70 };
-  if (emoji === '🧣') return { x: 160, y: 204, size: 60 };
-  return { x: 160, y: 46, size: 54 };
-}

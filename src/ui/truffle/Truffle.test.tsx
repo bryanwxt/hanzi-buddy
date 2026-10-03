@@ -1,6 +1,6 @@
 import { render } from '@testing-library/preact';
 import { describe, expect, it } from 'vitest';
-import { TRUFFLE_MOODS, accessoryPlacement } from './parts';
+import { TRUFFLE_MOODS } from './parts';
 import { Truffle } from './Truffle';
 
 const svg = (c: Element) => c.querySelector('svg.truffle')!;
@@ -22,12 +22,14 @@ describe('Truffle', () => {
       unmount();
     }
   });
-  it('wears an accessory where it belongs', () => {
-    const { container } = render(<Truffle accessory="🕶️" />);
-    const t = container.querySelector('.truffle__accessory')!;
-    expect(t.textContent).toBe('🕶️');
-    expect(t.getAttribute('y')).toBe(String(accessoryPlacement('🕶️').y));
-    expect(accessoryPlacement('👑').y).toBeLessThan(accessoryPlacement('🧣').y);
+  it('wears an accessory where it belongs: face items tilt with the head, back items sit behind the body', () => {
+    const glasses = render(<Truffle accessory="sunglasses" />);
+    expect(glasses.container.querySelector('svg.truffle')?.getAttribute('data-accessory')).toBe('sunglasses');
+    expect(glasses.container.querySelector('.truffle__head')?.parentElement?.querySelector('.truffle__accessory--face')).toBeTruthy();
+    glasses.unmount();
+    const wings = render(<Truffle accessory="wings" />);
+    const back = wings.container.querySelector('.truffle__accessory--back')!;
+    expect(back.compareDocumentPosition(wings.container.querySelector('.truffle__body')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it('gives each instance its own grain filter id', () => {
     const { container } = render(<><Truffle /><Truffle /></>);
@@ -84,5 +86,23 @@ describe('Truffle onesie hood', () => {
     hooded.unmount();
     const chef = render(<Truffle outfit="chef" />);
     expect(chef.container.querySelector('.truffle__head')!.innerHTML).toContain('M74 92');
+  });
+});
+
+describe('Truffle accessories v2', () => {
+  it('draws every accessory as ink art (never emoji text)', async () => {
+    const { ACCESSORY_IDS } = await import('../../fun/accessories');
+    for (const id of ACCESSORY_IDS) {
+      const { container, unmount } = render(<Truffle accessory={id} />);
+      expect(container.querySelector('svg.truffle')?.getAttribute('data-accessory')).toBe(id);
+      const art = [...container.querySelectorAll('.truffle__accessory')].map((g) => g.innerHTML).join('');
+      expect(art).toContain('stroke="#2a2630"');
+      expect(art).not.toMatch(/\p{Extended_Pictographic}/u);
+      unmount();
+    }
+  });
+  it('ignores unknown accessories', () => {
+    const { container } = render(<Truffle accessory="🎩" />);
+    expect(container.querySelector('.truffle__accessory')).toBeNull();
   });
 });
