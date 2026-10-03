@@ -26,7 +26,7 @@ import {
   addActiveTime, afterFlashAnswer, afterWriteWord, createFreePlayRecord, currentFlashItem, currentStep,
   currentWriteCandidate, finishStep, skipFlashItem,
 } from '../session/runner';
-import { addRecording, getKid, getSettings, listParentPassages, listRecordings, saveKid, saveSession } from '../store/repo';
+import { getKid, keepRecording, getSettings, listParentPassages, listRecordings, saveKid, saveSession } from '../store/repo';
 import { DEFAULT_KID, type KidState, type OralInfo, type Recording, type SessionRecord, type StepKind } from '../types';
 import { sessionProgress } from '../session/progress';
 import { ProgressBar } from '../ui/ProgressBar';
@@ -129,15 +129,6 @@ export function SessionScreen({ free }: { free: boolean }) {
     }
   };
 
-  /** A recording that can't be saved (storage full) is lost, but the step still counts and the lesson goes on. */
-  const keepRecording = async (r: Recording) => {
-    try {
-      await addRecording(db, r);
-    } catch {
-      // the parent frees space under Recordings
-    }
-  };
-
   const finishTimedStep = once(() => commit(finishStep(addActiveTime(rec, Math.round(performance.now() - stepStartedAt.current)))));
 
   const onFlashDone = (r: FlashResult) =>
@@ -174,7 +165,7 @@ export function SessionScreen({ free }: { free: boolean }) {
       const base = now().getTime();
       let n = 0;
       const save = async (prompt: Recording['prompt'], f: FinishedRecording | null | undefined) => {
-        if (f) await keepRecording({ id: newId(), createdAt: base + n++, prompt, ...f });
+        if (f) await keepRecording(db, { id: newId(), createdAt: base + n++, prompt, ...f });
       };
       for (const p of STORY_PARTS) await save({ kind: 'story', sceneId: scene.id, part: p.part }, r.parts[p.part]);
       await save({ kind: 'story', sceneId: scene.id, part: 'whole' }, r.whole);
@@ -190,12 +181,12 @@ export function SessionScreen({ free }: { free: boolean }) {
       const reading = state.speaking as { kind: 'langdu'; passage: ReadingPassage; oral: OralInfo };
       const at = now();
       const today = localDateKey(at);
-      if (r.intro) await keepRecording({ id: newId(), createdAt: at.getTime(), prompt: { kind: 'intro' }, ...r.intro });
+      if (r.intro) await keepRecording(db, { id: newId(), createdAt: at.getTime(), prompt: { kind: 'intro' }, ...r.intro });
       let bonus = false;
       if (r.read) {
         const prev = (await listRecordings(db)).find((x) => x.prompt.kind === 'passage' && x.prompt.passageId === reading.passage.id);
         bonus = earnsBonus(prev, { level: r.read.level ?? 0, durationSec: r.read.durationSec });
-        await keepRecording({ id: newId(), createdAt: at.getTime(), prompt: { kind: 'passage', passageId: reading.passage.id }, ...r.read });
+        await keepRecording(db, { id: newId(), createdAt: at.getTime(), prompt: { kind: 'passage', passageId: reading.passage.id }, ...r.read });
       }
       const fresh = (await getKid(db)) ?? kid;
       await saveKid(db, {

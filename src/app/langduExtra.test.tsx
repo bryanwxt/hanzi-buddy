@@ -48,6 +48,23 @@ describe('朗读 extra rounds', () => {
     expect(after.bonusStars).toBe(0);
   });
 
+  it('a full storage still lets 完成 go home (the recording is lost, not the child)', async () => {
+    const app = await makeAppData({ kid, now: () => new Date(2026, 9, 2, 17) });
+    await saveParentPassage(app.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
+    await saveKid(app.db, kid);
+    const put = app.db.put.bind(app.db);
+    app.db.put = ((store: string, ...rest: unknown[]) => (store === 'recordings' ? Promise.reject(new DOMException('full', 'QuotaExceededError')) : (put as (...a: unknown[]) => unknown)(store, ...rest))) as typeof app.db.put;
+    renderWithApp(<LangduScreen />, app);
+    await screen.findByText('我爱爸爸，');
+    fireEvent.click(screen.getByText('下一句'));
+    fireEvent.click(screen.getByText('开始朗读'));
+    fireEvent.click(screen.getByText('开始录音'));
+    fireEvent.click(await screen.findByText('停止'));
+    await screen.findByText('听听你自己');
+    fireEvent.click(screen.getByText('完成'));
+    await waitFor(() => expect(app.go).toHaveBeenLastCalledWith({ name: 'home' }));
+  });
+
   it('no 多读一遍 button when there is nothing to read', async () => {
     const app = await makeAppData();
     renderWithApp(<HomeScreen />, app);

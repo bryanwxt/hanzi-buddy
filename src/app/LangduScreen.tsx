@@ -5,7 +5,7 @@ import { PASSAGES } from '../content';
 import { pickPassage, readingPool, type ReadingPassage } from '../langdu/cycle';
 import { localDateKey } from '../lib/date';
 import { newId } from '../lib/id';
-import { addRecording, getKid, getSettings, listParentPassages } from '../store/repo';
+import { keepRecording, getKid, getSettings, listParentPassages } from '../store/repo';
 import { DEFAULT_KID, type KidState, type OralInfo } from '../types';
 import { InkIcon } from '../ui/icons/InkIcon';
 import { currentWorld, timeOfDay } from '../fun/worlds';
@@ -37,7 +37,7 @@ export function LangduScreen() {
   const passage = state.passage;
 
   const done = async (r: LangduResult) => {
-    if (r.read) await addRecording(db, { id: newId(), createdAt: now().getTime(), prompt: { kind: 'passage', passageId: passage.id }, ...r.read });
+    if (r.read) await keepRecording(db, { id: newId(), createdAt: now().getTime(), prompt: { kind: 'passage', passageId: passage.id }, ...r.read });
     go({ name: 'home' });
   };
 

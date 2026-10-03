@@ -105,6 +105,15 @@ export async function addRecording(db: AppDb, r: Recording): Promise<void> {
   await db.put('recordings', r);
 }
 
+/** A recording that can't be saved (storage full) is lost, but the lesson goes on; the parent frees space under Recordings. */
+export async function keepRecording(db: AppDb, r: Recording): Promise<void> {
+  try {
+    await addRecording(db, r);
+  } catch {
+    // nothing else to do
+  }
+}
+
 export async function listRecordings(db: AppDb): Promise<Recording[]> {
   return (await db.getAllFromIndex('recordings', 'byCreatedAt')).reverse();
 }
