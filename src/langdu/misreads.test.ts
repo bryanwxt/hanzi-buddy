@@ -1,0 +1,36 @@
+import { describe, expect, it } from 'vitest';
+import { builtinWords } from '../content';
+import { addRecording, getCard, getKid, getWord, listRecordings, putCards, putWords, saveKid } from '../store/repo';
+import { freshDb, makeCard } from '../test/fixtures';
+import { DEFAULT_KID } from '../types';
+import { applyMisreads } from './misreads';
+
+describe('applyMisreads', () => {
+  it('turns misread characters into priority words and gives the passage an extra day', async () => {
+    const db = await freshDb();
+    const now = new Date(2026, 9, 5, 17);
+    await putWords(db, builtinWords(0));
+    await putCards(db, [makeCard('b:大', 'recognise', new Date(2026, 10, 1), true)]);
+    await saveKid(db, { ...DEFAULT_KID, reading: { passageId: 'pp:1', days: 3, extra: 0, lastDay: '2026-10-05', lastRead: {}, warmups: 0 } });
+    const rec = { id: 'r1', createdAt: now.getTime(), prompt: { kind: 'passage' as const, passageId: 'pp:1' }, blob: new Blob(), mime: 'audio/mp4', durationSec: 12 };
+    await addRecording(db, rec);
+    await applyMisreads(db, rec, ['大', '天'], now);
+    expect((await getCard(db, 'b:大:recognise'))!.fsrs.due.getTime()).toBe(now.getTime());
+    expect((await getWord(db, 'b:天'))!.listedAt).toBe(now.getTime());
+    expect((await getKid(db))!.reading.extra).toBe(1);
+    expect((await listRecordings(db))[0]!.misread).toEqual(['大', '天']);
+  });
+
+  it('a passage that has moved on gets no extra day, and no marks changes nothing', async () => {
+    const db = await freshDb();
+    const now = new Date(2026, 9, 5, 17);
+    await putWords(db, builtinWords(0));
+    await saveKid(db, { ...DEFAULT_KID, reading: { passageId: 'pp:2', days: 1, extra: 0, lastDay: '2026-10-05', lastRead: {}, warmups: 0 } });
+    const rec = { id: 'r1', createdAt: now.getTime(), prompt: { kind: 'passage' as const, passageId: 'pp:1' }, blob: new Blob(), mime: 'audio/mp4', durationSec: 12 };
+    await addRecording(db, rec);
+    await applyMisreads(db, rec, ['大'], now);
+    expect((await getKid(db))!.reading.extra).toBe(0);
+    await applyMisreads(db, rec, [], now);
+    expect((await listRecordings(db))[0]!.misread).toEqual([]);
+  });
+});
