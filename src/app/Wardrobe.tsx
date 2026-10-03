@@ -15,6 +15,7 @@ import { loadKnowledge } from './knowledge';
 import { InkIcon } from '../ui/icons/InkIcon';
 import { currentWorld, WORLDS } from '../fun/worlds';
 import { SCENES } from '../ui/worlds/scenes';
+import { GEM } from '../ui/worlds/tapArt';
 
 type RoomTab = 'outfits' | 'powers' | 'places';
 
@@ -104,6 +105,15 @@ export function Wardrobe() {
           </div>
         ) : tab === 'places' ? (
           <div class="places" role="tabpanel">
+            <div class="gem-jar" aria-label={`${k.finds.gems} 颗宝石`}>
+              <svg class="gem-jar__glass" viewBox="-60 -70 120 140" aria-hidden="true">
+                <path d="M-40 -46 h80 v8 h-6 v86 a16 16 0 0 1 -16 16 h-36 a16 16 0 0 1 -16 -16 v-86 h-6Z" fill="#e4efff" stroke="#2a2630" stroke-width="3" stroke-linejoin="round" />
+                {Array.from({ length: Math.min(k.finds.gems, 30) }, (_, i) => (
+                  <g key={i} class="gem" transform={`translate(${-24 + (i % 4) * 16} ${46 - Math.floor(i / 4) * 14}) scale(0.55)`} dangerouslySetInnerHTML={{ __html: GEM }} />
+                ))}
+              </svg>
+              <Label zh={`${k.finds.gems} 颗宝石`} />
+            </div>
             {WORLDS.map((w) => {
               const reached = w.id === 'yard' || k.worldsSeen.includes(w.id);
               return (

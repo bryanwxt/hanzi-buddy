@@ -292,3 +292,22 @@ describe('HomeScreen world tap fun', () => {
     expect(document.querySelector('.pet__bubble .sr-only')?.textContent).toBe('找到了！');
   });
 });
+
+describe('找到的动物 and the gem jar', () => {
+  it('字卡 has an animals page: found ones named, the rest unknown', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, finds: { ...DEFAULT_KID.finds, animals: ['rat', 'ox'] } } });
+    renderWithApp(<CollectionScreen />, app);
+    fireEvent.click(await screen.findByRole('button', { name: '找到的动物' }));
+    const slots = [...document.querySelectorAll('.animal-slot')];
+    expect(slots).toHaveLength(12);
+    expect(slots.filter((s) => s.classList.contains('is-found')).map((s) => s.querySelector('.label__ch')?.textContent)).toEqual(['鼠', '牛']);
+    expect(slots.filter((s) => !s.classList.contains('is-found')).every((s) => s.textContent?.includes('？'))).toBe(true);
+  });
+  it("Truffle's room shows his gems in a jar", async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, finds: { ...DEFAULT_KID.finds, gems: 3 } } });
+    renderWithApp(<Wardrobe />, app);
+    fireEvent.click(await screen.findByRole('tab', { name: '地方' }));
+    expect(screen.getByText('3 颗宝石')).toBeTruthy();
+    expect(document.querySelectorAll('.gem-jar .gem')).toHaveLength(3);
+  });
+});

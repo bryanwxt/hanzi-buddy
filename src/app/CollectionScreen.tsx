@@ -12,8 +12,12 @@ import { TabBar } from '../ui/TabBar';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
 import { InkIcon } from '../ui/icons/InkIcon';
+import { ZODIAC_ORDER } from '../fun/finds';
+import { ONESIES } from '../fun/costumes';
+import { ANIMAL_FACES } from '../ui/worlds/tapArt';
+import { DEFAULT_KID } from '../types';
 
-type Filter = 'all' | 'gold' | PowerId;
+type Filter = 'all' | 'gold' | 'animals' | PowerId;
 
 /** 字卡: every built-in character as a collectible card. */
 export function CollectionScreen() {
@@ -50,13 +54,33 @@ export function CollectionScreen() {
       <div class="filters" role="group" aria-label="筛选">
         <button type="button" class={`chip ${filter === 'all' ? 'is-on' : ''}`} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>全部</button>
         <button type="button" class={`chip ${filter === 'gold' ? 'is-on' : ''}`} aria-pressed={filter === 'gold'} onClick={() => setFilter('gold')}><InkIcon name="sparkle" size={20} /> 金卡</button>
+        <button type="button" class={`chip ${filter === 'animals' ? 'is-on' : ''}`} aria-pressed={filter === 'animals'} aria-label="找到的动物" onClick={() => setFilter('animals')}><InkIcon name="paw" size={20} /> 动物</button>
         {POWERS.map((p) => (
           <button key={p.id} type="button" class={`chip ${filter === p.id ? 'is-on' : ''}`} aria-pressed={filter === p.id} aria-label={p.name} onClick={() => setFilter(p.id)}>
             <InkIcon name={p.mark} size={20} /> <span class="hanzi">{p.name}</span>
           </button>
         ))}
       </div>
-      <div class="zika-grid">
+      {filter === 'animals' && (
+        <div class="animals" aria-label="找到的动物">
+          <p class="animals__note"><Label zh="在草丛里找一找！" /></p>
+          <div class="animals__grid">
+            {ZODIAC_ORDER.map((a) => {
+              const found = (kid ?? DEFAULT_KID).finds.animals.includes(a);
+              const name = ONESIES.find((o) => o.id === a)?.zh ?? a;
+              return found ? (
+                <div key={a} class="animal-slot is-found">
+                  <svg viewBox="-28 -30 56 58" aria-hidden="true" dangerouslySetInnerHTML={{ __html: ANIMAL_FACES[a] ?? '' }} />
+                  <Label zh={name} />
+                </div>
+              ) : (
+                <div key={a} class="animal-slot"><span class="animal-slot__q">？</span></div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <div class="zika-grid" hidden={filter === 'animals'}>
         {visible.map((c) =>
           c.caught ? (
             <button key={c.char} type="button" class={`zika${c.gold ? ' card--gold' : ''}${c.rarity === 'rare' ? ' card--rare' : ''}`} aria-label={c.char} onClick={() => show(c)}>
