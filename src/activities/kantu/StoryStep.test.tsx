@@ -85,4 +85,11 @@ describe('StoryStep', () => {
     }
     await waitFor(() => expect(onDone).toHaveBeenCalledWith({ parts: {}, whole: null, answers: [null, null] }));
   });
+  it('the picture stays in view while Truffle asks about it', async () => {
+    vi.mocked(recordingSupported).mockReturnValue(false);
+    render(<StoryStep scene={vase} told={0} kid={DEFAULT_KID} onDone={vi.fn()} />);
+    for (let i = 0; i < STORY_PARTS.length + 1; i++) fireEvent.click(screen.getByText('继续'));
+    expect(screen.getByText(vase.questions[0]!.q)).toBeTruthy();
+    expect(screen.getByRole('img', { name: '打翻花瓶' })).toBeTruthy();
+  });
 });

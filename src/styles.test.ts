@@ -78,3 +78,9 @@ describe('world layers never get in the way', () => {
     expect(css).toMatch(/\.pet__bubble \.label__cells \{[^}]*flex-wrap: nowrap/);
   });
 });
+
+describe('看图说话 layout', () => {
+  it('the picture is sized to the screen height so the model sentence stays above the bottom bar', () => {
+    expect(css).toMatch(/\.kantu__pic \{[^}]*height: min\(34vh/);
+  });
+});

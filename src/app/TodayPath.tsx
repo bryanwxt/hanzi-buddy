@@ -14,9 +14,11 @@ interface Props {
   started: boolean;
   onStart: () => void;
   pet: ComponentChildren;
+  speakingName?: string; // today's speaking activity: 朗读 or 看图说话 (they alternate)
 }
 
-export function TodayPath({ nodes, started, onStart, pet }: Props) {
+export function TodayPath({ nodes, started, onStart, pet, speakingName = '朗读' }: Props) {
+  const name = (k: PathKind) => (k === 'speaking' ? speakingName : NAME[k]);
   const ref = useRef<HTMLOListElement>(null);
   const currentIndex = nodes.findIndex((n) => n.state === 'current');
   const verb = started ? '继续' : '开始';
@@ -36,13 +38,13 @@ export function TodayPath({ nodes, started, onStart, pet }: Props) {
             <button
               type="button"
               class={`path__node path__node--${n.state}`}
-              aria-label={isCurrent ? `${verb}：${NAME[n.kind]}` : NAME[n.kind]}
+              aria-label={isCurrent ? `${verb}：${name(n.kind)}` : name(n.kind)}
               aria-current={isCurrent ? 'step' : undefined}
               onClick={isCurrent ? onStart : undefined}
             >
               <span class={`path__icon${icon === '字' ? ' path__icon--hanzi' : ''}`}>{icon}</span>
             </button>
-            <span class="path__name"><Label zh={NAME[n.kind]} /></span>
+            <span class="path__name"><Label zh={name(n.kind)} /></span>
             {i === Math.max(0, currentIndex) && <div class="path__pet">{pet}</div>}
           </li>
         );

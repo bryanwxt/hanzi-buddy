@@ -55,11 +55,18 @@ describe('朗读 extra rounds', () => {
   });
 });
 
-describe('the lesson path names the step 朗读', () => {
-  it('shows 朗读 for the reading step', async () => {
-    const app = await makeAppData();
-    renderWithApp(<HomeScreen />, app);
+describe('the lesson path names the speaking step by today\'s activity', () => {
+  it('看图说话 on a story day, 朗读 on a reading day', async () => {
+    const names = () => [...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent);
+    const story = await makeAppData();
+    const a = renderWithApp(<HomeScreen />, story);
     await screen.findByText('今天的练习');
-    expect([...document.querySelectorAll('.path__name')].map((n) => n.querySelector('.sr-only')?.textContent ?? n.textContent)).toContain('朗读');
+    expect(names()).toContain('看图说话');
+    a.unmount();
+    const reading = await makeAppData({ kid: { ...DEFAULT_KID, speakingLast: 'story' } });
+    await saveParentPassage(reading.db, { id: 'pp:1', title: '我家', text: '我爱爸爸，我爱妈妈。', createdAt: 1 });
+    renderWithApp(<HomeScreen />, reading);
+    await screen.findByText('今天的练习');
+    expect(names()).toContain('朗读');
   });
 });

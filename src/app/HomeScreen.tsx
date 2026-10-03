@@ -13,6 +13,7 @@ import { pickExample } from '../activities/writing/cue';
 import { WeekStrip } from './WeekStrip';
 import { allSessions, listParentPassages, listRewards, saveKid } from '../store/repo';
 import { pickPassage, readingPool } from '../langdu/cycle';
+import { nextSpeaking } from '../kantu/flow';
 import { PASSAGES } from '../content';
 import { DEFAULT_KID, type KidState, type ParentPassage, type RewardGoal, type SessionRecord } from '../types';
 import { celebrate } from '../ui/confetti';
@@ -173,6 +174,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>
         <TodayPath
+          speakingName={nextSpeaking(k.speakingLast, canRead) === 'story' ? '看图说话' : '朗读'}
           nodes={nodes}
           started={!!todaySession}
           onStart={() => play(false)}

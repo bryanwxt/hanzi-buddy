@@ -656,7 +656,7 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 
 /* ===== 看图说话 story builder (spec §17) ===== */
 .kantu { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
-.kantu__pic { width: min(560px, 100%); aspect-ratio: 4 / 3; border: var(--panel-border); box-shadow: var(--panel-shadow); border-radius: var(--radius-lg); background: var(--paper); }
+.kantu__pic { height: min(34vh, 420px); width: auto; max-width: 100%; aspect-ratio: 4 / 3; border: var(--panel-border); box-shadow: var(--panel-shadow); border-radius: var(--radius-lg); background: var(--paper); }
 .kantu__q { margin: 0; font-size: 28px; }
 .kantu__starter { margin: 0; font-size: 30px; font-family: var(--hanzi); background: var(--gold-soft); border: 2.5px dashed var(--ink); border-radius: 14px; padding: 6px 18px; }
 .kantu__note { margin: 0; font-size: 22px; }
@@ -665,3 +665,5 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .kantu__model { margin: 0; max-width: 640px; font-size: 24px; font-family: var(--hanzi); background: var(--surface); border: var(--panel-border); border-radius: var(--radius); padding: 10px 16px; }
 .kantu__hint { font-size: 20px; }
 .story-parts { margin: 4px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; } .story-parts li span { display: inline-block; min-width: 8em; font-weight: 700; }
+.kantu__ask { display: flex; align-items: flex-end; gap: 18px; justify-content: center; }
+.kantu__pic--small { height: min(20vh, 220px); }
