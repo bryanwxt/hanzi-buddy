@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { ReadingState } from '../types';
 import { addExtraDay, CYCLE_DAYS, finishDay, pickPassage, readingPool, type ReadingPassage } from './cycle';
-const R0 = { passageId: null, days: 0, extra: 0, lastDay: null, lastRead: {}, warmups: 0 };
+const R0: ReadingState = { passageId: null, days: 0, extra: 0, lastDay: null, lastRead: {}, warmups: 0 };
 const P = (id: string, source: 'parent' | 'builtin' = 'builtin'): ReadingPassage => ({ id, title: id, text: '我。', source });
 describe('reading cycle', () => {
   it('parent passages come first, in the order added, then eligible built-ins', () => {
