@@ -1,42 +1,53 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
+import { pickPinyinDistractors } from '../activities/flashcards/distractors';
 import { applyPlacement } from '../placement/apply';
-import { pickPlacementSamples, placementCutoff } from '../placement/placement';
+import { bandSamples, placementBands, placementKnownIds, placementStep, startPlacement } from '../placement/placement';
+import { mulberry32, seedFromString, shuffle } from '../lib/random';
 import { allWords } from '../store/repo';
 import { DEFAULT_KID, type Word } from '../types';
+import { InkIcon } from '../ui/icons/InkIcon';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
 import { Scene } from '../ui/Scene';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
-import { InkIcon } from '../ui/icons/InkIcon';
 
+/** First-run check: a pinyin quiz in difficulty bands (8 each, pass at 6, stop at the 3rd miss). No right/wrong shown. */
 export function PlacementScreen() {
   const { db, now, go, refresh, kid } = useApp();
-  const [samples, setSamples] = useState<Word[] | null>(null);
-  const [answers, setAnswers] = useState<boolean[]>([]);
+  const [words, setWords] = useState<Word[] | null>(null);
+  const [state, setState] = useState(startPlacement);
   const [known, setKnown] = useState<number | null>(null);
 
   useEffect(() => {
-    void allWords(db).then((w) => setSamples(pickPlacementSamples(w)));
+    void allWords(db).then(setWords);
   }, []);
 
-  const answer = async (knows: boolean) => {
-    if (!samples || known !== null) return;
-    const next = [...answers, knows];
-    setAnswers(next);
-    if (!knows || next.length === samples.length) {
-      await applyPlacement(db, placementCutoff(samples.slice(0, next.length), next), now());
+  const bands = useMemo(() => (words ? placementBands(words) : []), [words]);
+  const current = bands.length && !state.done ? bandSamples(bands[state.band]!)[state.index] : undefined;
+  const options = useMemo(() => {
+    if (!current || !words) return [];
+    const rng = mulberry32(seedFromString(current.id));
+    return shuffle([current.pinyin, ...pickPinyinDistractors(current, words, rng)], rng);
+  }, [current?.id]);
+
+  const answer = async (correct: boolean) => {
+    if (!current || known !== null) return;
+    const next = placementStep(state, bands, correct, current.id);
+    setState(next);
+    if (next.done) {
+      await applyPlacement(db, placementKnownIds(next, bands), now());
       setKnown((await loadKnowledge(db)).known);
     }
   };
 
   const k = kid ?? DEFAULT_KID;
-  if (!samples) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
+  if (!words) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
 
   if (known !== null) {
     return (
       <div class="screen">
-      <Scene kind="home" />
+        <Scene kind="home" />
         <div class="center">
           <Pet kid={k} mood="pleased" size={160} />
           <h1><Label zh={`你已经认识 ${known} 个字了！`} /></h1>
@@ -49,18 +60,21 @@ export function PlacementScreen() {
     );
   }
 
-  const current = samples[answers.length];
   return (
     <div class="screen">
       <Scene kind="home" />
       <div class="center">
-        <Pet kid={k} mood="neutral" bubble="你认识这个字吗？" size={100} />
-        <div class="hanzi hanzi--xl">{current?.text}</div>
-        <div class="row">
-          <button type="button" class="btn btn--primary btn--big" onClick={() => void answer(true)}><Label zh="认识" /> <InkIcon name="check" size={30} /></button>
-          <button type="button" class="btn btn--big" onClick={() => void answer(false)}><Label zh="不认识" /> <InkIcon name="think" size={30} /></button>
+        <Pet kid={k} mood="neutral" bubble="这个字怎么读？" size={100} />
+        <span class="chip"><Label zh={`第 ${state.band + 1} 组`} /></span>
+        <div class="hanzi hanzi--xl" data-testid="placement-char">{current?.text}</div>
+        <div class="choices choices--pinyin">
+          {options.map((o) => (
+            <button key={o} type="button" class="choice press" onClick={() => void answer(o === current?.pinyin)}>{o}</button>
+          ))}
         </div>
-        <small>{answers.length + 1} / {samples.length}</small>
+        <button type="button" class="btn btn--big" onClick={() => void answer(false)}>
+          <Label zh="不知道" /> <InkIcon name="think" size={30} />
+        </button>
       </div>
     </div>
   );

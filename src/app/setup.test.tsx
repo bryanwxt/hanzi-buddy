@@ -45,15 +45,24 @@ describe('first launch', () => {
     expect((await getKid(app.db))?.petName).toBe('松露');
   });
 
-  it('Placement seeds everything ranked before the first unknown sample', async () => {
+  it('Placement quiz: passes a band at 6 of 8, stops at the 3rd miss, credits the passed band', async () => {
     const app = await makeAppData();
-    await putWords(app.db, builtinWords(0));
+    const words = builtinWords(0);
+    await putWords(app.db, words);
     renderWithApp(<PlacementScreen />, app);
-    for (let i = 0; i < 3; i++) fireEvent.click(await screen.findByText('认识'));
-    fireEvent.click(screen.getByText('不认识'));
-    expect(await screen.findByText('你已经认识 45 个字了！')).toBeTruthy();
+    const answerRight = async () => {
+      const ch = (await screen.findByTestId('placement-char')).textContent!;
+      fireEvent.click(screen.getByRole('button', { name: words.find((w) => w.text === ch)!.pinyin }));
+    };
+    for (let i = 0; i < 6; i++) await answerRight();
+    fireEvent.click(screen.getByText('不知道'));
+    fireEvent.click(screen.getByText('不知道'));
+    expect(await screen.findByText('第 2 组')).toBeTruthy();
+    for (let i = 0; i < 3; i++) fireEvent.click(await screen.findByText('不知道'));
+    expect(await screen.findByText('你已经认识 60 个字了！')).toBeTruthy();
     expect((await getSettings(app.db)).placementDone).toBe(true);
     fireEvent.click(screen.getByText('开始！'));
     await waitFor(() => expect(app.go).toHaveBeenCalledWith({ name: 'home' }));
   });
+
 });

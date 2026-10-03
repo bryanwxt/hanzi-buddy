@@ -22,7 +22,7 @@ describe('App', () => {
     type('1234');
     fireEvent.click(await screen.findByRole('button', { name: '叫醒松露' }));
     fireEvent.click(await screen.findByText('好！'));
-    fireEvent.click(await screen.findByText('不认识'));
+    for (let i = 0; i < 3; i++) fireEvent.click(await screen.findByText('不知道'));
     fireEvent.click(await screen.findByText('开始！'));
     expect(await screen.findByText('今天的练习')).toBeTruthy();
     expect(screen.getByText('认识 0 个字')).toBeTruthy();
