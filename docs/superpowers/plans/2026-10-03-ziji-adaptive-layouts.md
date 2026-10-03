@@ -438,6 +438,14 @@ function probe(args: { main: string; scrollers: string }): string[] {
     if (Math.min(r.width, r.height) < 43.5) out.push(`under 44px: ${name(el)} ${Math.round(r.width)}×${Math.round(r.height)}`);
     if (el.matches(args.main) && Math.min(r.width, r.height) < mainMin - 0.5) out.push(`main action under ${mainMin}px: ${name(el)} ${Math.round(r.width)}×${Math.round(r.height)}`);
   }
+  const small = new Set<string>();
+  for (const el of document.querySelectorAll('.label__ch')) {
+    const r = el.getBoundingClientRect();
+    if (!r.width || el.closest('[aria-hidden="true"], .world-taps, .sr-only')) continue;
+    const fs = parseFloat(getComputedStyle(el).fontSize);
+    if (fs < 15.5) small.add(`Chinese text under 16px: ${(el.parentElement?.closest('.label')?.textContent ?? el.textContent ?? '').slice(0, 12)} ${fs}px`);
+  }
+  out.push(...small);
   for (const t of document.querySelectorAll('.world-taps .tap > *')) {
     const r = t.getBoundingClientRect();
     const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
@@ -1161,6 +1169,10 @@ Add to `describe('找到的动物 and the gem jar', …)` in `src/app/home.test.
 Append to the adaptive describe in `src/styles.test.ts`:
 
 ```ts
+  it('the parent area never overflows sideways on a phone: wide tables scroll inside their panel', () => {
+    expect(adaptive).toMatch(/\.parent \.panel \{[^}]*min-width: 0;[^}]*overflow-x: auto;/);
+    expect(adaptive).toMatch(/\.parent__body \{[^}]*min-width: 0;/);
+  });
   it('the PIN pad and setup shrink on a phone instead of scrolling', () => {
     expect(adaptive).toMatch(/@media \(max-width: 599px\) \{[^@]*\.pinpad \{[^}]*grid-template-columns: repeat\(3, 72px\);/);
     expect(adaptive).toMatch(/\.room \{[^}]*min-height: 0;/);
@@ -1194,6 +1206,10 @@ Append to the adaptive section:
 .room [role="tabpanel"] { align-content: start; padding: 4px 4px 12px; }
 .zika-grid { grid-template-columns: repeat(auto-fill, minmax(clamp(84px, 22vw, 104px), 1fr)); }
 .error__msg { max-height: 40dvh; overflow: auto; white-space: pre-wrap; font-size: 14px; }
+
+/* Parent area: may scroll down, never sideways */
+.parent__body { min-width: 0; }
+.parent .panel { min-width: 0; overflow-x: auto; }
 
 /* First run and the PIN pad */
 .setup { min-height: 0; }
