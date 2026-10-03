@@ -602,7 +602,13 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .outfits__none .outfit { width: 96px; }
 
 /* ===== Journey worlds (spec §15) ===== */
-.world-scene { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.world-scene { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; } /* the screen, not the scrolling page */
+.home .world-scene { bottom: 80px; }
+.pet__bubble .label__cells { flex-wrap: nowrap; }
 .world-scene svg { width: 100%; height: 100%; display: block; }
 .world-strip { position: absolute; left: 0; right: 0; bottom: 0; height: 190px; z-index: -1; pointer-events: none; overflow: hidden; }
 .world-strip svg { width: 100%; height: 100%; display: block; }
+.arrival { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(42, 38, 48, 0.35); }
+.arrival__card { background: var(--surface); border: var(--panel-border); box-shadow: var(--panel-shadow); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; width: min(420px, 88vw); }
+.arrival__card h2 { margin: 0; font-size: 34px; }
+.arrival__scene { width: 100%; aspect-ratio: 3 / 4; max-height: 52vh; border: var(--panel-border); border-radius: var(--radius); background: var(--paper); }

@@ -58,4 +58,11 @@ describe('world layers never get in the way', () => {
     expect(css).toMatch(/\.world-scene \{[^}]*z-index: -1/);
     expect(css).toMatch(/\.world-strip \{[^}]*pointer-events: none/);
   });
+  it('the Home world is pinned to the screen, not stretched over the whole scrolling page', () => {
+    expect(css).toMatch(/\.world-scene \{[^}]*position: fixed/);
+    expect(css).toMatch(/\.home \.world-scene \{[^}]*bottom: 80px/); // ground sits above the sticky tab bar
+  });
+  it("Truffle's bubble keeps its line on one row", () => {
+    expect(css).toMatch(/\.pet__bubble \.label__cells \{[^}]*flex-wrap: nowrap/);
+  });
 });

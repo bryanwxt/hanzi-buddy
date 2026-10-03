@@ -10,6 +10,7 @@ import { HomeScreen } from './HomeScreen';
 import { CollectionScreen } from './CollectionScreen';
 import { powerFamilies } from '../fun/powers';
 import { Wardrobe } from './Wardrobe';
+import { WORLD_LINES } from '../fun/worlds';
 
 vi.mock('../audio/speech', () => ({ speak: vi.fn(), primeSpeech: vi.fn() }));
 vi.mock('../ui/confetti', () => ({ celebrate: vi.fn() }));
@@ -192,5 +193,44 @@ describe('HomeScreen Truffle', () => {
     await waitFor(() => expect(mood()).toBe('sleepy'));
     act(() => { window.dispatchEvent(new Event('pointerdown')); });
     await waitFor(() => expect(mood()).toBe('sulk'));
+  });
+});
+
+/** n built-in words, all known (recognise cards in review). */
+async function seedKnown(app: Awaited<ReturnType<typeof makeAppData>>, n: number) {
+  const words = builtinWords(0).slice(0, n);
+  await putWords(app.db, words);
+  await putCards(app.db, words.map((w) => makeCard(w.id, 'recognise', new Date(2030, 0, 1), true)));
+}
+
+describe('HomeScreen journey', () => {
+  it('draws the newest reached world and Truffle says a line from it', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, worldsSeen: ['yard', 'grass'] } });
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(document.querySelector('.world-scene')?.getAttribute('data-world')).toBe('grass');
+    expect(WORLD_LINES.grass).toContain(document.querySelector('.pet__bubble .sr-only')?.textContent); // every line is several characters, so the label carries one readable copy
+  });
+  it('an existing install at 61 known announces 赛车山 once and remembers it', async () => {
+    const app = await makeAppData();
+    await seedKnown(app, 61);
+    const first = renderWithApp(<HomeScreen />, app);
+    const card = await screen.findByRole('dialog', { name: '新地方' });
+    expect(card.textContent).toContain('到赛车山了！');
+    expect((await getKid(app.db))?.worldsSeen).toEqual(['yard', 'grass', 'race']);
+    fireEvent.click(screen.getByText('走吧！'));
+    expect(screen.queryByRole('dialog', { name: '新地方' })).toBeNull();
+    first.unmount();
+    renderWithApp(<HomeScreen />, { ...app, kid: await getKid(app.db) });
+    await screen.findByText('今天的练习');
+    expect(screen.queryByRole('dialog', { name: '新地方' })).toBeNull();
+  });
+  it('a lapse keeps the reached world', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, worldsSeen: ['yard', 'grass', 'race'] } });
+    await seedKnown(app, 40);
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(document.querySelector('.world-scene')?.getAttribute('data-world')).toBe('race');
+    expect(screen.queryByRole('dialog', { name: '新地方' })).toBeNull();
   });
 });

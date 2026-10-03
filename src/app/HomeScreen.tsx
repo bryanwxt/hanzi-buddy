@@ -9,12 +9,14 @@ import { goalProgress, nextGoal } from '../fun/rewards';
 import { localDateKey } from '../lib/date';
 import { STEP_ORDER } from '../session/plan';
 import { streak, totalStars } from '../stats/stats';
-import { allSessions, listRewards } from '../store/repo';
-import { DEFAULT_KID, type RewardGoal, type SessionRecord } from '../types';
+import { allSessions, listRewards, saveKid } from '../store/repo';
+import { DEFAULT_KID, type KidState, type RewardGoal, type SessionRecord } from '../types';
 import { celebrate } from '../ui/confetti';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
-import { Scene } from '../ui/Scene';
+import { WorldScene } from '../ui/worlds/WorldScene';
+import { SCENE_VIEWBOX, SCENES } from '../ui/worlds/scenes';
+import { currentWorld, timeOfDay, updateWorlds, worldById, worldLine, type WorldId } from '../fun/worlds';
 import { TabBar } from '../ui/TabBar';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
@@ -30,9 +32,11 @@ interface HomeData {
 const SLEEP_AFTER_MS = 20_000;
 
 export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: number }) {
-  const { db, now, go, kid, settings } = useApp();
+  const { db, now, go, kid, settings, refresh } = useApp();
   const [data, setData] = useState<HomeData | null>(null);
   const [sleepy, setSleepy] = useState(false);
+  const [arrival, setArrival] = useState<WorldId | null>(null);
+  const [journeyKid, setJourneyKid] = useState<KidState | null>(null); // the kid as saved by the journey update, until the app refreshes
 
   useEffect(() => enterSafeScreen(), []);
 
@@ -55,7 +59,21 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
     };
   }, [sleepAfterMs]);
 
-  const k = kid ?? DEFAULT_KID;
+  const k = journeyKid ?? kid ?? DEFAULT_KID;
+
+  // Journey: record newly reached worlds (never removes any), save before the arrival card shows so it shows once.
+  useEffect(() => {
+    if (!data) return;
+    const u = updateWorlds(kid ?? DEFAULT_KID, data.know.known);
+    if (!u.changed) return;
+    void (async () => {
+      await saveKid(db, u.kid);
+      setJourneyKid(u.kid);
+      setArrival(u.arrived);
+      await refresh();
+    })();
+  }, [data]);
+
   const stars = data ? totalStars(data.sessions, k.bonusStars) : 0;
   const goal = data ? nextGoal(data.goals) : null;
   const progress = goal && data ? goalProgress(goal, { stars, known: data.know.known }) : null;
@@ -78,6 +96,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
     knownChars: data.know.knownChars,
     date: today,
   });
+  const world = currentWorld(k);
   const play = (free: boolean) => {
     primeSpeech();
     go({ name: 'session', free });
@@ -85,7 +104,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
 
   return (
     <div class="screen home">
-      <Scene kind="home" band />
+      <WorldScene world={world} time={timeOfDay(now())} />
       <header class="topbar">
         <span class="stat stat--fire" aria-label={`连续 ${days} 天`}><Flame size={24} strokeWidth={2.75} /> {days}</span>
         <span class="stat stat--star" aria-label={`${stars} 颗星`}><Star size={24} strokeWidth={2.75} /> {stars}</span>
@@ -134,11 +153,20 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
           onStart={() => play(false)}
           pet={
             <button type="button" class="pet-button" aria-label="换装" onClick={() => go({ name: 'wardrobe' })}>
-              <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} />
+              <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} bubble={sleepy ? null : worldLine(world, today)} />
             </button>
           }
         />
       </main>
+      {arrival && (
+        <div class="arrival" role="dialog" aria-label="新地方">
+          <div class="arrival__card">
+            <svg class="arrival__scene" viewBox={SCENE_VIEWBOX} preserveAspectRatio="xMidYMax slice" aria-hidden="true" dangerouslySetInnerHTML={{ __html: SCENES[arrival] }} />
+            <h2><Label zh={`到${worldById(arrival)!.zh}了！`} /></h2>
+            <button type="button" class="btn btn--primary btn--big" onClick={() => setArrival(null)}><Label zh="走吧！" /></button>
+          </div>
+        </div>
+      )}
       <TabBar active="home" />
     </div>
   );
