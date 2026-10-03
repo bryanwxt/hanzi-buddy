@@ -164,3 +164,36 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - with 300+ seeded characters, two skipped days can push dues past the 40 pause (pause design, predates this plan)
 - builtin.json data errors — 了 liǎo, 包子 bāo zǐ
 - "你已经认识 0 个字了！" for a child who knows nothing could be kinder; no exit from a placement re-run started in Settings
+
+## Plan 6 — the journey: ink worlds
+
+### Rulings
+- Task 1: Ruling: repo.test needed normalizeKid added to its import (brief's test assumed it) — test-only — cost if wrong: none
+- Task 2: Ruling: styles contract for .world-scene split into two order-independent matches — the brief's regex required pointer-events before z-index, contradicting the brief's own CSS — cost if wrong: none
+- Task 2: Ruling: gallery found a seam (wash stopped at y=300), flat strips (bottom 89 units = plain grass) and lanterns/moon over the moon base — fixed: washes cover the full canvas, evening sky has a wavy two-tone edge, per-world STRIP_VIEW (120-unit band, xMidYMid slice) replaces the brief's single '0 300 360 180', timeLayers(t, world?) gives space stars only (tests added RED→GREEN) — cost if wrong: art tweaks
+- Task 2: Ruling: dino redrawn with a head (eye, smile, cheek, spots) per the brief; other scenes ported from the mockup unchanged — cost if wrong: art polish
+- Task 3: Ruling: Home keeps the journey-updated kid in local state (journeyKid) until the app refresh lands — the update is saved before the card shows, and tests' refresh is a no-op — cost if wrong: none
+- Task 3: Ruling: browser check found the world stretched over the whole scrolling page (1462px) and Truffle's bubble wrapping mid-word — .world-scene is position: fixed (bottom 80px on Home, above the sticky tab bar) and bubble label cells don't wrap (styles contracts RED→GREEN) — cost if wrong: none
+- Task 3: Ruling: at iPad width the 360-unit scene scales ~2.1×, so scenery reads bigger next to the panels than in the small mockups; kept (bold, readable; text sits on panels/plain paper) — cost if wrong: parent may want the scenery smaller (would need wider canvases)
+- Task 4: Ruling: stats test used the file's existing `session()` helper instead of the brief's `makeSession` — same shape — cost if wrong: none
+- Task 4: Ruling: example-word speaker uses lucide Volume2 like SpeakButton; the brief's "InkIcon speaker" doesn't exist (the `speech` icon is a talk bubble) — cost if wrong: none
+- Task 4: Ruling: WeekStrip is role=img with aria-label 这个星期练了 N 天 — cost if wrong: none
+- Task 6: Ruling: strip uses the session's own kid (read from the db), not the app context; the brief's test set only the context kid, so it now saves the kid to the db first — cost if wrong: none
+- Task 6: Ruling: browser check showed the strip almost fully hidden by the opaque bottom bar (flashcards leave no room above it) — the waiting (neutral) bottom bar is see-through on lesson screens (`.screen:has(.world-strip) .bottombar--neutral`), so the ground sits under 继续; feedback bars stay solid (styles contract RED→GREEN); answers near the bottom still take taps — cost if wrong: the disabled 继续 button is slightly see-through over the ground
+- Task 7: Ruling: landscape scales the scene ~2.8× and the race loop ran under 认识 75 个字 — text that sits straight on the page (corner count, 今天的练习, path labels) gets a paper backing (styles contract RED→GREEN) instead of shrinking the scenery — cost if wrong: small paper pills on Home
+- Final: Ruling: scene bottom offset is a fixed 80px over the tab bar; safe-area insets may differ by a few px (declined: visual polish, checked in the browser) — cost if wrong: a sliver of paper or overlap at the tab bar
+- Final: Ruling: spec §15 says the lesson strip sits above the bottom bar; it sits behind a see-through waiting bar (Task 6 ruling stands) — cost if wrong: none
+- Final: Ruling: world name 草丛 in code vs 草丛探险 in the spec table (declined) — 草丛 matches the spec's own 到草丛了 line — cost if wrong: none
+- Final: Ruling: :has() needs iPadOS 15.4+; older iPads keep an opaque bar (safe fallback) — cost if wrong: no ground under the button on old iPads
+- Final: Ruling: arrival dialog has no focus trap / aria-modal (declined: a11y polish) — cost if wrong: VoiceOver can reach Home behind the card
+
+### Fixed in the final review
+- tap-swallowing see-through bar — styles contract 'see-through must also mean tap-through' RED→GREEN (pointer-events none on the bar, auto on its button), suite 347/347
+- word-of-the-day reading mismatch — home 'shows the content reading, so it matches the example word' RED→GREEN, suite 347/347
+
+### Deferred minors
+- 八 offers bá as a wrong option though 八 can be read bá before a 4th tone (like 一/不, optional sandhi)
+- journeyKid local state is never cleared and would override a later context kid while Home stays open (harmless today: nothing on Home saves the kid)
+- the journey save builds from the context kid without re-reading the db — could overwrite a just-saved kid if Home mounts before a Wardrobe refresh lands and a new world is due
+- with a null kid, Home's journey effect would save DEFAULT_KID (unreachable: firstRoute sends a kid-less app to pet setup)
+- restoring a pre-plan-6 backup shows the arrival card once more
