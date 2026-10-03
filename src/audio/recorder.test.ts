@@ -63,4 +63,25 @@ describe('recording levels', () => {
     expect(order).toEqual(['ctx', 'mic']);
     rec.cancel();
   });
+  it('if iOS already ended the recording (app switched, Siri), stop() still finishes with what was captured', async () => {
+    const track = { stop: vi.fn() };
+    vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: vi.fn(async () => ({ getTracks: () => [track] })) } });
+    let inst: { ondataavailable?: (e: { data: Blob }) => void; onstop?: () => void; state: string } | null = null;
+    vi.stubGlobal('MediaRecorder', class {
+      static isTypeSupported = () => true;
+      mimeType = 'audio/mp4'; state = 'recording';
+      ondataavailable?: (e: { data: Blob }) => void; onstop?: () => void;
+      constructor() { inst = this as never; }
+      start() {}
+      stop() { throw new Error('InvalidStateError'); }
+    });
+    const rec = await startRecording(() => {});
+    inst!.ondataavailable?.({ data: new Blob(['abc']) });
+    inst!.state = 'inactive';
+    inst!.onstop?.(); // the system stopped it
+    const done = await Promise.race([rec.stop(), new Promise((r) => setTimeout(() => r('hung'), 200))]);
+    expect(done).not.toBe('hung');
+    expect((done as { blob: Blob }).blob.size).toBe(3);
+    expect(track.stop).toHaveBeenCalled();
+  });
 });

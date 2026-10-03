@@ -18,7 +18,8 @@ export async function applyMisreads(db: AppDb, recording: Recording, chars: stri
       continue;
     }
     const word = await getWord(db, id);
-    if (word) await putWords(db, [{ ...word, listedAt: now.getTime() }]);
+    // ahead of every school list (lists use their add time); the newest marks come first
+    if (word) await putWords(db, [{ ...word, listedAt: -now.getTime() }]);
   }
   if (chars.length && recording.prompt.kind === 'passage') {
     const kid = await getKid(db);

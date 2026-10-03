@@ -93,13 +93,20 @@ export async function startRecording(onAutoStop: () => void, onLevel?: (level: n
   return {
     stop: () =>
       new Promise((resolve) => {
-        recorder.onstop = () => {
+        const finish = () => {
           release();
           const type = recorder.mimeType || mime || 'audio/mp4';
           const level = meter?.levels.length ? average(meter.levels) : undefined;
           resolve({ blob: new Blob(chunks, { type }), mime: type, durationSec: Math.round((Date.now() - started) / 1000), ...(level === undefined ? {} : { level }) });
         };
-        recorder.stop();
+        // iOS may already have ended it (app switched, Siri): finish with what was captured rather than wait forever
+        if (recorder.state === 'inactive') return finish();
+        recorder.onstop = finish;
+        try {
+          recorder.stop();
+        } catch {
+          finish();
+        }
       }),
     cancel: () => {
       recorder.onstop = release;

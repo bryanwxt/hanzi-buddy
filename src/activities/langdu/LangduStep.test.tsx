@@ -119,4 +119,17 @@ describe('LangduStep', () => {
     expect(screen.queryByRole('meter')).toBeNull();
     expect(screen.queryByText('大声一点！')).toBeNull();
   });
+  it('a double tap on 开始录音 starts one recording; leaving while the mic is starting releases it', async () => {
+    let release!: () => void;
+    const cancel = vi.fn();
+    vi.mocked(startRecording).mockClear();
+    vi.mocked(startRecording).mockImplementation(() => new Promise((res) => { release = () => res({ stop: async () => ({ blob: new Blob(['x']), mime: 'audio/mp4', durationSec: 5 }), cancel }); }));
+    const { unmount } = render(<LangduStep passage={passage} oral={oral} warmups={0} knownChars={new Set()} kid={DEFAULT_KID} withWarmup onDone={vi.fn()} />);
+    fireEvent.click(screen.getByText('开始录音'));
+    fireEvent.click(screen.queryByText('开始录音') ?? document.body);
+    expect(startRecording).toHaveBeenCalledTimes(1);
+    unmount();
+    await act(async () => release());
+    expect(cancel).toHaveBeenCalled();
+  });
 });

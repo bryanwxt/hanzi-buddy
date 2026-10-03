@@ -42,8 +42,13 @@ function useRecorder() {
   const [quietMs, setQuietMs] = useState(0);
   const [heard, setHeard] = useState(false); // a real level has arrived: until then no meter, so a silent meter never nags
   const active = useRef<ActiveRecording | null>(null);
+  const starting = useRef(false); // the mic is opening: a second tap must not start a second recording
+  const mounted = useRef(true);
   const series = useRef<{ at: number; level: number }[]>([]);
-  useEffect(() => () => active.current?.cancel(), []);
+  useEffect(() => () => {
+    mounted.current = false;
+    active.current?.cancel();
+  }, []);
 
   const stop = async () => {
     const rec = active.current;
@@ -53,9 +58,11 @@ function useRecorder() {
     setState('done');
   };
   const start = async (withLevel: boolean) => {
+    if (starting.current || active.current) return;
+    starting.current = true;
     series.current = [];
     try {
-      active.current = await startRecording(
+      const rec = await startRecording(
         () => void stop(),
         withLevel
           ? (l) => {
@@ -67,9 +74,13 @@ function useRecorder() {
             }
           : undefined,
       );
+      if (!mounted.current) return rec.cancel(); // he left while the mic was opening: never leave it on
+      active.current = rec;
       setState('recording');
     } catch {
-      setState('blocked');
+      if (mounted.current) setState('blocked');
+    } finally {
+      starting.current = false;
     }
   };
   const reset = () => {

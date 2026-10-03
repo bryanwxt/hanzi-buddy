@@ -4,6 +4,9 @@ import { addRecording, getCard, getKid, getWord, listRecordings, putCards, putWo
 import { freshDb, makeCard } from '../test/fixtures';
 import { DEFAULT_KID } from '../types';
 import { applyMisreads } from './misreads';
+import { buildSessionPlan } from '../session/plan';
+import { DEFAULT_SETTINGS } from '../types';
+import { allCards, allWords } from '../store/repo';
 
 describe('applyMisreads', () => {
   it('turns misread characters into priority words and gives the passage an extra day', async () => {
@@ -16,7 +19,7 @@ describe('applyMisreads', () => {
     await addRecording(db, rec);
     await applyMisreads(db, rec, ['大', '天'], now);
     expect((await getCard(db, 'b:大:recognise'))!.fsrs.due.getTime()).toBe(now.getTime());
-    expect((await getWord(db, 'b:天'))!.listedAt).toBe(now.getTime());
+    expect((await getWord(db, 'b:天'))!.listedAt).toBe(-now.getTime()); // ahead of every school list
     expect((await getKid(db))!.reading.extra).toBe(1);
     expect((await listRecordings(db))[0]!.misread).toEqual(['大', '天']);
   });
@@ -32,5 +35,16 @@ describe('applyMisreads', () => {
     expect((await getKid(db))!.reading.extra).toBe(0);
     await applyMisreads(db, rec, [], now);
     expect((await listRecordings(db))[0]!.misread).toEqual([]);
+  });
+  it('a misread character with no card jumps ahead of words from school lists he has not started', async () => {
+    const db = await freshDb();
+    const now = new Date(2026, 9, 5, 17);
+    const words = builtinWords(0);
+    await putWords(db, words.map((w) => (w.text === '山' ? { ...w, listedAt: 1000, listName: '听写 7' } : w)));
+    const rec = { id: 'r1', createdAt: now.getTime(), prompt: { kind: 'passage' as const, passageId: 'pp:1' }, blob: new Blob(), mime: 'audio/mp4', durationSec: 12 };
+    await addRecording(db, rec);
+    await applyMisreads(db, rec, ['天'], now);
+    const plan = buildSessionPlan({ cards: await allCards(db), words: await allWords(db), settings: DEFAULT_SETTINGS, now });
+    expect(plan.newWordIds.slice(0, 2)).toEqual(['b:天', 'b:山']);
   });
 });
