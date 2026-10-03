@@ -4,6 +4,10 @@ import { ComponentsStep } from '../activities/components/ComponentsStep';
 import { buildComponentRound, type ComponentQuestion } from '../activities/components/game';
 import { FlashcardStep, type FlashResult } from '../activities/flashcards/FlashcardStep';
 import { LangduStep, type LangduResult } from '../activities/langdu/LangduStep';
+import { StoryStep, type StoryResult } from '../activities/kantu/StoryStep';
+import { afterStory, nextSpeaking, sceneFor } from '../kantu/flow';
+import { STORY_PARTS, type Scene } from '../kantu/scenes';
+import type { FinishedRecording } from '../audio/recorder';
 import { pickPassage, readingPool, finishDay, type ReadingPassage } from '../langdu/cycle';
 import { earnsBonus } from '../langdu/stars';
 import { burst } from '../ui/motion';
@@ -22,7 +26,7 @@ import {
   currentWriteCandidate, finishStep, skipFlashItem,
 } from '../session/runner';
 import { addRecording, getKid, getSettings, listParentPassages, listRecordings, saveKid, saveSession } from '../store/repo';
-import { DEFAULT_KID, type KidState, type OralInfo, type SessionRecord, type StepKind } from '../types';
+import { DEFAULT_KID, type KidState, type OralInfo, type Recording, type SessionRecord, type StepKind } from '../types';
 import { sessionProgress } from '../session/progress';
 import { ProgressBar } from '../ui/ProgressBar';
 import { useApp } from './AppContext';
@@ -39,7 +43,7 @@ interface Loaded {
   know: Knowledge;
   kid: KidState;
   round: ComponentQuestion[] | null;
-  reading: { passage: ReadingPassage; oral: OralInfo } | null;
+  speaking: { kind: 'langdu'; passage: ReadingPassage; oral: OralInfo } | { kind: 'story'; scene: Scene } | null;
 }
 
 export function SessionScreen({ free }: { free: boolean }) {
@@ -65,9 +69,13 @@ export function SessionScreen({ free }: { free: boolean }) {
         know,
         kid: kid ?? DEFAULT_KID,
         round: buildComponentRound([...know.knownChars], rng),
-        reading: (() => {
-          const passage = pickPassage((kid ?? DEFAULT_KID).reading, readingPool(parentPassages, PASSAGES, know.knownChars), localDateKey(today));
-          return passage ? { passage, oral: settings.oral } : null;
+        speaking: (() => {
+          const k = kid ?? DEFAULT_KID;
+          const passage = pickPassage(k.reading, readingPool(parentPassages, PASSAGES, know.knownChars), localDateKey(today));
+          // 朗读 and 看图说话 take turns; with nothing to read, it's a story
+          return passage && nextSpeaking(k.speakingLast, true) === 'langdu'
+            ? { kind: 'langdu' as const, passage, oral: settings.oral }
+            : { kind: 'story' as const, scene: sceneFor(k.story) };
         })(),
       });
     })();
@@ -94,7 +102,7 @@ export function SessionScreen({ free }: { free: boolean }) {
     else if (step === 'writing' && !writeCandidate) void commit(finishStep(rec));
     else if (step === 'writing' && (!writeWord || writeWord.paused)) void commit(afterWriteWord(rec, false, 0));
     else if (step === 'components' && !state.round) void commit(finishStep(rec));
-    else if (step === 'speaking' && !state.reading) void commit(finishStep(rec));
+    else if (step === 'speaking' && !state.speaking) void commit(finishStep(rec));
   }, [rec]);
 
   if (!state || !rec) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
@@ -141,10 +149,27 @@ export function SessionScreen({ free }: { free: boolean }) {
       await commit(afterWriteWord(rec, r !== null, r?.elapsedMs ?? 0));
     })();
 
+  /** Save each part, the whole telling and the answers (grouped by time for the parent), count the story, and pass the turn to 朗读. */
+  const onStoryDone = (r: StoryResult) =>
+    once(async () => {
+      const { scene } = state.speaking as { kind: 'story'; scene: Scene };
+      const base = now().getTime();
+      let n = 0;
+      const save = async (prompt: Recording['prompt'], f: FinishedRecording | null | undefined) => {
+        if (f) await addRecording(db, { id: newId(), createdAt: base + n++, prompt, ...f });
+      };
+      for (const p of STORY_PARTS) await save({ kind: 'story', sceneId: scene.id, part: p.part }, r.parts[p.part]);
+      await save({ kind: 'story', sceneId: scene.id, part: 'whole' }, r.whole);
+      for (const [i, a] of r.answers.entries()) await save({ kind: 'answer', sceneId: scene.id, question: i }, a);
+      const fresh = (await getKid(db)) ?? kid;
+      await saveKid(db, { ...fresh, story: afterStory(fresh.story), speakingLast: 'story' });
+      await commit(finishStep(addActiveTime(rec, Math.round(performance.now() - stepStartedAt.current))));
+    })();
+
   /** Save the warm-up and the read, count the cycle day, and give a bonus star for beating the last read. */
   const onLangduDone = (r: LangduResult) =>
     once(async () => {
-      const reading = state.reading!;
+      const reading = state.speaking as { kind: 'langdu'; passage: ReadingPassage; oral: OralInfo };
       const at = now();
       const today = localDateKey(at);
       if (r.intro) await addRecording(db, { id: newId(), createdAt: at.getTime(), prompt: { kind: 'intro' }, ...r.intro });
@@ -158,6 +183,7 @@ export function SessionScreen({ free }: { free: boolean }) {
       await saveKid(db, {
         ...fresh,
         reading: { ...finishDay(fresh.reading, reading.passage.id, today), warmups: fresh.reading.warmups + (r.intro ? 1 : 0) },
+        speakingLast: 'langdu',
         bonusStars: fresh.bonusStars + (bonus ? 1 : 0),
       });
       if (bonus) {
@@ -200,16 +226,19 @@ export function SessionScreen({ free }: { free: boolean }) {
       {step === 'components' && state.round && (
         <ComponentsStep questions={state.round} kid={kid} resting={resting} onDone={() => void finishTimedStep()} />
       )}
-      {step === 'speaking' && state.reading && (
+      {step === 'speaking' && state.speaking?.kind === 'langdu' && (
         <LangduStep
-          passage={state.reading.passage}
-          oral={state.reading.oral}
+          passage={state.speaking.passage}
+          oral={state.speaking.oral}
           warmups={kid.reading.warmups}
           knownChars={know.knownChars}
           kid={kid}
           withWarmup
           onDone={(r) => void onLangduDone(r)}
         />
+      )}
+      {step === 'speaking' && state.speaking?.kind === 'story' && (
+        <StoryStep scene={state.speaking.scene} told={kid.story.told} kid={kid} onDone={(r) => void onStoryDone(r)} />
       )}
     </div>
   );
