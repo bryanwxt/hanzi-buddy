@@ -31,7 +31,7 @@ export function ParentArea() {
   const [tab, setTab] = useState<ParentTab>('dashboard');
   return (
     <PinGate>
-      <div class="screen parent">
+      <div class="screen screen--scroll parent">
         <header class="topbar">
           <button type="button" class="btn btn--ghost" onClick={() => go({ name: 'home' })}><ChevronLeft size={22} strokeWidth={3} /> Done</button>
           <nav class="tabs">

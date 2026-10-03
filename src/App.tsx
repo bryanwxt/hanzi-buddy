@@ -17,6 +17,7 @@ import { allWords, getKid, getSettings } from './store/repo';
 import { hanChars } from './content';
 import { prefetchStrokes } from './content/strokes';
 import { InkIcon } from './ui/icons/InkIcon';
+import { RotateHint } from './ui/RotateHint';
 
 export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: string; now?: () => Date }) {
   const [booted, setBooted] = useState<Booted | null>(null);
@@ -53,6 +54,7 @@ export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: str
   return (
     <AppContext.Provider value={app}>
       <Screen route={route} />
+      {route.name !== 'parent' && <RotateHint kid={booted.kid} />}
     </AppContext.Provider>
   );
 }

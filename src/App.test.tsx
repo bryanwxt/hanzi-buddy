@@ -30,4 +30,12 @@ describe('App', () => {
     expect(await screen.findByText('今天的练习')).toBeTruthy();
     expect(screen.getByText('认识 0 个字')).toBeTruthy();
   });
+  it('draws the phone-sideways overlay beside the screen, never instead of it', async () => {
+    render(<App dbName={`test-${crypto.randomUUID()}`} now={() => new Date(2026, 9, 2, 9)} />);
+    await screen.findByText('For parents: choose a 4-digit PIN');
+    const hint = document.querySelector('.rotate-hint');
+    expect(hint?.textContent).toContain('竖');
+    expect(hint?.getAttribute('aria-label')).toBe('请把手机竖过来');
+    expect(document.querySelector('.screen')).toBeTruthy(); // the routed screen stays mounted under it, so a lesson keeps its state
+  });
 });

@@ -108,3 +108,26 @@ describe('the 字己 seal', () => {
     expect(rules.filter((r) => /writing-mode:\s*vertical/.test(r))).toEqual([]);
   });
 });
+
+describe('adaptive layouts (spec §18)', () => {
+  const adaptive = css.slice(css.indexOf('/* ===== Adaptive layouts (spec §18)'));
+  it('a screen is exactly one screen tall and the document never scrolls (the parent area may)', () => {
+    expect(css).toMatch(/\.screen \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
+    expect(adaptive).toMatch(/html, body \{ overflow: hidden; \}/);
+    expect(adaptive).toMatch(/html:has\(\.screen--scroll\), html:has\(\.screen--scroll\) body \{ overflow: auto; \}/);
+    expect(adaptive).toMatch(/\.screen--scroll \{[^}]*height: auto;[^}]*min-height: 100dvh;[^}]*overflow: visible;/);
+  });
+  it('long lists scroll inside their own panel', () => {
+    expect(adaptive).toMatch(/\.scroll-panel \{[^}]*flex: 1;[^}]*min-height: 0;[^}]*overflow-y: auto;/);
+  });
+  it('has the three arrangements and the phone-sideways overlay', () => {
+    expect(adaptive).toContain('@media (max-width: 599px)');
+    expect(adaptive).toContain('@media (orientation: landscape) and (min-height: 600px)');
+    expect(adaptive).toMatch(/@media \(orientation: landscape\) and \(max-height: 499px\) \{[^@]*\.rotate-hint \{[^}]*display: flex;/);
+    expect(adaptive).toMatch(/\.rotate-hint \{ display: none; \}/);
+  });
+  it('the nav height clears the home indicator, and pinyin never drops below 9px', () => {
+    expect(adaptive).toMatch(/--nav-h: calc\(\d+px \+ env\(safe-area-inset-bottom\)\)/);
+    expect(adaptive).toMatch(/\.label__py \{ font-size: max\(0\.5em, 9px\); \}/);
+  });
+});
