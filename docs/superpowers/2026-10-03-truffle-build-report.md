@@ -109,3 +109,58 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - types.ts imports ZodiacId from fun/costumes (type-only cycle); ChestResult costume id typed as string
 - plan 3 text says first chest needs "no lastChestDate" — contradicts its own Review Focus; code follows the spec
 - test gaps — same-seed replay after first chest, 👑 reappearing after the onesie comes off, backup asserting ownedCostumes/outfit defaults, locked accessories disabled
+
+## Plan 4 — ink icons + accessories v2
+
+### Rulings
+- Task 1: Ruling: tests written for emoji accessories / onesie-hiding / no-hat-on-hat updated to the v2 rules (spec §13 supersedes); room accessory buttons now show the Chinese name with pinyin (art arrives in Task 2) — cost if wrong: none
+- Task 2: Ruling: accessory layers split into back/under/face/over (plan said back/front) — neck items must sit under the chin, held items over everything, face items tilt with the head — cost if wrong: none
+- Task 3: Ruling: icon test checks the plan's 25 named icons (my first draft asserted ≥26, a miscount) — cost if wrong: none
+- Task 4: Ruling: burst particle glyph ★ swapped for ✧ (★ counts as emoji); accessory chest prize now shows Truffle wearing it (covered by a new celebration test, green on first run — the raw-id text window existed only between T1 and T4 on this branch); emoji-text assertions in older tests repointed to the icons — cost if wrong: none
+- Task 5: Ruling: InkIcon gained data-icon so tests can assert which icon shows (replacing emoji text assertions) — cost if wrong: none
+- Task 6: Ruling: stored kid data keeps legacy emoji until the next save (normalizeKid migrates on every read) — no write-on-read — cost if wrong: none (reads are always normalized)
+- Final: Ruling: back items (wings/jetpack/backpack) drawn over the power and hero capes (plan text contradicted itself) — the accessory he chose stays fully visible; the cape hem still shows — cost if wrong: less cape visible
+- Final: Ruling: reward-goal emoji on Home (declined: spec §13 keeps parent-chosen emoji) — stands — cost if wrong: one emoji on a child screen
+- Final: Ruling: parent-entered words containing emoji (declined) — parent content, out of scope — cost if wrong: an emoji in a word list
+- Final: Ruling: one accessory at a time across slots (declined: spec silent) — stands; room note says 一次戴一个小东西 — cost if wrong: a child wanting glasses + scarf together
+- Final: Ruling: art taste — bow tie under the chin, backpack size (declined) — parent reviewed the gallery — cost if wrong: art polish
+- Final: Ruling: downgrade to main after ids are saved (declined) — forward-only rollout (prompt-mode SW) — cost if wrong: emoji-era code showing ids as text after a rollback
+- Final: Ruling: plan-5 WIP on the branch (declined: out of range) — plan 5 tasks 1–2 since committed green; branch builds — cost if wrong: none
+
+### Fixed in the final review
+- medal hidden by the tier-3 emblem — Truffle.test "the gold medal and the tier-3 power emblem do not overlap" RED→GREEN, suite 290/290
+- balloon/kite hide the power mark — "the power mark sits on the left, clear of held items" RED→GREEN, suite 290/290
+- unreadable room thumbnails — "room thumbnails are cropped tightly to each accessory, without the paw" RED→GREEN, suite 290/290
+- normalizeKid crash on malformed data — repo "does not crash on a malformed accessory list" RED→GREEN, suite 290/290
+- 不戴 in the face row — home "shows each accessory as its own ink drawing…" (不戴 outside slot sections) RED→GREEN, suite 290/290
+
+### Deferred minors
+- dash/wind mark lands on a left wing / jetpack tank
+- AccessoryDef.py unused (Label derives pinyin; 星星 shows xīng xīng not xīngxing)
+- emoji contract test scans .ts/.tsx only (JSON/CSS/index.html clean today but unguarded)
+- leftover CSS (.loading font-size, .fishtile__badge font-size, .zika__stars letter-spacing, .prize 130px line box)
+- wings / jetpack room thumbnails are two separate small shapes
+- 一 offers yí as a wrong pinyin option though tone sandhi makes yí a real reading
+
+## Plan 5 — fairer placement, writing cues, pinyin over each character
+
+### Rulings
+- Task 1: Ruling: committed with PlacementScreen still on the old API (fixed in Task 2, the next commit) — task test is the placement suite — cost if wrong: one non-building intermediate commit
+- Parent request: Ruling: per-character pinyin in Label (one 1.3em slot per character, sr-only full text for multi-cell labels) and 松露 labelled so the home corner lines up — added at the parent's request ("align the pinyin with the words", "top right corner is off") — cost if wrong: one CSS/markup revert; five-letter syllables (chéng) still widen their slot slightly
+- Parent request: Ruling: placement-seeded cards get first rechecks spread over days 7–28 (hardest first) instead of all at day 14 — a 75-word placement otherwise lands 75 reviews on one day and pauses new words; raised in the SRS answer, parent replied "ok" — cost if wrong: easy words wait up to 4 weeks for a recheck
+- Task 3: Ruling: added blankedPy + Label py prop — 子 alone reads zǐ but in 儿子 it is zi, so the blank line takes the example's own syllables (falls back to auto when counts differ) — cost if wrong: one optional prop
+- Final: Ruling: KID_MEANING curates only the top ~300 characters; ranks 301–600 rely on the grammar/length filter — the cue is a hint beside pinyin and the spoken example — cost if wrong: a few odd English words on rarer characters
+
+### Fixed in the final review
+- misleading first-sense meanings (他 "other", 呢 "wool") — curated KID_MEANING + grammar/length filter, tests 'uses kid meanings…' + 'drops grammar labels…' RED→GREEN, suite 312/312
+- doubled example blanks — 'prefers a word where the character appears once' + 'a doubled word is still said aloud…' RED→GREEN, suite 312/312
+- example with a different reading — 'skips a word that uses a different reading…' RED→GREEN (neutral tone of the same syllable still counts), suite 312/312
+- placement double tap — 'a double tap answers once…' RED→GREEN (350 ms tap guard, data-ready; tests pass tapGuardMs=0 or wait for ready), suite 312/312
+
+### Deferred minors
+- the readable copy of a blanked word says '＿半' to screen readers (underscore)
+- neutral-tone distractors (爸 offered "ba", 妈 "ma") can make him hesitate
+- parent-entered meanings with full-width separators — now handled by the split, kept as a note since parents can't enter meanings yet
+- with 300+ seeded characters, two skipped days can push dues past the 40 pause (pause design, predates this plan)
+- builtin.json data errors — 了 liǎo, 包子 bāo zǐ
+- "你已经认识 0 个字了！" for a child who knows nothing could be kinder; no exit from a placement re-run started in Settings
