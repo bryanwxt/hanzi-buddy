@@ -118,7 +118,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   };
 
   return (
-    <div class="screen home">
+    <div class={`screen home${doneToday && chestOpened ? ' home--done' : ''}`}>
       <WorldScene world={world} time={timeOfDay(now())} />
       <WorldTaps
         world={world}
@@ -137,74 +137,78 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
       <header class="topbar">
         <span class="stat stat--fire" aria-label={`连续 ${days} 天`}><Flame size={24} strokeWidth={2.75} /> {days}</span>
         <span class="stat stat--star" aria-label={`${stars} 颗星`}><Star size={24} strokeWidth={2.75} /> {stars}</span>
+        <div class="home__week">
+          <span class="seal" aria-hidden="true"><span>字</span><span>己</span></span>
+          <WeekStrip days={weekDays(data.sessions, today)} />
+        </div>
         <span class="spacer" />
         <span class="home__who">
           <strong><Label zh="松露" /></strong>
           <Label zh={`认识 ${data.know.known} 个字`} />
         </span>
       </header>
-      <div class="home__week">
-        <span class="seal" aria-hidden="true"><span>字</span><span>己</span></span>
-        <WeekStrip days={weekDays(data.sessions, today)} />
-      </div>
       <main class="home__main">
-        {goal && progress && (
-          <div class={`goal ${progress.reached ? 'goal--reached' : ''}`}>
-            <span class="goal__emoji">{goal.emoji}</span>
-            <div class="goal__body">
-              <strong>{goal.title}</strong>
-              {progress.reached ? (
-                <span><Label zh="你做到了！" /> Ask your parent for {goal.emoji}</span>
-              ) : (
-                <>
-                  <div class="progress"><div class="progress__fill" style={{ width: `${Math.round(progress.fraction * 100)}%` }} /></div>
-                  <small>{progress.value} / {goal.target} {goal.metric === 'stars' ? <InkIcon name="star" size={16} /> : '字'}</small>
-                </>
+        <div class="home__cards">
+          {goal && progress && (
+            <div class={`goal ${progress.reached ? 'goal--reached' : ''}`}>
+              <span class="goal__emoji">{goal.emoji}</span>
+              <div class="goal__body">
+                <strong>{goal.title}</strong>
+                {progress.reached ? (
+                  <span><Label zh="你做到了！" /> Ask your parent for {goal.emoji}</span>
+                ) : (
+                  <>
+                    <div class="progress"><div class="progress__fill" style={{ width: `${Math.round(progress.fraction * 100)}%` }} /></div>
+                    <small>{progress.value} / {goal.target} {goal.metric === 'stars' ? <InkIcon name="star" size={16} /> : '字'}</small>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          {doneToday && chestOpened && (
+            <div class="card done-card">
+              <p class="done-today"><Label zh="今天完成了！" /> <InkIcon name="party" size={30} /></p>
+              {hasCards && (
+                <button type="button" class="btn btn--secondary" onClick={() => play(true)}><Label zh="再玩一会儿" /></button>
               )}
             </div>
-          </div>
-        )}
-        {doneToday && chestOpened && (
-          <div class="card done-card">
-            <p class="done-today"><Label zh="今天完成了！" /> <InkIcon name="party" size={30} /></p>
-            {hasCards && (
-              <button type="button" class="btn btn--secondary" onClick={() => play(true)}><Label zh="再玩一会儿" /></button>
-            )}
-          </div>
-        )}
-        {wotd && (
-          <div class="card wotd">
-            <button type="button" class="wotd__main" aria-label={`今日一字：${wotd}`} onClick={() => speak(wotd)}>
-              <span class="label-tag">今日一字</span>
-              <span class="wotd__grid" aria-hidden="true">{wotd}</span>
-              <span class="wotd__py" aria-hidden="true">{wotdWord?.pinyin ?? pinyin(wotd)}</span>
-            </button>
-            {wotdExample && (
-              <button type="button" class="wotd__example" aria-label={`听：${wotdExample.text}`} onClick={() => speak(wotdExample.text)}>
-                <Label zh={wotdExample.text} py={wotdExample.pinyin} />
-                <Volume2 size={22} strokeWidth={2.75} aria-hidden="true" />
+          )}
+          {wotd && (
+            <div class="card wotd">
+              <button type="button" class="wotd__main" aria-label={`今日一字：${wotd}`} onClick={() => speak(wotd)}>
+                <span class="label-tag">今日一字</span>
+                <span class="wotd__grid" aria-hidden="true">{wotd}</span>
+                <span class="wotd__py" aria-hidden="true">{wotdWord?.pinyin ?? pinyin(wotd)}</span>
               </button>
-            )}
-          </div>
-        )}
-        {canRead && (
-          <button type="button" class="btn btn--secondary langdu-btn" aria-label="多读一遍" onClick={() => go({ name: 'langdu' })}>
-            <InkIcon name="mic" size={28} /> <Label zh="多读一遍" />
-          </button>
-        )}
-        <h2 class="home__title"><Label zh="今天的练习" /></h2>
-        <TodayPath
-          speakingName={speakingKind === 'story' ? '看图说话' : '朗读'}
-          nodes={nodes}
-          started={!!todaySession}
-          onStart={() => play(false)}
-          pet={
-            <button type="button" class="pet-button" aria-label="换装" onClick={() => go({ name: 'wardrobe' })}>
-              <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} bubble={said ?? (sleepy ? null : worldLine(world, today))} />
+              {wotdExample && (
+                <button type="button" class="wotd__example" aria-label={`听：${wotdExample.text}`} onClick={() => speak(wotdExample.text)}>
+                  <Label zh={wotdExample.text} py={wotdExample.pinyin} />
+                  <Volume2 size={22} strokeWidth={2.75} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          )}
+          {canRead && (
+            <button type="button" class="btn btn--secondary langdu-btn" aria-label="多读一遍" onClick={() => go({ name: 'langdu' })}>
+              <InkIcon name="mic" size={28} /> <Label zh="多读一遍" />
             </button>
-          }
-        />
+          )}
+        </div>
+        <div class="home__path">
+          <h2 class="home__title"><Label zh="今天的练习" /></h2>
+          <TodayPath
+            speakingName={speakingKind === 'story' ? '看图说话' : '朗读'}
+            nodes={nodes}
+            started={!!todaySession}
+            onStart={() => play(false)}
+          />
+        </div>
       </main>
+      <div class="home__pet">
+        <button type="button" class="pet-button" aria-label="换装" onClick={() => go({ name: 'wardrobe' })}>
+          <Pet kid={k} mood={sleepy ? 'sleepy' : doneToday ? 'pleased' : 'sulk'} size={150} bubble={said ?? (sleepy ? null : worldLine(world, today))} />
+        </button>
+      </div>
       {arrival && (
         <div class="arrival" role="dialog" aria-label="新地方">
           <div class="arrival__card">

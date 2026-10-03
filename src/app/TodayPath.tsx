@@ -1,6 +1,4 @@
 import { Check } from 'lucide-preact';
-import type { ComponentChildren } from 'preact';
-import { useEffect, useRef } from 'preact/hooks';
 import type { PathKind, PathNode } from '../fun/path';
 import { Label } from '../ui/Label';
 import { InkIcon } from '../ui/icons/InkIcon';
@@ -13,27 +11,20 @@ interface Props {
   nodes: PathNode[];
   started: boolean;
   onStart: () => void;
-  pet: ComponentChildren;
   speakingName?: string; // today's speaking activity: 朗读 or 看图说话 (they alternate)
 }
 
-export function TodayPath({ nodes, started, onStart, pet, speakingName = '朗读' }: Props) {
+export function TodayPath({ nodes, started, onStart, speakingName = '朗读' }: Props) {
   const name = (k: PathKind) => (k === 'speaking' ? speakingName : NAME[k]);
-  const ref = useRef<HTMLOListElement>(null);
-  const currentIndex = nodes.findIndex((n) => n.state === 'current');
   const verb = started ? '继续' : '开始';
 
-  useEffect(() => {
-    (ref.current?.querySelector('[aria-current="step"]') as HTMLElement | null)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
-  }, []);
-
   return (
-    <ol class="path" ref={ref} aria-label="今天的练习">
+    <ol class="path" aria-label="今天的练习" style={`--stops:${nodes.length}`}>
       {nodes.map((n, i) => {
         const isCurrent = n.state === 'current';
         const icon = n.state === 'done' ? (n.kind === 'chest' ? <InkIcon name="party" size={44} /> : <Check size={38} strokeWidth={3.5} />) : ICON[n.kind] ? <InkIcon name={ICON[n.kind]!} size={44} /> : '字';
         return (
-          <li key={n.kind} class="path__row" style={`--x:${Math.round(Math.sin((i * Math.PI) / 2) * 80)}px`}>
+          <li key={n.kind} class="path__row" style={`--side:${i % 2 === 0 ? -1 : 1}`}>
             {isCurrent && <div class="path__bubble"><Label zh={verb} /></div>}
             <button
               type="button"
@@ -45,7 +36,6 @@ export function TodayPath({ nodes, started, onStart, pet, speakingName = '朗读
               <span class={`path__icon${icon === '字' ? ' path__icon--hanzi' : ''}`}>{icon}</span>
             </button>
             <span class="path__name"><Label zh={name(n.kind)} /></span>
-            {i === Math.max(0, currentIndex) && <div class="path__pet">{pet}</div>}
           </li>
         );
       })}

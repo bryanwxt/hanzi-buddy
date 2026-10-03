@@ -336,7 +336,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   position: absolute; top: -50px; z-index: 2; background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 4px 14px;
   color: var(--green-ink); font-weight: 900; font-size: 20px; white-space: nowrap; animation: node-bounce 1.8s ease-in-out infinite;
 }
-.path__pet { position: absolute; left: calc(50% + 74px); top: -54px; }
 
 /* Sticker book & wardrobe */
 .book { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
@@ -670,9 +669,9 @@ body { background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www
 .world-taps { position: fixed; inset: 0 0 80px 0; width: 100%; height: calc(100% - 80px); z-index: 0; pointer-events: none; }
 .world-taps .tap, .world-taps .tap * { pointer-events: all; cursor: pointer; outline: none; }
 /* Home's layout boxes let taps through to the scene; their real contents keep them */
-.home > .topbar, .home > .home__week, .home > .home__main { position: relative; z-index: 1; }
+.home > .topbar, .home > .home__main { position: relative; z-index: 1; }
 .home .home__main, .home .path, .home .path__row { pointer-events: none; }
-.home .home__main > *:not(.path), .home .path__row > * { pointer-events: auto; }
+.home .path__row > * { pointer-events: auto; }
 .animals { width: 100%; max-width: 760px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .animals__note { margin: 0; font-size: 20px; }
 .animals__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; width: 100%; }
@@ -728,4 +727,78 @@ html:has(.screen--scroll), html:has(.screen--scroll) body { overflow: auto; }
 @media (orientation: landscape) and (max-height: 499px) {
   .rotate-hint { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; gap: 24px; background: var(--paper); }
   .rotate-hint__msg { margin: 0; font-size: 26px; background: var(--surface); border: var(--panel-border); box-shadow: var(--panel-shadow); border-radius: 16px; padding: 12px 20px; }
+}
+
+/* Home: one screen. Header and cards up top, today's path, Truffle on the ground in the middle.
+   The world's tap targets sit in the scene's outer quarters (x < 110 or > 290 of 360), so on the ground
+   everything stays inside --band, the middle half of the scene. */
+:root { --band: 50vw; }
+.world-scene { top: auto; height: min(100%, 133.33vw); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%); mask-image: linear-gradient(to bottom, transparent, #000 12%); } /* never wider than the screen: nothing of the world is cropped off the sides */
+.tabbar { height: var(--nav-h); align-items: stretch; }
+.tabbar__item { min-height: var(--tap-main); font-size: 16px; }
+.week__day { font-size: 16px; }
+.home .world-scene { bottom: var(--nav-h); height: min(calc(100% - var(--nav-h)), 133.33vw); }
+.world-taps { inset: auto 0 var(--nav-h) 0; height: min(calc(100% - var(--nav-h)), 133.33vw); }
+.home { gap: 10px; }
+.home__main { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-bottom: calc(var(--pet-home) * 1.25 + 44px); }
+/* the layout boxes let taps through to the world; only their contents catch them */
+.home .home__cards, .home .home__path { pointer-events: none; }
+.home .home__cards > *, .home .home__path > .home__title { pointer-events: auto; }
+.home__cards { width: min(100%, var(--band), 560px); display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.home__cards > * { grid-column: 1 / -1; }
+.home__cards > .wotd { grid-column: 1; }
+.home__cards > .langdu-btn { grid-column: 2; }
+.home__cards .goal { width: auto; padding: 6px 14px; gap: 12px; }
+.home__cards .goal__emoji { font-size: 32px; }
+.home__cards .goal__body { flex-direction: row; align-items: center; gap: 10px; }
+.home__cards .goal__body .progress { flex: 1; min-width: 60px; }
+.home__cards .goal__body small { white-space: nowrap; }
+.home__cards .done-card { justify-content: space-between; padding: 8px 10px 8px 16px; }
+.home__cards .done-today { font-size: 22px; }
+.home__cards .wotd { flex-direction: row; justify-content: center; gap: 14px; padding: 8px 12px; transform: rotate(-1deg); }
+.home__cards .wotd__main { flex-direction: row; align-items: center; gap: 10px; }
+.home__cards .wotd { position: relative; margin-top: 8px; }
+.home__cards .wotd .label-tag { position: absolute; top: -12px; left: 12px; } /* a sticker on the card's corner */
+.home__cards .langdu-btn .label__cells { flex-wrap: nowrap; }
+.home__cards .wotd__grid { width: 70px; height: 70px; font-size: 58px; }
+.home__cards .wotd__example { margin-top: 0; font-size: 20px; }
+.home__cards .langdu-btn { flex-direction: column; min-height: 64px; padding: 6px 14px; gap: 2px; font-size: 18px; }
+.home__path { flex: 1; min-height: 0; width: min(100%, var(--band)); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; }
+.home__title { margin: 0; font-size: 20px; }
+.path { flex: none; width: 100%; padding: 38px 0 0; gap: 34px 0; flex-direction: row; flex-wrap: wrap; justify-content: space-evenly; align-items: flex-start; --node: clamp(var(--tap-main), 7vw, 80px); }
+.path::before { display: none; }
+.path__row { transform: translateY(calc(var(--side, 0) * -8px)); }
+.path__node { width: var(--node); height: var(--node); }
+.path__node--current { width: calc(var(--node) * 1.08); height: calc(var(--node) * 1.08); }
+.path__name { margin-top: 4px; font-size: 16px; }
+.path__bubble { top: -36px; font-size: 16px; }
+.home__pet { position: absolute; z-index: 2; bottom: calc(var(--nav-h) + 4px); left: 50%; transform: translateX(-50%); }
+.home__pet .truffle { width: var(--pet-home); height: auto; }
+.home__pet .pet__bubble { font-size: 17px; }
+.home__pet .pet-button { pointer-events: none; } /* his box is as wide as his bubble; only Truffle and the bubble catch taps */
+.home__pet .truffle, .home__pet .pet__bubble { pointer-events: auto; }
+
+@media (max-width: 599px) {
+  /* the top of a phone is sky: cards may be full width there */
+  .home .seal, .home__who, .home__title { display: none; }
+  .home--done .home__path { display: none; } /* the done card says it; the all-ticked path would not fit */
+  .home__week .week { gap: 4px; padding: 4px 8px; }
+  .home__week .week__dot { width: 16px; height: 16px; }
+  .home .topbar { flex-wrap: nowrap; gap: 8px; }
+  .home .topbar .stat { font-size: 18px; padding: 4px 10px; }
+  .home__cards { width: 100%; }
+  .home__cards .goal__emoji { font-size: 30px; }
+  .home__cards .done-card .btn { min-height: 48px; padding: 6px 14px; font-size: 18px; }
+  .home__cards .done-today { font-size: 19px; }
+  .home__cards .wotd__grid { width: 56px; height: 56px; font-size: 46px; }
+  .home__cards .wotd__example { font-size: 18px; }
+  .home__path .path__icon svg { width: 30px; height: 30px; }
+  /* a phone's path sits in the sky (above the ground's tap targets), so it can use the full width in one row */
+  .home__path { width: 100%; }
+  .path { flex-wrap: nowrap; justify-content: space-between; }
+  .home__pet .pet__bubble { font-size: 16px; padding: 4px 10px; margin-bottom: 8px; }
+}
+@media (orientation: landscape) and (min-height: 600px) {
+  :root { --pet-home: clamp(100px, 14dvh, 150px); }
+  .home__title { display: none; } /* no room under the cards; the 开始 bubble names the next step */
 }

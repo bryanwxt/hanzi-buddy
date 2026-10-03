@@ -21,6 +21,7 @@ const SIZES = [
 type Size = (typeof SIZES)[number];
 interface Result { size: string; flow: string; step: number; sig: string; problems: string[] }
 const results: Result[] = [];
+const ONLY = process.env.FIT_ONLY ? new RegExp(process.env.FIT_ONLY) : null; // e.g. FIT_ONLY=home npm run fit
 
 /* ---------- in-page probes (plain JS: they run inside WebKit) ---------- */
 const MAIN = '.choice, .bottombar .btn, .path__node, .mic-btn, .tabbar__item, .fishtile, .bubble-opt';
@@ -48,10 +49,21 @@ function probe(args: { main: string; scrollers: string }): string[] {
     if (fs < 15.5) small.add(`Chinese text under 16px: ${(el.parentElement?.closest('.label')?.textContent ?? el.textContent ?? '').slice(0, 12)} ${fs}px`);
   }
   out.push(...small);
+  // solid things must not sit on each other (the eye catches this; scroll and size checks don't)
+  const solid = [...document.querySelectorAll('button, h1, h2, .card, .goal, .pet__bubble, svg.truffle, .path__name, .week, .stat, .home__who, .passage, .tianzige, .intro__card, .hanzi--xl, .langdu__phrase, .kantu__pic')]
+    .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !el.closest('[aria-hidden="true"]:not(.truffle):not(.pet), .arrival, .zika-big, .closeup, .rotate-hint, .world-taps, .particles') && getComputedStyle(el).visibility !== 'hidden'; });
+  const seenPair = new Set<string>();
+  for (let a = 0; a < solid.length; a++) for (let b = a + 1; b < solid.length; b++) {
+    const A = solid[a]!, B = solid[b]!;
+    if (A.contains(B) || B.contains(A)) continue;
+    const ra = A.getBoundingClientRect(), rb = B.getBoundingClientRect();
+    const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+    if (w > 6 && h > 6) { const key = `${name(A)} × ${name(B)}`; if (!seenPair.has(key)) { seenPair.add(key); out.push(`overlap: ${key}`); } }
+  }
   for (const t of document.querySelectorAll('.world-taps .tap > *')) {
     const r = t.getBoundingClientRect();
     const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-    if (!top?.closest('.world-taps .tap')) out.push(`world tap covered by ${top ? top.className.toString() || top.tagName : 'nothing'}`);
+    if (!top?.closest('.world-taps .tap')) out.push(`world tap at ${Math.round(r.left + r.width / 2)},${Math.round(r.top + r.height / 2)} covered by ${top ? (typeof top.className === 'string' ? top.className : top.tagName) || top.tagName : 'nothing (off screen)'}`);
   }
   return out;
 }
@@ -152,6 +164,7 @@ async function walkLesson(page: Page, size: Size, flow: string, opts: { firstOnl
 
 async function sweep(browser: Browser, size: Size) {
   const run = async (flow: string, now: Date, profile: Omit<FitProfileOptions, 'now'>, then: (p: Page) => Promise<void>) => {
+    if (ONLY && !ONLY.test(flow)) return;
     const page = await open(browser, size, now, profile);
     try { await then(page); } catch (e) { results.push({ size: size.name, flow, step: -1, sig: '', problems: [`flow crashed: ${String(e).slice(0, 160)}`] }); }
     await page.context().close();

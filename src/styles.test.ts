@@ -90,8 +90,8 @@ describe('world tap fun never gets in the way', () => {
     expect(css).toMatch(/\.world-taps \{[^}]*position: fixed[^}]*pointer-events: none/);
     expect(css).toMatch(/\.world-taps \.tap[^{]*\{[^}]*pointer-events: all/);
     expect(css).toMatch(/\.home \.home__main, \.home \.path, \.home \.path__row \{[^}]*pointer-events: none/);
-    expect(css).toMatch(/\.home \.home__main > \*:not\(\.path\), \.home \.path__row > \* \{[^}]*pointer-events: auto/);
-    expect(css).toMatch(/\.home > \.topbar, \.home > \.home__week, \.home > \.home__main \{[^}]*z-index: 1/);
+    expect(css).toMatch(/\.home \.path__row > \* \{[^}]*pointer-events: auto/);
+    expect(css).toMatch(/\.home > \.topbar, \.home > \.home__main \{[^}]*z-index: 1/);
   });
 });
 
@@ -129,5 +129,14 @@ describe('adaptive layouts (spec §18)', () => {
   it('the nav height clears the home indicator, and pinyin never drops below 9px', () => {
     expect(adaptive).toMatch(/--nav-h: calc\(\d+px \+ env\(safe-area-inset-bottom\)\)/);
     expect(adaptive).toMatch(/\.label__py \{ font-size: max\(0\.5em, 9px\); \}/);
+  });
+  it('Home: on the ground everything stays in the middle band (the sides hold the world taps); Truffle pinned above a --nav-h nav', () => {
+    expect(adaptive).toMatch(/:root \{ --band: 50vw; \}/);
+    expect(adaptive).toMatch(/\.home__path \{[^}]*width: min\(100%, var\(--band\)\);/);
+    expect(adaptive).toMatch(/\.home__cards \{ width: min\(100%, var\(--band\), 560px\);/);
+    expect(adaptive).toMatch(/\.world-scene \{ top: auto; height: min\(100%, 133\.33vw\);/); // never wider than the screen: no target cropped off
+    expect(adaptive).toMatch(/\.home__pet \{[^}]*position: absolute;[^}]*bottom: calc\(var\(--nav-h\)[^}]*left: 50%;/);
+    expect(adaptive).toMatch(/\.tabbar \{ height: var\(--nav-h\);/);
+    expect(adaptive).toMatch(/\.home \.home__cards, \.home \.home__path \{ pointer-events: none; \}/);
   });
 });

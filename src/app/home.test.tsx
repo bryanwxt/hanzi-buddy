@@ -19,6 +19,25 @@ const emptyPlan: SessionPlan = { steps: [], reviewWordIds: [], newWordIds: [], f
 const done = (date: string, steps: SessionPlan['steps']) => ({ ...createSessionRecord(emptyPlan, date, 0), completed: true, completedSteps: steps });
 
 describe('HomeScreen', () => {
+  it('Truffle stands on the ground beside the path, not inside it (he never moves with the list)', async () => {
+    const app = await makeAppData();
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    expect(document.querySelector('.home > .home__pet .pet')).toBeTruthy();
+    expect(document.querySelector('.path .pet')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '换装' }));
+    expect(app.go).toHaveBeenCalledWith({ name: 'wardrobe' });
+  });
+  it('the path zigzags left and right and knows how many stops it has; the cards sit above it', async () => {
+    const app = await makeAppData();
+    renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天的练习');
+    const rows = [...document.querySelectorAll<HTMLElement>('.path__row')];
+    expect(rows.map((r) => r.style.getPropertyValue('--side'))).toEqual(rows.map((_, i) => (i % 2 === 0 ? '-1' : '1')));
+    expect(document.querySelector<HTMLElement>('.path')!.style.getPropertyValue('--stops')).toBe(String(rows.length));
+    expect(document.querySelector('.home__main > .home__path .path')).toBeTruthy();
+    expect(document.querySelector('.home__main > .home__cards')).toBeTruthy();
+  });
   it("shows streak and stars and starts today's path", async () => {
     const app = await makeAppData();
     await saveSession(app.db, done('2026-10-01', ['flashcards', 'writing']));
@@ -42,6 +61,17 @@ describe('HomeScreen', () => {
     expect(document.querySelector('.goal small svg.inkicon')).toBeTruthy();
     fireEvent.click(screen.getByText('再玩一会儿'));
     expect(app.go).toHaveBeenCalledWith({ name: 'session', free: true });
+  });
+  it('marks Home as done for today (a phone then leaves out the all-ticked path); not before', async () => {
+    const app = await makeAppData({ kid: { ...DEFAULT_KID, lastChestDate: '2026-10-02' } });
+    await saveSession(app.db, done('2026-10-02', ['flashcards']));
+    const a = renderWithApp(<HomeScreen />, app);
+    await screen.findByText('今天完成了！');
+    expect(document.querySelector('.screen.home')!.classList.contains('home--done')).toBe(true);
+    a.unmount();
+    renderWithApp(<HomeScreen />, await makeAppData());
+    await screen.findByText('今天的练习');
+    expect(document.querySelector('.screen.home')!.classList.contains('home--done')).toBe(false);
   });
 
   it('reopens the session to claim an unopened chest', async () => {
