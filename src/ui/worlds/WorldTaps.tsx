@@ -29,9 +29,9 @@ type Effect =
 const INK = '#2a2630';
 const TRACK = 'M-20 460 C80 470 140 380 220 380 C300 380 330 300 290 270 C250 240 210 290 250 320 C300 360 340 330 380 300';
 const STAR = 'M0 -12 l3.5 7.5 8 1 -6 5.5 1.6 8 -7.1 -4 -7.1 4 1.6 -8 -6 -5.5 8 -1Z';
-const CAR = `<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"><path d="M-26 6 L-24 -6 L-10 -8 L-2 -18 L14 -18 L22 -8 L28 -6 L28 6Z" fill="#ffc94a"/><path d="M-4 -9 L1 -15 L12 -15 L17 -9Z" fill="#e4efff"/><circle cx="-14" cy="7" r="6" fill="${INK}"/><circle cx="17" cy="7" r="6" fill="${INK}"/></g>`;
-const ROCKET = `<g stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"><path d="M42 370 C42 330 52 300 62 288 C72 300 82 330 82 370Z" fill="#fffaf0"/><path d="M52 288 C56 280 68 280 72 288" fill="#ff5532"/><circle cx="62" cy="324" r="7" fill="#4aa3ff"/><path d="M42 352 l-12 18 h12 M82 352 l12 18 h-12" fill="#ff5532"/><path d="M50 372 q12 26 24 0" fill="#ffc94a"/></g>`;
-const EGG = `<ellipse cx="0" cy="0" rx="9" ry="12" fill="#ffe7a3" stroke="${INK}" stroke-width="2.4"/><path d="M-4 -4 l4 4 3 -3" fill="none" stroke="${INK}" stroke-width="2"/>`;
+const CAR = `<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"><path d="M-26 6 L-24 -6 L-10 -8 L-2 -18 L14 -18 L22 -8 L28 -6 L28 6Z" fill="#efc472"/><path d="M-4 -9 L1 -15 L12 -15 L17 -9Z" fill="#e3ecf2"/><circle cx="-14" cy="7" r="6" fill="${INK}"/><circle cx="17" cy="7" r="6" fill="${INK}"/></g>`;
+const ROCKET = `<g stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"><path d="M42 370 C42 330 52 300 62 288 C72 300 82 330 82 370Z" fill="#fffaf0"/><path d="M52 288 C56 280 68 280 72 288" fill="#e2705d"/><circle cx="62" cy="324" r="7" fill="#6ea4d4"/><path d="M42 352 l-12 18 h12 M82 352 l12 18 h-12" fill="#e2705d"/><path d="M50 372 q12 26 24 0" fill="#efc472"/></g>`;
+const EGG = `<ellipse cx="0" cy="0" rx="9" ry="12" fill="#f1e1b0" stroke="${INK}" stroke-width="2.4"/><path d="M-4 -4 l4 4 3 -3" fill="none" stroke="${INK}" stroke-width="2"/>`;
 
 /** Where each world's one tappable thing sits, in scene units (the same 360×480 box as WorldScene). */
 const TARGET: Record<WorldId, { label: string; shape: string }> = {
@@ -146,15 +146,15 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
   if (effect?.kind === 'wobble') fx = `<g class="tap-egg" transform="translate(90 428)">${EGG}${still ? '' : '<animateTransform attributeName="transform" type="rotate" additive="sum" values="0;-14;12;-8;6;0" dur="800ms"/>'}</g>`;
   if (effect?.kind === 'bubbles') {
     fx = [0, 1, 2, 3].map((i) => `<circle cx="${50 + i * 12}" cy="340" r="${3 + (i % 2)}" fill="none" stroke="${INK}" stroke-width="1.6">${still ? fade(1600) : `<animate attributeName="cy" values="340;296" dur="${900 + i * 200}ms" fill="freeze"/>${fade(1600)}`}</circle>`).join('');
-    fx += `<g transform="translate(-30 410)"><path d="M0 0 c10 -10 30 -10 40 0 c-10 10 -30 10 -40 0Z M0 0 l-10 -6 v12Z" fill="#7fdc7a" stroke="${INK}" stroke-width="2"/>${still ? fade(1600) : `<animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;420 -10" dur="1600ms" fill="freeze"/>`}</g>`;
+    fx += `<g transform="translate(-30 410)"><path d="M0 0 c10 -10 30 -10 40 0 c-10 10 -30 10 -40 0Z M0 0 l-10 -6 v12Z" fill="#9fcf90" stroke="${INK}" stroke-width="2"/>${still ? fade(1600) : `<animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;420 -10" dur="1600ms" fill="freeze"/>`}</g>`;
   }
   if (effect?.kind === 'launch') {
     // 三，二，一 first (about 1.5 s), then lift-off; the sky patch stops above the launch pad
     fx = `<path d="M26 278 H100 V368 H26Z" fill="#e4e1f5"/>` + (still ? `<g class="tap-rocket">${ROCKET}${fade(4300)}</g>` : `<g class="tap-rocket">${ROCKET}<animateTransform attributeName="transform" type="translate" values="0 0;0 -420;0 -420;0 0" keyTimes="0;0.4;0.55;1" begin="1500ms" dur="2800ms" fill="freeze"/></g>`);
   }
   if (effect?.kind === 'dig') {
-    fx = `<g fill="#ffe7a3" stroke="${INK}" stroke-width="1.6"><circle cx="82" cy="400" r="4"/><circle cx="100" cy="398" r="3.5"/><circle cx="91" cy="394" r="3"/></g>`;
-    if (effect.star) fx += `<g transform="translate(91 384)"><path d="${STAR}" fill="#ffc94a" stroke="${INK}" stroke-width="2"/>${rise(20, 1400)}</g>`;
+    fx = `<g fill="#f1e1b0" stroke="${INK}" stroke-width="1.6"><circle cx="82" cy="400" r="4"/><circle cx="100" cy="398" r="3.5"/><circle cx="91" cy="394" r="3"/></g>`;
+    if (effect.star) fx += `<g transform="translate(91 384)"><path d="${STAR}" fill="#efc472" stroke="${INK}" stroke-width="2"/>${rise(20, 1400)}</g>`;
   }
   const baby = world === 'dino' && kid.finds.dinoHatched && effect?.kind !== 'hop' ? `<g class="tap-baby-dino" transform="translate(94 424) scale(0.9)">${BABY_DINO}</g>` : '';
 

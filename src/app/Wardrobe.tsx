@@ -125,7 +125,7 @@ export function Wardrobe() {
                   disabled={!reached}
                   onClick={() => void save({ ...k, world: w.id })}
                 >
-                  <svg class="place__thumb" viewBox="0 160 360 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true" dangerouslySetInnerHTML={{ __html: SCENES[w.id] }} />
+                  <span class="grainy place__frame"><svg class="place__thumb" viewBox="0 160 360 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true" dangerouslySetInnerHTML={{ __html: SCENES[w.id] }} /></span>
                   <Label zh={w.zh} />
                   {!reached && (
                     <span class="place__lock"><InkIcon name="lock" size={20} /> <Label zh={`${w.at} 个字`} /></span>

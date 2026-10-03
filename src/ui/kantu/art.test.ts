@@ -13,4 +13,7 @@ describe('看图说话 scene art', () => {
       expect(s).not.toMatch(/Gradient|<filter|url\(#/);
     }
   });
+  it('uses the muted palette, like the worlds and Truffle', () => {
+    for (const id of SCENE_IDS) for (const c of ['#ff5532', '#4aa3ff', '#7fdc7a', '#ffc94a', '#ff9b3d']) expect(SCENE_ART[id], `${id} uses ${c}`).not.toContain(c);
+  });
 });

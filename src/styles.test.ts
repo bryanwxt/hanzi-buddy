@@ -94,3 +94,9 @@ describe('world tap fun never gets in the way', () => {
     expect(css).toMatch(/\.home > \.topbar, \.home > \.home__week, \.home > \.home__main \{[^}]*z-index: 1/);
   });
 });
+
+describe('scene texture', () => {
+  it('worlds, lesson strips and pictures get a grain overlay like Truffle\'s', () => {
+    expect(css).toMatch(/\.world-scene::after, \.world-strip::after, \.grainy::after \{[^}]*mix-blend-mode: multiply/);
+  });
+});
