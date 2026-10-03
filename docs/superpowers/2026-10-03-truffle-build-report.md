@@ -295,3 +295,15 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - the gem jar's top row overflows the rim at 29–30 gems
 - spec flavour not built — yard: Truffle flinch-then-laugh (only the 哇！ bubble); pirate: Truffle digging
 - SessionScreen's `!rec?.completed` hatch guard is always true (harmless)
+
+## Minor fixes (branch fix/minors)
+
+Fixed, each with a test that failed first:
+- the 字己 seal's characters slid out of the red in Safari (vertical text plus the WenKai font): now stacked spans, no writing-mode
+- the gem jar's top rows overflowed the rim: it draws at most 24 gems (the label keeps the real count)
+- gem taps carried over past midnight: the counter belongs to one day
+- the dig puffs overlapped the island's outline: they sit on the sand around the X
+- the "too many recordings" warning counted story parts: a story counts as one and is pruned as a whole
+- a full storage froze 完成 on the last story screen (and the 朗读 step): the recording is lost, the lesson goes on
+
+Still deferred: reduced-motion fish fades in mostly off-screen; yard/pirate Truffle flavour; the always-true hatch guard; plan 8's recorder/oral-field/ASR minors.
