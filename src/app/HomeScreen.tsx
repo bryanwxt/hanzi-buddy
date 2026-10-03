@@ -11,8 +11,10 @@ import { STEP_ORDER } from '../session/plan';
 import { streak, totalStars, weekDays } from '../stats/stats';
 import { pickExample } from '../activities/writing/cue';
 import { WeekStrip } from './WeekStrip';
-import { allSessions, listRewards, saveKid } from '../store/repo';
-import { DEFAULT_KID, type KidState, type RewardGoal, type SessionRecord } from '../types';
+import { allSessions, listParentPassages, listRewards, saveKid } from '../store/repo';
+import { pickPassage, readingPool } from '../langdu/cycle';
+import { PASSAGES } from '../content';
+import { DEFAULT_KID, type KidState, type ParentPassage, type RewardGoal, type SessionRecord } from '../types';
 import { celebrate } from '../ui/confetti';
 import { Label } from '../ui/Label';
 import { Pet } from '../ui/Pet';
@@ -29,6 +31,7 @@ interface HomeData {
   know: Knowledge;
   sessions: SessionRecord[];
   goals: RewardGoal[];
+  parentPassages: ParentPassage[];
 }
 
 const SLEEP_AFTER_MS = 20_000;
@@ -43,7 +46,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
   useEffect(() => enterSafeScreen(), []);
 
   useEffect(() => {
-    void Promise.all([loadKnowledge(db), allSessions(db), listRewards(db)]).then(([know, sessions, goals]) => setData({ know, sessions, goals }));
+    void Promise.all([loadKnowledge(db), allSessions(db), listRewards(db), listParentPassages(db)]).then(([know, sessions, goals, parentPassages]) => setData({ know, sessions, goals, parentPassages }));
   }, []);
 
   // The dragon dozes off when nobody is around; any tap wakes it.
@@ -99,6 +102,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
     date: today,
   });
   const world = currentWorld(k);
+  const canRead = !!pickPassage(k.reading, readingPool(data.parentPassages, PASSAGES, data.know.knownChars), today);
   const wotdWord = wotd ? data.know.wordsById.get(`b:${wotd}`) : undefined;
   const wotdExample = wotdWord ? pickExample(wotdWord)?.example ?? null : null;
   const play = (free: boolean) => {
@@ -161,6 +165,11 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
               </button>
             )}
           </div>
+        )}
+        {canRead && (
+          <button type="button" class="btn btn--secondary langdu-btn" aria-label="朗读" onClick={() => go({ name: 'langdu' })}>
+            <InkIcon name="mic" size={28} /> <Label zh="朗读" />
+          </button>
         )}
         <h2 class="home__title"><Label zh="今天的练习" /></h2>
         <TodayPath

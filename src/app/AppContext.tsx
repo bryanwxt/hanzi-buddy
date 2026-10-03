@@ -11,7 +11,8 @@ export type Route =
   | { name: 'stickers' }
   | { name: 'wardrobe' }
   | { name: 'setupPin' }
-  | { name: 'petSetup' };
+  | { name: 'petSetup' }
+  | { name: 'langdu' };
 
 export interface AppData {
   db: AppDb;

@@ -4,6 +4,7 @@ import { ErrorScreen } from './app/ErrorScreen';
 import { HomeScreen } from './app/HomeScreen';
 import { PetSetup } from './app/PetSetup';
 import { PlacementScreen } from './app/PlacementScreen';
+import { LangduScreen } from './app/LangduScreen';
 import { SessionScreen } from './app/SessionScreen';
 import { SetupPin } from './app/SetupPin';
 import { CollectionScreen } from './app/CollectionScreen';
@@ -72,6 +73,8 @@ function Screen({ route }: { route: Route }) {
       return <CollectionScreen />;
     case 'wardrobe':
       return <Wardrobe />;
+    case 'langdu':
+      return <LangduScreen />;
     case 'home':
       return <HomeScreen />;
   }
