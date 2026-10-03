@@ -26,10 +26,12 @@ describe('first launch', () => {
     expect((await getSettings(app.db)).pinHash).toBe(await hashPin('1234'));
   });
 
-  it('PetSetup welcomes him to 字己 and spells out the pun, so 自己 stays right at school', async () => {
+  it('PetSetup welcomes him with the red 字己 seal, and no explanation of the pun', async () => {
     renderWithApp(<PetSetup />, await makeAppData({ kid: null }));
-    expect(screen.getByRole('heading', { name: /字己/ })).toBeTruthy();
-    expect(document.querySelector('.pun')?.textContent).toContain('字己 = 自己学汉字');
+    expect(screen.getByRole('heading', { name: '字己' })).toBeTruthy();
+    expect(document.querySelector('.brand .seal')?.textContent).toBe('字己');
+    expect(document.querySelector('.pun')).toBeNull();
+    expect(document.body.textContent).not.toContain('自己学汉字');
   });
 
   it('Meet Truffle: wake him, then continue to placement', async () => {
