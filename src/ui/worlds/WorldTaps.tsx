@@ -21,6 +21,7 @@ type Effect =
   | { kind: 'lap' }
   | { kind: 'crack'; cracks: number; gem: boolean }
   | { kind: 'wobble' }
+  | { kind: 'hop' }
   | { kind: 'bubbles' }
   | { kind: 'launch' }
   | { kind: 'dig'; star: boolean };
@@ -36,7 +37,7 @@ const EGG = `<ellipse cx="0" cy="0" rx="9" ry="12" fill="#ffe7a3" stroke="${INK}
 const TARGET: Record<WorldId, { label: string; shape: string }> = {
   yard: { label: '洒水器', shape: '<circle cx="68" cy="392" r="30"/>' },
   grass: { label: '草丛', shape: '<rect x="60" y="312" width="50" height="84" rx="10"/>' },
-  race: { label: '赛车', shape: '<rect x="26" y="326" width="60" height="80" rx="10"/>' }, // the chequered flag starts the race
+  race: { label: '赛车', shape: '<rect x="26" y="326" width="60" height="80" rx="10"/><rect x="86" y="396" width="24" height="40" rx="6"/>' }, // the flag, or the red car's near half (clear of Truffle)
   blocks: { label: '宝石', shape: '<rect x="306" y="368" width="54" height="38" rx="6"/>' },
   dino: { label: '恐龙蛋', shape: '<rect x="54" y="408" width="54" height="48" rx="10"/>' },
   sea: { label: '潜水艇', shape: '<rect x="22" y="320" width="86" height="70" rx="12"/>' },
@@ -44,7 +45,8 @@ const TARGET: Record<WorldId, { label: string; shape: string }> = {
   pirate: { label: '宝藏', shape: '<rect x="74" y="392" width="34" height="36" rx="8"/>' },
 };
 
-const DURATION: Record<Effect['kind'], number> = { spray: 1200, animal: 2200, lap: 1700, crack: 500, wobble: 800, bubbles: 1600, launch: 3200, dig: 1400 };
+const DURATION: Record<Effect['kind'], number> = { spray: 1200, animal: 2200, lap: 1700, crack: 500, wobble: 800, hop: 900, bubbles: 1600, launch: 4300, dig: 1400 };
+const GEM_POP_MS = 1400; // the day's gem stays up even if he keeps tapping
 
 /** One thing to tap in each journey world, drawn over the scene in its own coordinates. Never blocks practice: only the target takes taps. */
 export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
@@ -52,20 +54,20 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
   const busy = useRef(false);
   const gemTaps = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout>>();
-  const svg = useRef<SVGSVGElement>(null);
+  const [run, setRun] = useState(0);
   const still = reducedMotion();
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const play = (e: Effect) => {
     busy.current = true;
     setEffect(e);
-    // SVG animations run on the <svg>'s own clock, which started at page load: rewind it so this effect plays from its start
-    svg.current?.setCurrentTime?.(0);
+    // SVG animations run on their outermost <svg>'s clock: each effect gets a fresh <svg> (keyed), so it always plays from its start
+    setRun((n) => n + 1);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       busy.current = false;
       if (e.kind !== 'crack') setEffect(null); // cracks stay on the block for this visit
-    }, DURATION[e.kind]);
+    }, e.kind === 'crack' && e.gem ? GEM_POP_MS : DURATION[e.kind]);
   };
 
   const onTap = () => {
@@ -99,6 +101,11 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
         return;
       }
       case 'dino': {
+        if (f.dinoHatched) {
+          play({ kind: 'hop' }); // the baby hops; no egg over it any more
+          onSay('你好，小恐龙！');
+          return;
+        }
         const next = tapEgg(f);
         if (next !== f) onKid({ ...kid, finds: next });
         play({ kind: 'wobble' });
@@ -129,30 +136,35 @@ export function WorldTaps({ world, kid, today, onKid, onSay }: Props) {
   let fx = '';
   if (effect?.kind === 'spray') fx = `<g transform="translate(68 396)">${SPRAY}${fade(1200)}</g>`;
   if (effect?.kind === 'animal') fx = `<g class="tap-pop" data-animal="${effect.animal}" transform="translate(88 298) scale(1.1)"><circle r="24" fill="#fffaf0" stroke="${INK}" stroke-width="2.4"/>${ANIMAL_FACES[effect.animal] ?? ''}${rise(40, 2200)}</g>`;
-  if (effect?.kind === 'lap') fx = still ? `<g transform="translate(220 380)">${CAR}${fade(1700)}</g>` : `<g>${CAR}<animateMotion dur="1700ms" path="${TRACK}" rotate="auto" fill="freeze"/></g>`;
+  if (effect?.kind === 'lap') fx = still ? `<g class="tap-car" transform="translate(220 380)">${CAR}${fade(1700)}</g>` : `<g class="tap-car">${CAR}<animateMotion dur="1700ms" path="${TRACK}" rotate="auto" fill="freeze"/></g>`;
   if (effect?.kind === 'crack') {
     const lines = ['M316 378 l8 8 -4 6', 'M334 376 l-6 10 5 6', 'M320 396 l6 -6 6 2'];
     fx = lines.slice(0, effect.cracks).map((d) => `<path class="tap-crack" d="${d}" fill="none" stroke="#fffaf0" stroke-width="2.4" stroke-linecap="round"/>`).join('');
-    if (effect.gem) fx += `<g transform="translate(325 358)">${GEM}${rise(24, 1400)}</g>`;
+    if (effect.gem) fx += `<g class="tap-gem" transform="translate(325 358)">${GEM}${rise(24, 1400)}</g>`;
   }
-  if (effect?.kind === 'wobble') fx = `<g transform="translate(90 428)">${EGG}${still ? '' : '<animateTransform attributeName="transform" type="rotate" additive="sum" values="0;-14;12;-8;6;0" dur="800ms"/>'}</g>`;
+  if (effect?.kind === 'hop') fx = `<g class="tap-baby-dino is-hopping" transform="translate(94 424) scale(0.9)">${BABY_DINO}${still ? '' : '<animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;0 -14;0 0;0 -7;0 0" dur="900ms"/>'}</g>`;
+  if (effect?.kind === 'wobble') fx = `<g class="tap-egg" transform="translate(90 428)">${EGG}${still ? '' : '<animateTransform attributeName="transform" type="rotate" additive="sum" values="0;-14;12;-8;6;0" dur="800ms"/>'}</g>`;
   if (effect?.kind === 'bubbles') {
     fx = [0, 1, 2, 3].map((i) => `<circle cx="${50 + i * 12}" cy="340" r="${3 + (i % 2)}" fill="none" stroke="${INK}" stroke-width="1.6">${still ? fade(1600) : `<animate attributeName="cy" values="340;296" dur="${900 + i * 200}ms" fill="freeze"/>${fade(1600)}`}</circle>`).join('');
     fx += `<g transform="translate(-30 410)"><path d="M0 0 c10 -10 30 -10 40 0 c-10 10 -30 10 -40 0Z M0 0 l-10 -6 v12Z" fill="#7fdc7a" stroke="${INK}" stroke-width="2"/>${still ? fade(1600) : `<animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;420 -10" dur="1600ms" fill="freeze"/>`}</g>`;
   }
   if (effect?.kind === 'launch') {
-    fx = `<path d="M26 278 H100 V374 H26Z" fill="#e4e1f5"/>` + (still ? `<g>${ROCKET}${fade(3200)}</g>` : `<g>${ROCKET}<animateTransform attributeName="transform" type="translate" values="0 0;0 -420;0 -420;0 0" keyTimes="0;0.4;0.55;1" dur="3200ms" fill="freeze"/></g>`);
+    // 三，二，一 first (about 1.5 s), then lift-off; the sky patch stops above the launch pad
+    fx = `<path d="M26 278 H100 V368 H26Z" fill="#e4e1f5"/>` + (still ? `<g class="tap-rocket">${ROCKET}${fade(4300)}</g>` : `<g class="tap-rocket">${ROCKET}<animateTransform attributeName="transform" type="translate" values="0 0;0 -420;0 -420;0 0" keyTimes="0;0.4;0.55;1" begin="1500ms" dur="2800ms" fill="freeze"/></g>`);
   }
   if (effect?.kind === 'dig') {
     fx = `<g fill="#ffe7a3" stroke="${INK}" stroke-width="1.6"><circle cx="82" cy="400" r="4"/><circle cx="100" cy="398" r="3.5"/><circle cx="91" cy="394" r="3"/></g>`;
     if (effect.star) fx += `<g transform="translate(91 384)"><path d="${STAR}" fill="#ffc94a" stroke="${INK}" stroke-width="2"/>${rise(20, 1400)}</g>`;
   }
-  const baby = world === 'dino' && kid.finds.dinoHatched ? `<g class="tap-baby-dino" transform="translate(94 424) scale(0.9)">${BABY_DINO}</g>` : '';
+  const baby = world === 'dino' && kid.finds.dinoHatched && effect?.kind !== 'hop' ? `<g class="tap-baby-dino" transform="translate(94 424) scale(0.9)">${BABY_DINO}</g>` : '';
 
   return (
-    <svg ref={svg} class="world-taps" data-world={world} viewBox={SCENE_VIEWBOX} preserveAspectRatio="xMidYMax slice">
-      <g dangerouslySetInnerHTML={{ __html: baby + fx }} />
-      <g class="tap" role="button" aria-label={t.label} tabIndex={0} onClick={onTap} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onTap()} dangerouslySetInnerHTML={{ __html: t.shape.replace('/>', ' fill="#000" fill-opacity="0"/>') }} />
-    </svg>
+    <>
+      <svg class="world-taps" data-world={world} viewBox={SCENE_VIEWBOX} preserveAspectRatio="xMidYMax slice">
+        <g dangerouslySetInnerHTML={{ __html: baby }} />
+        <g class="tap" role="button" aria-label={t.label} tabIndex={0} onClick={onTap} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onTap()} dangerouslySetInnerHTML={{ __html: t.shape.replaceAll('/>', ' fill="#000" fill-opacity="0"/>') }} />
+      </svg>
+      {fx && <svg key={run} class="world-taps world-taps__fx" aria-hidden="true" viewBox={SCENE_VIEWBOX} preserveAspectRatio="xMidYMax slice" dangerouslySetInnerHTML={{ __html: fx }} />}
+    </>
   );
 }
