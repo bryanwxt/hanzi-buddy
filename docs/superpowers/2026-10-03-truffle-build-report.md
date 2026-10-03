@@ -335,3 +335,22 @@ Every child screen fits one screen, with no page scrolling, on an upright iPhone
 - Task 7: Ruling: the overlap probe clips each element to the scroll panel it sits in (cards scrolled out of 字卡's panel read as overlapping the tab bar) — cost if wrong: none
 - Task 7: Ruling: PetSetup's Truffle is 1.5× --pet (tiny on the SE with room to spare) — cost if wrong: none
 - Task 8: Ruling: 再玩一会儿 and 今天完成了 keep to one line (nowrap; smaller on phones) — the tall-iPhone screenshot showed 儿 on its own line — cost if wrong: none
+
+### Final review (fresh Opus reviewer): with fixes → fixed
+
+- 多读一遍 完成 dead on full storage — 'a full storage still lets 完成 go home' RED→GREEN, suite src/app 67/67
+- parked-speaking path disagreeing with the lesson (stop reappearing after start; a skipped step ticked as 看图说话) — '看图说话 parked: the path matches what the lesson does' (2 tests) RED→GREEN, suite src/app+src/kantu 79/79; the existing "names the activity he did today" test now switches the story on (it describes the unparked behaviour)
+- the sweep could not see clipped content (.screen clips its own overflow) — probe now flags any text or solid element past the screen's edges, and all Chinese text nodes under 16px; RED: the next sweep found the costume-prize screen cutting off 继续 on phones (and 今日一字 13px); GREEN after the fixes below; full sweep 266/266
+- the walker stopping at the first celebration phase — it now presses and holds the chest and taps 继续/回家; RED: prize screens newly reached and failing on phones; GREEN: prize Truffle min(1.6×--pet, 22dvh), smaller chest and one-line headline on phones; full sweep 266/266
+- big character and 钓鱼 question sitting on busy ground in iPad landscape — paper card behind .flash__prompt .hanzi--xl, .whichpart__char, .pond-q; feedback card centred on tablet portrait (spec §18); 今日一字 tag and 按住 at 16px — contract test 'the review fixes…' RED→GREEN, suite 483/483, sweep 266/266
+
+### Final rulings
+- Final: Ruling: Truffle is centred on Home (spec §18 says bottom-right on phone/portrait) — follows from the middle-band ruling: the right quarter holds the gem-block target — cost if wrong: Truffle's spot differs from the mockup
+- Final: Ruling: fixed the reviewer's Minor 9 (harness: per-flow try around open(), exitCode instead of exit, a 3-minute per-flow cap, progress lines) — a full sweep hung 2 hours on one flow and blocked verification — cost if wrong: none
+
+### Deferred minors
+- the PIN gate, Forgot PIN and the error screen clip on a sideways phone (no overlay on the parent route; parent can turn the phone upright)
+- world-tap probe samples only each target's centre; done-Home swept in the race world only
+- a long parent-written self-introduction has no overflow guard on an SE
+- with only 朗读 enabled and nothing to read, Home shows a lone chest with no 开始 (rare settings)
+- small leftovers — unused --stops, an orphaned JSDoc in scenes.ts, the rotate test checks SetupPin not a session, evening lanterns across the iPad-landscape progress bar
