@@ -764,3 +764,127 @@ is retired.
   - hints if the spike says yes.
 - **Plan 9:** the 看图说话 story builder and Truffle asks (会话).
 - **Plan 7:** the world tap fun, scheduled after these.
+
+## 17. 看图说话 story builder and "Truffle asks" (added 2026-10-03 at the parent's request)
+
+### Why
+
+His oral-exam sheet rated 看图说话 (describing a picture) and 会话
+(conversation) 中等 (average) on every criterion. The teacher marked 开场白
+(opening line) ✗ and noted vocabulary he lacked: 还给 (give back), 诚实
+(honest), 打翻 (knock over).
+
+What helps at this age:
+- a predictable story frame;
+- sentence starters that fade;
+- pre-taught theme words;
+- trying first, then comparing with a model;
+- whole-story rehearsal without the cards.
+
+### Fitting into the day
+
+- The daily speaking step **alternates**: 朗读 on one lesson, 看图说话 on the
+  next.
+  - `kid.speakingLast: 'langdu' | 'story' | null` records which ran last.
+  - The first lesson after this ships runs 看图说话.
+- 朗读's 3-day cycle counts only 朗读 days.
+- If either activity has nothing to offer (no passage, say), the other one
+  runs instead.
+- Home's 多读一遍 (read it once more) extra round stays 朗读 only.
+- The parent's activity toggle `speaking` covers both.
+
+### The 8 built-in scenes
+
+Each scene is drawn in the app's ink style (§13 rules), with simple ink
+children as the characters, never anyone's IP. The parent sees a gallery of
+the scenes before release.
+
+| id | Scene | Theme words |
+|---|---|---|
+| `vase` | A boy knocks over a vase in a shop and owns up | 打翻、花瓶、诚实、道歉、老板 |
+| `wallet` | A girl finds a wallet and hands it back | 捡到、钱包、还给、失主、谢谢 |
+| `grandma` | Children help an elderly lady cross the road | 帮助、老奶奶、过马路、小心、红绿灯 |
+| `queue` | Someone cuts the canteen queue | 排队、插队、食堂、等一等、不对 |
+| `litter` | A child litters in the park; another picks it up | 垃圾、乱丢、捡起来、垃圾桶、公园 |
+| `share` | Sharing lunch with a classmate who forgot theirs | 分享、午饭、忘了、一起、开心 |
+| `fall` | A friend falls in the playground | 跌倒、受伤、扶起来、医务室、关心 |
+| `spill` | Bumping into someone and spilling a drink | 撞到、打翻、饮料、对不起、没关系 |
+
+Each scene carries:
+- its theme words (with pinyin from the content);
+- a model story in the 5 parts below, one or two sentences each;
+- 2–3 "Truffle asks" questions, each with a model answer.
+
+Scenes are used in order, then repeat. `kid.story = { next: number; told:
+number }`, where `told` counts finished stories and drives the fading.
+
+### The story builder
+
+Five parts, one screen each. Every screen shows:
+- the picture;
+- the guiding question, spoken by TTS;
+- a sentence starter (`Label`, pinyin above each character);
+- theme-word chips (tap to hear one).
+
+| part | guiding question | starter |
+|---|---|---|
+| `opening` 开场白 | 图上画的是什么？ | 图上画的是… |
+| `setting` 时间、地点、人物 | 什么时候？在哪里？有谁？ | 有一天，…在… |
+| `events` 经过 | 发生了什么事？ | 突然，… |
+| `ending` 结果 | 后来怎么样了？ | 后来，… |
+| `opinion` 看法 | 你觉得怎么样？为什么？ | 我觉得…，因为… |
+
+For each part:
+1. He records his attempt.
+2. Then a 听松露说 ("hear Truffle say it") button plays that part of the model
+   story.
+3. He can 重录 (re-record) or 继续 (continue).
+
+After the five parts:
+- **讲一讲:** he tells the whole story from the picture alone, with no cards
+  or starters, and records it. This is the exam rehearsal.
+- **Fading:** starters show for his first 8 stories (`told < 8`). After that
+  they hide behind a 💡 hint button that reveals them.
+- **No microphone:** each part shows the existing "麦克风没有打开" (the
+  microphone isn't on) note and lets him go on. 听松露说 still works, so he
+  still hears good sentences.
+
+### Truffle asks (会话)
+
+After the whole story, Truffle asks each of the scene's 2–3 questions, shown
+as a `Label` and spoken. For example:
+- 如果你是他，你会怎么做？为什么？ ("If you were him, what would you do? Why?")
+- 你有没有遇到过这样的事？ ("Has something like this ever happened to you?")
+
+For each answer:
+- The frame starter is 我会…，因为… ("I would…, because…") or
+  我觉得…，因为… ("I think…, because…").
+- He records his answer.
+- 听松露说 then plays the model answer.
+
+### Recordings
+
+New prompt kinds:
+- `{ kind: 'story'; sceneId; part }`, where `part` is one of the five above
+  or `'whole'`;
+- `{ kind: 'answer'; sceneId; question: number }`.
+
+The parent's Recordings page groups one session's story recordings under a
+single "🖼️ {scene title}" entry: the parts, then the whole telling, then the
+answers. Each plays inline. There is no automatic grading and no misread
+marking (that is for 朗读).
+
+### Stars
+
+The step's usual star. No bonus star: talking time isn't a fair measure here.
+
+### Build order
+
+**Plan 9:**
+1. Scene art and gallery.
+2. Scene content (theme words, model stories, questions).
+3. The alternation.
+4. The story builder.
+5. Truffle asks.
+6. Parent grouping in Recordings.
+7. Walkthrough.
