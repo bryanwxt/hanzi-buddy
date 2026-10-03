@@ -11,6 +11,7 @@ import { SpeakButton } from '../ui/SpeakButton';
 import { TabBar } from '../ui/TabBar';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
+import { InkIcon } from '../ui/icons/InkIcon';
 
 type Filter = 'all' | 'gold' | PowerId;
 
@@ -27,7 +28,7 @@ export function CollectionScreen() {
   }, []);
   const cards = useMemo(() => (know ? collectionCards(BUILTIN, know) : []), [know]);
 
-  if (!know) return <div class="screen loading">🐾</div>;
+  if (!know) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
 
   const caught = cards.filter((c) => c.caught).length;
   const visible = cards.filter((c) => (filter === 'all' ? true : filter === 'gold' ? c.gold : c.power === filter));
@@ -48,10 +49,10 @@ export function CollectionScreen() {
       </header>
       <div class="filters" role="group" aria-label="筛选">
         <button type="button" class={`chip ${filter === 'all' ? 'is-on' : ''}`} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>全部</button>
-        <button type="button" class={`chip ${filter === 'gold' ? 'is-on' : ''}`} aria-pressed={filter === 'gold'} onClick={() => setFilter('gold')}>✨ 金卡</button>
+        <button type="button" class={`chip ${filter === 'gold' ? 'is-on' : ''}`} aria-pressed={filter === 'gold'} onClick={() => setFilter('gold')}><InkIcon name="sparkle" size={20} /> 金卡</button>
         {POWERS.map((p) => (
-          <button key={p.id} type="button" class={`chip ${filter === p.id ? 'is-on' : ''}`} aria-pressed={filter === p.id} aria-label={`${p.mark} ${p.name}`} onClick={() => setFilter(p.id)}>
-            {p.mark} <span class="hanzi">{p.name}</span>
+          <button key={p.id} type="button" class={`chip ${filter === p.id ? 'is-on' : ''}`} aria-pressed={filter === p.id} aria-label={p.name} onClick={() => setFilter(p.id)}>
+            <InkIcon name={p.mark} size={20} /> <span class="hanzi">{p.name}</span>
           </button>
         ))}
       </div>
@@ -62,20 +63,20 @@ export function CollectionScreen() {
               <span class="zika__py">{c.pinyin}</span>
               <span class="zika__char hanzi">{c.char}</span>
               <span class="zika__foot">
-                <span class="zika__stars">{'★'.repeat(c.stars)}</span>
-                {c.power && <span>{powerDef(c.power)!.mark}</span>}
+                <span class="zika__stars">{Array.from({ length: c.stars }, (_, i) => <InkIcon key={i} name="star" size={14} />)}</span>
+                {c.power && <InkIcon name={powerDef(c.power)!.mark} size={16} />}
               </span>
             </button>
           ) : (
             <button key={c.char} type="button" class="zika card--back" aria-label="未收集" disabled>
-              {c.power ? powerDef(c.power)!.mark : '？'}
+              {c.power ? <InkIcon name={powerDef(c.power)!.mark} size={30} /> : '？'}
             </button>
           ),
         )}
       </div>
       <h2><Label zh="徽章" /></h2>
       <div class="badges">
-        {badges.length ? badges.map((b) => <span key={b} class="badge">🏅 {b}</span>) : <Label zh="集齐一个家族就能得到徽章！" />}
+        {badges.length ? badges.map((b) => <span key={b} class="badge"><InkIcon name="medal" size={22} /> {b}</span>) : <Label zh="集齐一个家族就能得到徽章！" />}
       </div>
       {myWords.length > 0 && (
         <>
@@ -98,7 +99,7 @@ export function CollectionScreen() {
             <span class="zika__char hanzi">{shown.char}</span>
             <SpeakButton text={shown.char} />
             {shown.example && <span class="zika__example hanzi">{shown.example} <SpeakButton text={shown.example} /></span>}
-            <span class="zika__stars">{'★'.repeat(shown.stars)}{'☆'.repeat(3 - shown.stars)}</span>
+            <span class="zika__stars">{[1, 2, 3].map((i) => <InkIcon key={i} name={i <= shown.stars ? 'star' : 'starOutline'} size={26} />)}</span>
           </div>
         </div>
       )}

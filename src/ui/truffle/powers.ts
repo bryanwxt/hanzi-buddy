@@ -1,12 +1,13 @@
 import { powerDef, type PowerId } from '../../fun/powers';
+import { iconMarkup, type IconName } from '../icons/icons';
 
 const INK = '#2a2630';
 
 /** Where a power's mark sits: most above the right ear; the heart on the cheek; dash streaks behind. */
-function markAt(mark: string): { x: number; y: number; size: number } {
-  if (mark === '💗') return { x: 226, y: 150, size: 22 }; // a 💧 on the cheek reads as a tear
-  if (mark === '💨') return { x: 72, y: 214, size: 34 };
-  return { x: 236, y: 64, size: 34 };
+function markAt(mark: IconName): { x: number; y: number; size: number } {
+  if (mark === 'heart') return { x: 226, y: 150, size: 24 }; // a drop on the cheek would read as a tear
+  if (mark === 'wind') return { x: 72, y: 214, size: 36 };
+  return { x: 236, y: 64, size: 36 };
 }
 
 /**
@@ -16,7 +17,7 @@ function markAt(mark: string): { x: number; y: number; size: number } {
 export function powerLayer(id: PowerId, tier: 1 | 2 | 3): { back: string; front: string } {
   const p = powerDef(id)!;
   const m = markAt(p.mark);
-  const mark = `<text x="${m.x}" y="${m.y}" font-size="${m.size}" text-anchor="middle" dominant-baseline="middle">${p.mark}</text>`;
+  const mark = iconMarkup(p.mark, m.x - m.size / 2, m.y - m.size / 2, m.size);
   const aura =
     `<circle cx="160" cy="170" r="128" fill="${p.color}" opacity=".18"/>` +
     `<circle cx="160" cy="170" r="112" fill="none" stroke="${p.color}" stroke-width="5" stroke-dasharray="4 14" stroke-linecap="round" opacity=".7"/>`;

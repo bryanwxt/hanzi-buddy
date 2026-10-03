@@ -39,7 +39,7 @@ export function burstVectors(count: number, rng: Rng, minDist = 40, maxDist = 90
 /** A short burst of sparkles at a viewport point. No-op without Web Animations or under reduced motion. */
 export function burst(x: number, y: number, opts: { count?: number; glyphs?: string[] } = {}): void {
   if (!canAnimate()) return;
-  const glyphs = opts.glyphs ?? ['✦', '★', '•'];
+  const glyphs = opts.glyphs ?? ['✦', '✧', '•'];
   const layer = document.createElement('div');
   layer.className = 'particles';
   layer.style.left = `${x}px`;

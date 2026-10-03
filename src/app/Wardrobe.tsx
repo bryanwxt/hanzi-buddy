@@ -12,6 +12,7 @@ import { Scene } from '../ui/Scene';
 import { TabBar } from '../ui/TabBar';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
+import { InkIcon } from '../ui/icons/InkIcon';
 
 type RoomTab = 'outfits' | 'powers';
 
@@ -59,7 +60,7 @@ export function Wardrobe() {
                         disabled={!owned}
                         onClick={() => void save({ ...k, outfit: k.outfit === c.id ? null : c.id })}
                       >
-                        <span class="outfit__swatch" style={{ background: owned ? c.color : undefined }}>{owned ? '' : '🔒'}</span>
+                        <span class="outfit__swatch" style={{ background: owned ? c.color : undefined }}>{owned ? '' : <InkIcon name="lock" size={20} />}</span>
                         <span class="outfit__name"><Label zh={c.zh} /></span>
                       </button>
                     );
@@ -70,7 +71,7 @@ export function Wardrobe() {
             <section>
               <h2><Label zh="小东西" /></h2>
               <div class="wardrobe">
-                <button type="button" class={k.wearing === null ? 'is-on' : ''} aria-label="不戴" aria-pressed={k.wearing === null} onClick={() => void save({ ...k, wearing: null })}>🚫</button>
+                <button type="button" class={k.wearing === null ? 'is-on' : ''} aria-label="不戴" aria-pressed={k.wearing === null} onClick={() => void save({ ...k, wearing: null })}><InkIcon name="none" size={30} /></button>
                 {ACCESSORIES.map((a) => {
                   const owned = k.ownedAccessories.includes(a);
                   return (
@@ -96,9 +97,9 @@ export function Wardrobe() {
                   disabled={tier === 0}
                   onClick={() => void save({ ...k, activePower: p.id })}
                 >
-                  <span class="power-row__mark">{tier > 0 ? p.mark : '🔒'}</span>
+                  <span class="power-row__mark"><InkIcon name={tier > 0 ? p.mark : 'lock'} size={30} /></span>
                   <span class="power-row__name hanzi">{p.radicals[0]}</span>
-                  {ready && <span class="power-row__ready">✨ <Label zh="完成练习就解锁" /></span>}
+                  {ready && <span class="power-row__ready"><InkIcon name="sparkle" size={16} /> <Label zh="完成练习就解锁" /></span>}
                   <span class="power-row__pips" aria-hidden="true">{[1, 2, 3].map((t) => <i key={t} class={t <= tier ? 'is-on' : ''} style={t <= tier ? { background: p.color } : undefined} />)}</span>
                   <span class="power-row__count">{pr?.known ?? 0}/{pr?.size ?? 0}</span>
                 </button>

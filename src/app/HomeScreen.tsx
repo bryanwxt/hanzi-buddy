@@ -19,6 +19,7 @@ import { TabBar } from '../ui/TabBar';
 import { useApp } from './AppContext';
 import { loadKnowledge, type Knowledge } from './knowledge';
 import { TodayPath } from './TodayPath';
+import { InkIcon } from '../ui/icons/InkIcon';
 
 interface HomeData {
   know: Knowledge;
@@ -62,7 +63,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
     if (progress?.reached) celebrate();
   }, [progress?.reached]);
 
-  if (!data) return <div class="screen loading">🐾</div>;
+  if (!data) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
 
   const today = localDateKey(now());
   const todaySession = data.sessions.find((s) => s.date === today && !s.free);
@@ -105,7 +106,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
               ) : (
                 <>
                   <div class="progress"><div class="progress__fill" style={{ width: `${Math.round(progress.fraction * 100)}%` }} /></div>
-                  <small>{progress.value} / {goal.target} {goal.metric === 'stars' ? '⭐' : '字'}</small>
+                  <small>{progress.value} / {goal.target} {goal.metric === 'stars' ? <InkIcon name="star" size={16} /> : '字'}</small>
                 </>
               )}
             </div>
@@ -113,7 +114,7 @@ export function HomeScreen({ sleepAfterMs = SLEEP_AFTER_MS }: { sleepAfterMs?: n
         )}
         {doneToday && chestOpened && (
           <div class="card done-card">
-            <p class="done-today"><Label zh="今天完成了！" /> 🎉</p>
+            <p class="done-today"><Label zh="今天完成了！" /> <InkIcon name="party" size={30} /></p>
             {hasCards && (
               <button type="button" class="btn btn--secondary" onClick={() => play(true)}><Label zh="再玩一会儿" /></button>
             )}

@@ -28,6 +28,7 @@ import { useApp } from './AppContext';
 import { Celebration } from './Celebration';
 import { loadKnowledge, type Knowledge } from './knowledge';
 import { newId } from '../lib/id';
+import { InkIcon } from '../ui/icons/InkIcon';
 
 
 interface Loaded {
@@ -44,7 +45,7 @@ export function SessionScreen({ free }: { free: boolean }) {
   const [combo, setCombo] = useState(0);
   const [correct, setCorrect] = useState(0); // this sitting only: Truffle warms up from sulk
   const cardsSinceCloseup = useRef(CLOSEUP_EVERY);
-  const [banner, setBanner] = useState<string | null>(null);
+  const [banner, setBanner] = useState<number | null>(null); // a combo milestone being celebrated
   const stepStartedAt = useRef(performance.now());
   const busy = useRef(false);
 
@@ -90,7 +91,7 @@ export function SessionScreen({ free }: { free: boolean }) {
     else if (step === 'speaking' && !state.speaking) void commit(finishStep(rec));
   }, [rec]);
 
-  if (!state || !rec) return <div class="screen loading">🐾</div>;
+  if (!state || !rec) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
   if (rec.completed) return <Celebration rec={rec} />;
   const { know, kid } = state;
   const resting = restingMood(correct);
@@ -121,7 +122,7 @@ export function SessionScreen({ free }: { free: boolean }) {
       setCombo(nextCombo);
       if (comboMilestone(nextCombo)) {
         playSfx('combo');
-        setBanner(`连对 ${nextCombo} 个！🔥`);
+        setBanner(nextCombo);
         setTimeout(() => setBanner(null), 1600);
       }
       await commit(afterFlashAnswer(rec, r.correct, r.elapsedMs));
@@ -150,7 +151,7 @@ export function SessionScreen({ free }: { free: boolean }) {
         <ProgressBar steps={rec.plan.steps} stepIndex={rec.stepIndex} fraction={sessionProgress(rec)} />
         {combo >= 3 && <span class="combo"><Flame size={20} strokeWidth={2.75} /> {combo}</span>}
       </header>
-      {banner && <div class="combo-banner">{banner}</div>}
+      {banner !== null && <div class="combo-banner">连对 {banner} 个！<InkIcon name="flame" size={30} /></div>}
 
       {step === 'flashcards' && flashItem && flashWord && !flashWord.paused && (
         <FlashcardStep

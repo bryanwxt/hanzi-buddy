@@ -15,6 +15,7 @@ import { withViewTransition } from './ui/motion';
 import { allWords, getKid, getSettings } from './store/repo';
 import { hanChars } from './content';
 import { prefetchStrokes } from './content/strokes';
+import { InkIcon } from './ui/icons/InkIcon';
 
 export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: string; now?: () => Date }) {
   const [booted, setBooted] = useState<Booted | null>(null);
@@ -45,7 +46,7 @@ export function App({ dbName = DB_NAME, now = () => new Date() }: { dbName?: str
   }, [db]);
 
   if (error) return <ErrorScreen message={error} dbName={dbName} />;
-  if (!booted) return <div class="screen loading">🐾</div>;
+  if (!booted) return <div class="screen loading"><InkIcon name="paw" size={88} label="加载中" /></div>;
 
   const app: AppData = { ...booted, now, go: (r) => withViewTransition(() => setRoute(r)), refresh };
   return (

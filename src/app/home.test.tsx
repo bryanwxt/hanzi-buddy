@@ -36,7 +36,8 @@ describe('HomeScreen', () => {
     renderWithApp(<HomeScreen />, app);
     expect(await screen.findByText('今天完成了！')).toBeTruthy();
     expect(screen.getByText('Ice cream')).toBeTruthy();
-    expect(screen.getByText('1 / 10 ⭐')).toBeTruthy();
+    expect(document.querySelector('.goal small')?.textContent?.trim()).toBe('1 / 10');
+    expect(document.querySelector('.goal small svg.inkicon')).toBeTruthy();
     fireEvent.click(screen.getByText('再玩一会儿'));
     expect(app.go).toHaveBeenCalledWith({ name: 'session', free: true });
   });
@@ -82,7 +83,8 @@ describe('CollectionScreen', () => {
   it('keeps earned badges', async () => {
     const app = await makeAppData({ kid: { ...DEFAULT_KID, badgesSeen: ['氵'] } });
     renderWithApp(<CollectionScreen />, app);
-    expect(await screen.findByText('🏅 氵')).toBeTruthy();
+    await waitFor(() => expect(document.querySelector('.badge')?.textContent).toContain('氵'));
+    expect(document.querySelector('.badge svg.inkicon')).toBeTruthy();
   });
 });
 

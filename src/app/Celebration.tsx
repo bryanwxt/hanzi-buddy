@@ -18,6 +18,8 @@ import { Scene } from '../ui/Scene';
 import { Truffle } from '../ui/truffle/Truffle';
 import { useApp } from './AppContext';
 import { loadKnowledge } from './knowledge';
+import { InkIcon } from '../ui/icons/InkIcon';
+import { accessoryById } from '../fun/accessories';
 
 type Phase = 'stars' | 'chest' | 'power' | 'badges';
 
@@ -80,7 +82,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
     };
   }, [seq]);
 
-  if (!seq || !kid) return <div class="screen loading">⭐</div>;
+  if (!seq || !kid) return <div class="screen loading"><InkIcon name="star" size={88} label="加载中" /></div>;
 
   const save = async (next: KidState) => {
     kidRef.current = next;
@@ -133,7 +135,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
       {!rec.free && (
         <header class="topbar">
           <span class="spacer" />
-          <span key={landed} ref={counterRef} class={`chip ${landed ? 'is-bumping' : ''}`}>⭐ {seq.starsBefore + landed}</span>
+          <span key={landed} ref={counterRef} class={`chip ${landed ? 'is-bumping' : ''}`}><InkIcon name="star" size={20} /> {seq.starsBefore + landed}</span>
         </header>
       )}
       <div class="celebrate celebrate--night">
@@ -144,7 +146,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
               <>
                 <div class="stars stagger">
                   {Array.from({ length: stars }, (_, i) => (
-                    <span key={i} ref={(el) => { starRefs.current[i] = el; }}>⭐</span>
+                    <span key={i} ref={(el) => { starRefs.current[i] = el; }}><InkIcon name="star" size={64} /></span>
                   ))}
                 </div>
                 <p><Label zh={`你得到了 ${stars} 颗星`} /></p>
@@ -162,7 +164,14 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
                     <Truffle mood="cheer" outfit={chest.id} accessory={null} size={190} bounce />
                     <Label zh={costumeById(chest.id)?.zh ?? ''} />
                   </div>
-                ) : chest.kind === 'accessory' ? chest.item : '⭐⭐⭐'}
+                ) : chest.kind === 'accessory' ? (
+                  <div class="prize__costume">
+                    <Truffle mood="cheer" outfit={kid.outfit} accessory={chest.item} size={190} bounce />
+                    <Label zh={accessoryById(chest.item)?.zh ?? ''} />
+                  </div>
+                ) : (
+                  <span class="prize__stars"><InkIcon name="star" size={72} /><InkIcon name="star" size={72} /><InkIcon name="star" size={72} /></span>
+                )}
               </div>
             )}
             <div ref={chestRef}>
@@ -195,7 +204,7 @@ export function Celebration({ rec }: { rec: SessionRecord }) {
           <>
             <h1><Label zh="新徽章！" /></h1>
             <div class="badges stagger">
-              {seq.badges.map((b) => <span key={b} class="badge">🏅 {b} {radicalMeaning(b)?.emoji}</span>)}
+              {seq.badges.map((b) => <span key={b} class="badge"><InkIcon name="medal" size={24} /> {b} {radicalMeaning(b)?.emoji}</span>)}
             </div>
           </>
         )}

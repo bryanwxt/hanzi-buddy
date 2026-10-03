@@ -142,3 +142,18 @@ describe('Celebration power-up in costume', () => {
     expect(document.querySelector('.celebrate .truffle__accessory')).toBeTruthy();
   });
 });
+
+describe('Celebration accessory prize', () => {
+  it('shows Truffle wearing the new accessory with its name', async () => {
+    const { COSTUMES } = await import('../fun/costumes');
+    const app = await makeAppData();
+    await saveKid(app.db, { ...DEFAULT_KID, ownedCostumes: COSTUMES.map((c) => c.id) });
+    renderWithApp(<Celebration rec={finished('2026-10-02', ['flashcards'])} />, app);
+    await screen.findByText('太棒了！');
+    fireEvent.click(screen.getByText('继续'));
+    fireEvent(await screen.findByRole('button', { name: '按住打开宝箱' }), new Event('pointerdown', { bubbles: true }));
+    await hold();
+    await screen.findByText('松露有新东西了！');
+    expect(document.querySelector('.prize svg.truffle')?.getAttribute('data-accessory')).toBeTruthy();
+  });
+});

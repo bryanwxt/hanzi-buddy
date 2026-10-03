@@ -46,7 +46,7 @@ describe('Truffle powers', () => {
   it('draws a power by tier: mark, then aura, then cape with the power character', () => {
     const t1 = render(<Truffle power="fire" powerTier={1} />);
     expect(t1.container.querySelector('svg.truffle')?.getAttribute('data-power')).toBe('fire');
-    expect(t1.container.querySelector('.truffle__power-front')?.textContent).toContain('🔥');
+    expect(t1.container.querySelector('.truffle__power-front')?.innerHTML).toContain('#ff6a3d'); // the ink flame icon
     expect(t1.container.querySelector('.truffle__power-back')?.innerHTML).toBe('');
     t1.unmount();
     const t3 = render(<Truffle power="fire" powerTier={3} />);

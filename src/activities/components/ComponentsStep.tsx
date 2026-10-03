@@ -9,11 +9,12 @@ import { burst } from '../../ui/motion';
 import { Pet } from '../../ui/Pet';
 import type { TruffleMood } from '../../ui/truffle/Truffle';
 import type { ComponentQuestion } from './game';
+import { InkIcon } from '../../ui/icons/InkIcon';
 
 const splash = (el: Element | null | undefined, count = 8) => {
   if (!el) return;
   const r = el.getBoundingClientRect();
-  burst(r.left + r.width / 2, r.top + r.height / 2, { count, glyphs: ['💧', '✦', '•'] });
+  burst(r.left + r.width / 2, r.top + r.height / 2, { count, glyphs: ['✦', '✧', '•'] });
 };
 
 interface Props {
@@ -110,7 +111,7 @@ export function ComponentsStep({ questions, kid, resting, onDone }: Props) {
                   }}
                 >
                   <span class="fishtile__char hanzi">{c}</span>
-                  <span class="fishtile__badge" aria-hidden="true">🐟</span>
+                  <span class="fishtile__badge"><InkIcon name="fish" size={22} /></span>
                 </button>
               ))}
             </div>

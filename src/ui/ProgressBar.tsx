@@ -1,6 +1,8 @@
 import type { StepKind } from '../types';
+import { InkIcon } from './icons/InkIcon';
+import type { IconName } from './icons/icons';
 
-const ICONS: Record<StepKind, string> = { flashcards: '字', writing: '✍️', components: '🎣', speaking: '🎤' };
+const ICONS: Record<StepKind, IconName | null> = { flashcards: null, writing: 'pen', components: 'fish', speaking: 'mic' };
 
 export function ProgressBar({ steps, stepIndex, fraction }: { steps: StepKind[]; stepIndex: number; fraction: number }) {
   const pct = Math.round(fraction * 100);
@@ -16,7 +18,7 @@ export function ProgressBar({ steps, stepIndex, fraction }: { steps: StepKind[];
           style={{ left: `${((i + 1) / steps.length) * 100}%` }}
           aria-hidden="true"
         >
-          {ICONS[s]}
+          {ICONS[s] ? <InkIcon name={ICONS[s]!} size={22} /> : <span class="hanzi">字</span>}
         </span>
       ))}
     </div>
