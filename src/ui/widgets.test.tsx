@@ -14,6 +14,11 @@ describe('widgets', () => {
     const { container } = render(<Label zh="＿子" py="zi" />);
     expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('zi');
   });
+  it('Label draws a ＿ blank as its own empty box, never a line that could pass for 一', () => {
+    const { container } = render(<Label zh="＿！子" />);
+    const cells = [...container.querySelectorAll('.label__cell')];
+    expect(cells.map((c) => c.className)).toEqual(['label__cell label__cell--blank', 'label__cell', 'label__cell label__cell--zh']);
+  });
   it('Label falls back to its own reading when the given syllables do not fit', () => {
     const { container } = render(<Label zh="儿子" py="zi" />);
     expect(container.querySelector('.label')?.getAttribute('data-py')).toBe('ér zi');

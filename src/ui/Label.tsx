@@ -4,7 +4,10 @@ import { useMemo } from 'preact/hooks';
 interface Cell {
   py: string;
   ch: string;
+  blank?: boolean;
 }
+
+const BLANK = '＿';
 
 /** Chinese text with each syllable shown small directly above its own character, for a P2 reader. */
 export function Label({ zh, py: given }: { zh: string; /** syllables for its Han characters, from context (子 in 儿子 is zi) */ py?: string }) {
@@ -15,12 +18,20 @@ export function Label({ zh, py: given }: { zh: string; /** syllables for its Han
     const fits = ctx && ctx.length === all.filter((d) => d.isZh).length;
     let k = 0;
     for (const d of all) {
-      if (d.isZh) out.push({ py: fits ? ctx[k++]! : d.pinyin, ch: d.origin });
-      else if (out.length && out[out.length - 1]!.py === '') out[out.length - 1]!.ch += d.origin; // keep "45" or "！" runs together
-      else out.push({ py: '', ch: d.origin });
+      if (d.isZh) {
+        out.push({ py: fits ? ctx[k++]! : d.pinyin, ch: d.origin });
+        continue;
+      }
+      // pinyin-pro may hand a run like "＿！" over as one piece; split out each blank
+      for (const part of d.origin.split(/(＿)/).filter(Boolean)) {
+        const prev = out[out.length - 1];
+        if (part === BLANK) out.push({ py: '', ch: BLANK, blank: true });
+        else if (prev && prev.py === '' && !prev.blank) prev.ch += part; // keep "45" or "！" runs together
+        else out.push({ py: '', ch: part });
+      }
     }
     // data-py: the syllables plus any numbers or Latin text, without punctuation
-    const py = out.map((c) => c.py || (/[\p{L}\p{N}]/u.test(c.ch) ? c.ch.trim() : '')).filter(Boolean).join(' ');
+    const py = out.map((c) => c.py || (!c.blank && /[\p{L}\p{N}]/u.test(c.ch) ? c.ch.trim() : '')).filter(Boolean).join(' ');
     return { cells: out, py };
   }, [zh, given]);
   return (
@@ -29,7 +40,7 @@ export function Label({ zh, py: given }: { zh: string; /** syllables for its Han
       {cells.length > 1 && <span class="sr-only">{zh}</span>}
       <span class="label__cells" aria-hidden={cells.length > 1 ? 'true' : undefined}>
         {cells.map((c, i) => (
-          <span key={i} class={c.py ? 'label__cell label__cell--zh' : 'label__cell'}>
+          <span key={i} class={c.blank ? 'label__cell label__cell--blank' : c.py ? 'label__cell label__cell--zh' : 'label__cell'}>
             <small class="label__py" aria-hidden="true">{c.py}</small>
             <span class="label__ch">{c.ch}</span>
           </span>
