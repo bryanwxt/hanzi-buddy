@@ -8,6 +8,7 @@ const KEEP = 100;
 
 const describe = ({ prompt }: Recording) => {
   if (prompt.kind === 'picture') return '📷 Picture talk';
+  if (prompt.kind === 'intro') return '🙋 Self-introduction';
   const { passageId } = prompt;
   return `📖 ${PASSAGES.find((p) => p.id === passageId)?.title ?? 'Passage'}`;
 };

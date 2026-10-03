@@ -103,7 +103,8 @@ export interface SessionRecord {
 
 export type RecordingPrompt =
   | { kind: 'picture'; promptId: string }
-  | { kind: 'passage'; passageId: string };
+  | { kind: 'passage'; passageId: string }
+  | { kind: 'intro' }; // the exam-etiquette self-introduction
 
 export interface Recording {
   id: string;
@@ -112,6 +113,8 @@ export interface Recording {
   blob: Blob;
   mime: string;
   durationSec: number;
+  level?: number; // average loudness (RMS 0..1) while reading; older recordings have none
+  misread?: string[]; // characters the parent confirmed he misread
 }
 
 export interface PicturePrompt {
@@ -127,6 +130,35 @@ export interface Passage {
   text: string;
 }
 
+/** A school text the parent added for 朗读. id 'pp:<uuid>'; text may hold '/' phrase marks. */
+export interface ParentPassage {
+  id: string;
+  title: string;
+  text: string;
+  createdAt: number;
+}
+
+/** Details for the oral-exam self-introduction (stored only on the iPad). */
+export interface OralInfo {
+  name: string;
+  age: string;
+  school: string;
+  className: string;
+  customIntro: string;
+}
+
+/** 朗读 progress: the passage in its 3-day cycle, and warm-ups recorded (for pinyin fading). */
+export interface ReadingState {
+  passageId: string | null;
+  days: number;
+  extra: number;
+  lastDay: string | null;
+  lastRead: Record<string, string>;
+  warmups: number;
+}
+
+export const DEFAULT_READING: ReadingState = { passageId: null, days: 0, extra: 0, lastDay: null, lastRead: {}, warmups: 0 };
+
 export interface Settings {
   pinHash: string | null;
   sessionMinutes: number;
@@ -139,6 +171,7 @@ export interface Settings {
   lastBackupAt: number | null;
   placementDone: boolean;
   zodiac: ZodiacId | null; // the child's 生肖, the first chest's gift
+  oral: OralInfo;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -153,6 +186,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lastBackupAt: null,
   placementDone: false,
   zodiac: null,
+  oral: { name: '', age: '', school: '', className: '', customIntro: '' },
 };
 
 export type PetColor = 'green' | 'blue' | 'purple' | 'red' | 'gold';
@@ -172,6 +206,7 @@ export interface KidState {
   outfit: string | null;
   worldsSeen: string[]; // journey worlds reached; never shrinks
   world: string | null; // the child's pick in the room; null = newest reached
+  reading: ReadingState;
 }
 
 export const DEFAULT_KID: KidState = {
@@ -189,6 +224,7 @@ export const DEFAULT_KID: KidState = {
   outfit: null,
   worldsSeen: [],
   world: null,
+  reading: DEFAULT_READING,
 };
 
 export interface RewardGoal {

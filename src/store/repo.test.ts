@@ -5,7 +5,7 @@ import { freshDb, makeCard, makeWord } from '../test/fixtures';
 import { DEFAULT_SETTINGS, DEFAULT_KID } from '../types';
 import {
   addRecording, addReviewLog, allCards, allWords, deleteWord, getKid, getSettings, listRecordings,
-  logsSince, normalizeKid, putCards, putWords, saveKid, seedBuiltinWords, updateSettings,
+  deleteParentPassage, listParentPassages, logsSince, normalizeKid, putCards, putWords, saveKid, saveParentPassage, seedBuiltinWords, updateSettings,
 } from './repo';
 
 describe('repo', () => {
@@ -106,5 +106,23 @@ describe('normalizeKid hardening', () => {
     const db = await freshDb();
     await db.put('kid', { ...DEFAULT_KID, ownedAccessories: null, wearing: 42 } as never, 'main');
     expect(await getKid(db)).toMatchObject({ ownedAccessories: [], wearing: null });
+  });
+});
+
+describe('plan 8 data', () => {
+  it('stores parent passages in the order added', async () => {
+    const db = await freshDb();
+    await saveParentPassage(db, { id: 'pp:2', title: '乙', text: '我们去公园。', createdAt: 2 });
+    await saveParentPassage(db, { id: 'pp:1', title: '甲', text: '我爱我家。', createdAt: 1 });
+    expect((await listParentPassages(db)).map((p) => p.id)).toEqual(['pp:1', 'pp:2']);
+    await deleteParentPassage(db, 'pp:1');
+    expect((await listParentPassages(db)).map((p) => p.id)).toEqual(['pp:2']);
+  });
+  it('fills oral-exam fields and reading progress for old records', async () => {
+    const db = await freshDb();
+    await db.put('settings', { ...DEFAULT_SETTINGS, oral: undefined } as never, 'main');
+    expect((await getSettings(db)).oral).toEqual({ name: '', age: '', school: '', className: '', customIntro: '' });
+    expect(normalizeKid({ petName: '松露' } as never)?.reading).toEqual({ passageId: null, days: 0, extra: 0, lastDay: null, lastRead: {}, warmups: 0 });
+    expect(normalizeKid({ reading: 'x' } as never)?.reading.warmups).toBe(0);
   });
 });

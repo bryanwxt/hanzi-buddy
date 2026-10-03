@@ -4,7 +4,7 @@ import { createSessionRecord } from '../session/runner';
 import { freshDb, makeCard, makeWord } from '../test/fixtures';
 import { DEFAULT_KID } from '../types';
 import { applyBackup, BACKUP_FORMAT, BackupError, exportBackup, exportRawBackup, readBackup } from './backup';
-import { addRecording, allCards, getKid, getSettings, listRecordings, putCards, putWords, saveKid, saveSession, updateSettings } from './repo';
+import { addRecording, allCards, getKid, getSettings, listParentPassages, listRecordings, putCards, putWords, saveKid, saveParentPassage, saveSession, updateSettings } from './repo';
 
 async function seeded() {
   const db = await freshDb();
@@ -72,5 +72,21 @@ describe('old backups and new kid fields', () => {
     const db = await freshDb();
     await applyBackup(db, readBackup(text));
     expect(await getKid(db)).toMatchObject({ petName: '小龙', activePower: null, powerTiersSeen: {} });
+  });
+});
+
+describe('backup of 朗读 texts', () => {
+  it('round-trips parent passages, and restores a backup made before they existed', async () => {
+    const src = await freshDb();
+    await saveParentPassage(src, { id: 'pp:1', title: '甲', text: '我爱我家。', createdAt: 1 });
+    const text = await exportBackup(src, { includeMedia: false, now: 1 });
+    const target = await freshDb();
+    await applyBackup(target, readBackup(text));
+    expect((await listParentPassages(target)).map((p) => p.title)).toEqual(['甲']);
+    const file = JSON.parse(text);
+    delete file.stores.passages;
+    const old = await freshDb();
+    await applyBackup(old, readBackup(JSON.stringify(file)));
+    expect(await listParentPassages(old)).toEqual([]);
   });
 });

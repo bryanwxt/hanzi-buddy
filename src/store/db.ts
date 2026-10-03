@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { CardRecord, KidState, PicturePrompt, Recording, ReviewLog, RewardGoal, SessionRecord, Settings, Word } from '../types';
+import type { CardRecord, KidState, ParentPassage, PicturePrompt, Recording, ReviewLog, RewardGoal, SessionRecord, Settings, Word } from '../types';
 
 export interface HanziDB extends DBSchema {
   words: { key: string; value: Word };
@@ -11,15 +11,16 @@ export interface HanziDB extends DBSchema {
   rewards: { key: string; value: RewardGoal };
   settings: { key: string; value: Settings };
   kid: { key: string; value: KidState };
+  passages: { key: string; value: ParentPassage };
 }
 
 export type AppDb = IDBPDatabase<HanziDB>;
 
 export const DB_NAME = 'hanzi-buddy'; // pre-rename name; kept so existing progress survives
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 /** Stores holding one record per item (everything except the 'main' singletons). */
-export const LIST_STORES = ['words', 'cards', 'reviewLogs', 'sessions', 'rewards', 'recordings', 'prompts'] as const;
+export const LIST_STORES = ['words', 'cards', 'reviewLogs', 'sessions', 'rewards', 'recordings', 'prompts', 'passages'] as const;
 export type ListStore = (typeof LIST_STORES)[number];
 
 export function openAppDb(name: string = DB_NAME): Promise<AppDb> {
@@ -37,6 +38,7 @@ export function openAppDb(name: string = DB_NAME): Promise<AppDb> {
         db.createObjectStore('settings');
         db.createObjectStore('kid');
       }
+      if (oldVersion < 2) db.createObjectStore('passages', { keyPath: 'id' }); // parent 朗读 texts
     },
   });
 }

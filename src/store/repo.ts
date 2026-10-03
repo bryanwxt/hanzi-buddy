@@ -1,13 +1,13 @@
 import { WORLDS, worldById } from '../fun/worlds';
 import { migrateAccessory } from '../fun/accessories';
-import { DEFAULT_KID, DEFAULT_SETTINGS, type CardRecord, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
+import { DEFAULT_KID, DEFAULT_READING, DEFAULT_SETTINGS, type CardRecord, type ParentPassage, type ReadingState, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
 import type { AppDb } from './db';
 
 const MAIN = 'main';
 
 export async function getSettings(db: AppDb): Promise<Settings> {
   const s = await db.get('settings', MAIN);
-  return { ...DEFAULT_SETTINGS, ...s, activities: { ...DEFAULT_SETTINGS.activities, ...s?.activities } };
+  return { ...DEFAULT_SETTINGS, ...s, activities: { ...DEFAULT_SETTINGS.activities, ...s?.activities }, oral: { ...DEFAULT_SETTINGS.oral, ...s?.oral } };
 }
 
 export async function saveSettings(db: AppDb, s: Settings): Promise<void> {
@@ -31,7 +31,7 @@ export function normalizeKid(raw: Partial<KidState> | null | undefined): KidStat
   const worldList = Array.isArray(kid.worldsSeen) ? kid.worldsSeen.filter((w): w is string => typeof w === 'string' && !!worldById(w)) : [];
   const worldsSeen = WORLDS.map((w) => w.id as string).filter((id) => worldList.includes(id));
   const world = typeof kid.world === 'string' && worldsSeen.includes(kid.world) ? kid.world : null;
-  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null), worldsSeen, world };
+  return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null), worldsSeen, world, reading: normalizeReading(kid.reading) };
 }
 
 export async function getKid(db: AppDb): Promise<KidState | null> {
@@ -126,3 +126,26 @@ export async function saveReward(db: AppDb, g: RewardGoal): Promise<void> {
 }
 
 export const deleteReward = (db: AppDb, id: string) => db.delete('rewards', id);
+
+function normalizeReading(r: unknown): ReadingState {
+  if (!r || typeof r !== 'object') return { ...DEFAULT_READING, lastRead: {} };
+  const x = r as Partial<ReadingState>;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0);
+  const str = (v: unknown) => (typeof v === 'string' ? v : null);
+  const lastRead = x.lastRead && typeof x.lastRead === 'object' ? Object.fromEntries(Object.entries(x.lastRead).filter(([, d]) => typeof d === 'string')) : {};
+  return { passageId: str(x.passageId), days: num(x.days), extra: num(x.extra), lastDay: str(x.lastDay), lastRead, warmups: num(x.warmups) };
+}
+
+export async function listParentPassages(db: AppDb): Promise<ParentPassage[]> {
+  return (await db.getAll('passages')).sort((a, b) => a.createdAt - b.createdAt);
+}
+
+export async function saveParentPassage(db: AppDb, p: ParentPassage): Promise<void> {
+  await db.put('passages', p);
+}
+
+export const deleteParentPassage = (db: AppDb, id: string) => db.delete('passages', id);
+
+export async function updateRecording(db: AppDb, r: Recording): Promise<void> {
+  await db.put('recordings', r);
+}
