@@ -32,66 +32,79 @@ interface Person {
   stick?: boolean; // walking stick in the right hand
 }
 
-/** A simple ink person: round head, dot eyes, a shirt, arms and legs as thick ink strokes. */
+/** A child drawn the way Truffle is: a big round head with highlighted eyes and blush, a soft bean body with a
+ * shaded side, limbs as outlined rounded strokes, thick outer ink and thinner inner lines. */
 function person(p: Person): string {
   const h = p.h ?? 76;
   const k = h / 76;
-  const headR = 13 * k;
-  const hipY = p.y - 26 * k;
-  const shoulderY = p.y - 50 * k;
-  const headY = shoulderY - headR - 2 * k;
-  const sw = 3 * Math.max(0.8, k);
-  const limb = (from: Pt, off: Pt, color: string) =>
-    `<path d="M${from[0]} ${from[1]} l${off[0] * k} ${off[1] * k}" stroke="${color}" stroke-width="${7 * k}" stroke-linecap="round"/>`;
-  const legL = p.legL ?? [-6, 26];
-  const legR = p.legR ?? [6, 26];
-  const armL = p.armL ?? [-10, 22];
-  const armR = p.armR ?? [10, 22];
-  const shL: Pt = [p.x - 10 * k, shoulderY + 4 * k];
-  const shR: Pt = [p.x + 10 * k, shoulderY + 4 * k];
-  const hip: Pt = [p.x, hipY];
-  const legs =
-    limb([hip[0] - 4 * k, hip[1]], legL, p.pants ?? INK) +
-    limb([hip[0] + 4 * k, hip[1]], legR, p.pants ?? INK) +
-    `<g ${S} stroke-width="${sw}" fill="none"><path d="M${hip[0] - 4 * k} ${hip[1]} l${legL[0] * k} ${legL[1] * k} M${hip[0] + 4 * k} ${hip[1]} l${legR[0] * k} ${legR[1] * k}"/></g>` +
-    `<g fill="${INK}"><ellipse cx="${hip[0] - 4 * k + legL[0] * k}" cy="${hip[1] + legL[1] * k}" rx="${4.5 * k}" ry="${2.6 * k}"/><ellipse cx="${hip[0] + 4 * k + legR[0] * k}" cy="${hip[1] + legR[1] * k}" rx="${4.5 * k}" ry="${2.6 * k}"/></g>`;
-  const body = p.skirt
-    ? `<path d="M${p.x - 11 * k} ${shoulderY} L${p.x + 11 * k} ${shoulderY} L${p.x + 17 * k} ${hipY + 4 * k} L${p.x - 17 * k} ${hipY + 4 * k}Z" fill="${p.shirt}" ${S} stroke-width="${sw}"/>`
-    : `<path d="M${p.x - 12 * k} ${shoulderY} L${p.x + 12 * k} ${shoulderY} L${p.x + 11 * k} ${hipY + 2 * k} L${p.x - 11 * k} ${hipY + 2 * k}Z" fill="${p.shirt}" ${S} stroke-width="${sw}"/>`;
-  const apron = p.apron ? `<path d="M${p.x - 8 * k} ${shoulderY + 8 * k} h${16 * k} v${18 * k} h${-16 * k}Z" fill="#fffaf0" ${S} stroke-width="${sw * 0.8}"/>` : '';
+  const headR = 15 * k;
+  const hipY = p.y - 25 * k;
+  const shoulderY = p.y - 47 * k;
+  const headY = shoulderY - headR + 1 * k;
+  const sw = 2.6 * Math.max(0.8, k);
+  const thin = 1.6 * Math.max(0.8, k);
+  // an outlined rounded limb: ink underneath, colour on top
+  const limb = (from: Pt, off: Pt, color: string, w = 7) =>
+    `<path d="M${from[0]} ${from[1]} l${off[0] * k} ${off[1] * k}" stroke="${INK}" stroke-width="${(w + 2.6) * k}" stroke-linecap="round"/>` +
+    `<path d="M${from[0]} ${from[1]} l${off[0] * k} ${off[1] * k}" stroke="${color}" stroke-width="${w * k}" stroke-linecap="round"/>`;
+  const legL = p.legL ?? [-6, 25];
+  const legR = p.legR ?? [6, 25];
+  const armL = p.armL ?? [-10, 20];
+  const armR = p.armR ?? [10, 20];
+  const hipL: Pt = [p.x - 4.5 * k, hipY];
+  const hipR: Pt = [p.x + 4.5 * k, hipY];
+  const shL: Pt = [p.x - 10 * k, shoulderY + 5 * k];
+  const shR: Pt = [p.x + 10 * k, shoulderY + 5 * k];
+  const foot = (hp: Pt, off: Pt) => `<ellipse cx="${hp[0] + off[0] * k + (off[0] < 0 ? -1.5 : 1.5) * k}" cy="${hp[1] + off[1] * k + 1 * k}" rx="${5 * k}" ry="${3 * k}" fill="#3a3640" stroke="${INK}" stroke-width="${thin}"/>`;
+  const legs = limb(hipL, legL, p.pants ?? '#5d5864') + limb(hipR, legR, p.pants ?? '#5d5864') + foot(hipL, legL) + foot(hipR, legR);
+  const bodyPath = p.skirt
+    ? `M${p.x - 10 * k} ${shoulderY + 1 * k} C${p.x - 13 * k} ${shoulderY + 8 * k} ${p.x - 15 * k} ${hipY} ${p.x - 18 * k} ${hipY + 5 * k} C${p.x - 8 * k} ${hipY + 9 * k} ${p.x + 8 * k} ${hipY + 9 * k} ${p.x + 18 * k} ${hipY + 5 * k} C${p.x + 15 * k} ${hipY} ${p.x + 13 * k} ${shoulderY + 8 * k} ${p.x + 10 * k} ${shoulderY + 1 * k} C${p.x + 5 * k} ${shoulderY - 2 * k} ${p.x - 5 * k} ${shoulderY - 2 * k} ${p.x - 10 * k} ${shoulderY + 1 * k}Z`
+    : `M${p.x - 11 * k} ${shoulderY + 1 * k} C${p.x - 15 * k} ${shoulderY + 9 * k} ${p.x - 14 * k} ${hipY + 1 * k} ${p.x - 10 * k} ${hipY + 4 * k} C${p.x - 4 * k} ${hipY + 6 * k} ${p.x + 4 * k} ${hipY + 6 * k} ${p.x + 10 * k} ${hipY + 4 * k} C${p.x + 14 * k} ${hipY + 1 * k} ${p.x + 15 * k} ${shoulderY + 9 * k} ${p.x + 11 * k} ${shoulderY + 1 * k} C${p.x + 5 * k} ${shoulderY - 2 * k} ${p.x - 5 * k} ${shoulderY - 2 * k} ${p.x - 11 * k} ${shoulderY + 1 * k}Z`;
+  const body =
+    `<path d="${bodyPath}" fill="${p.shirt}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>` +
+    // the shaded side, like Truffle's tonal layer
+    `<path d="M${p.x + 4 * k} ${shoulderY + 1 * k} C${p.x + 12 * k} ${shoulderY + 6 * k} ${p.x + 13 * k} ${hipY} ${p.x + (p.skirt ? 16 : 9) * k} ${hipY + 4 * k} C${p.x + 13 * k} ${hipY - 4 * k} ${p.x + 11 * k} ${shoulderY + 10 * k} ${p.x + 4 * k} ${shoulderY + 1 * k}Z" fill="${INK}" opacity=".1"/>` +
+    `<path d="M${p.x - 4 * k} ${shoulderY + 1 * k} q${4 * k} ${4 * k} ${8 * k} 0" fill="none" stroke="${INK}" stroke-width="${thin}" stroke-linecap="round" opacity=".55"/>`;
+  const apron = p.apron
+    ? `<path d="M${p.x - 8 * k} ${shoulderY + 7 * k} C${p.x - 8 * k} ${hipY + 2 * k} ${p.x + 8 * k} ${hipY + 2 * k} ${p.x + 8 * k} ${shoulderY + 7 * k}Z" fill="#fbf7ee" stroke="${INK}" stroke-width="${thin}"/>`
+    : '';
   const arms =
-    `<path d="M${shL[0]} ${shL[1]} l${armL[0] * k} ${armL[1] * k}" stroke="${p.shirt}" stroke-width="${7 * k}" stroke-linecap="round"/>` +
-    `<path d="M${shR[0]} ${shR[1]} l${armR[0] * k} ${armR[1] * k}" stroke="${p.shirt}" stroke-width="${7 * k}" stroke-linecap="round"/>` +
-    `<g fill="none" ${S} stroke-width="${sw}"><path d="M${shL[0]} ${shL[1]} l${armL[0] * k} ${armL[1] * k} M${shR[0]} ${shR[1]} l${armR[0] * k} ${armR[1] * k}"/></g>` +
-    `<g fill="${SKIN}" ${S} stroke-width="${sw * 0.8}"><circle cx="${shL[0] + armL[0] * k}" cy="${shL[1] + armL[1] * k}" r="${3.6 * k}"/><circle cx="${shR[0] + armR[0] * k}" cy="${shR[1] + armR[1] * k}" r="${3.6 * k}"/></g>`;
-  const stick = p.stick ? `<path d="M${shR[0] + armR[0] * k} ${shR[1] + armR[1] * k} L${shR[0] + armR[0] * k + 2 * k} ${p.y}" stroke="${INK}" stroke-width="${sw}" stroke-linecap="round"/>` : '';
-  const hc = p.hairColor ?? INK;
+    limb(shL, armL, p.shirt, 6.5) + limb(shR, armR, p.shirt, 6.5) +
+    `<g fill="${SKIN}" stroke="${INK}" stroke-width="${thin}"><circle cx="${shL[0] + armL[0] * k}" cy="${shL[1] + armL[1] * k}" r="${3.6 * k}"/><circle cx="${shR[0] + armR[0] * k}" cy="${shR[1] + armR[1] * k}" r="${3.6 * k}"/></g>`;
+  const stick = p.stick ? `<path d="M${shR[0] + armR[0] * k} ${shR[1] + armR[1] * k} C${shR[0] + armR[0] * k + 3 * k} ${p.y - 18 * k} ${shR[0] + armR[0] * k + 1 * k} ${p.y - 8 * k} ${shR[0] + armR[0] * k + 3 * k} ${p.y}" fill="none" stroke="#8a6a4e" stroke-width="${3.2 * k}" stroke-linecap="round"/>` : '';
+  const hc = p.hairColor ?? '#3a3640';
+  const top = headY - headR;
   const hair: Record<Hair, string> = {
-    boy: `<path d="M${p.x - headR} ${headY - 1 * k} C${p.x - headR} ${headY - headR * 1.25} ${p.x + headR} ${headY - headR * 1.25} ${p.x + headR} ${headY - 1 * k} C${p.x + 5 * k} ${headY - 6 * k} ${p.x - 5 * k} ${headY - 7 * k} ${p.x - headR} ${headY - 1 * k}Z" fill="${hc}" ${S} stroke-width="${sw}"/>`,
+    boy: `<path d="M${p.x - headR - 1 * k} ${headY + 1 * k} C${p.x - headR - 2 * k} ${top - 4 * k} ${p.x + headR + 2 * k} ${top - 4 * k} ${p.x + headR + 1 * k} ${headY + 1 * k} C${p.x + 10 * k} ${headY - 6 * k} ${p.x + 4 * k} ${headY - 4 * k} ${p.x + 1 * k} ${headY - 8 * k} C${p.x - 3 * k} ${headY - 3 * k} ${p.x - 9 * k} ${headY - 6 * k} ${p.x - headR - 1 * k} ${headY + 1 * k}Z" fill="${hc}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>`,
     girl:
-      `<path d="M${p.x - headR - 1 * k} ${headY + 2 * k} C${p.x - headR} ${headY - headR * 1.3} ${p.x + headR} ${headY - headR * 1.3} ${p.x + headR + 1 * k} ${headY + 2 * k} C${p.x + 6 * k} ${headY - 7 * k} ${p.x - 6 * k} ${headY - 7 * k} ${p.x - headR - 1 * k} ${headY + 2 * k}Z" fill="${hc}" ${S} stroke-width="${sw}"/>` +
-      `<g fill="${hc}" ${S} stroke-width="${sw * 0.8}"><ellipse cx="${p.x - headR - 3 * k}" cy="${headY + 4 * k}" rx="${3.5 * k}" ry="${6 * k}"/><ellipse cx="${p.x + headR + 3 * k}" cy="${headY + 4 * k}" rx="${3.5 * k}" ry="${6 * k}"/></g>` +
-      `<g fill="#e2705d" stroke="none"><circle cx="${p.x - headR - 1 * k}" cy="${headY - 1 * k}" r="${2.2 * k}"/><circle cx="${p.x + headR + 1 * k}" cy="${headY - 1 * k}" r="${2.2 * k}"/></g>`,
-    grey: `<path d="M${p.x - headR} ${headY} C${p.x - headR} ${headY - headR * 1.2} ${p.x + headR} ${headY - headR * 1.2} ${p.x + headR} ${headY} C${p.x + 5 * k} ${headY - 5 * k} ${p.x - 5 * k} ${headY - 5 * k} ${p.x - headR} ${headY}Z" fill="#dcdde6" ${S} stroke-width="${sw}"/><circle cx="${p.x}" cy="${headY - headR - 2 * k}" r="${4.5 * k}" fill="#dcdde6" ${S} stroke-width="${sw * 0.8}"/>`,
-    man: `<path d="M${p.x - headR} ${headY - 2 * k} C${p.x - headR + 2 * k} ${headY - headR * 1.15} ${p.x + headR - 2 * k} ${headY - headR * 1.15} ${p.x + headR} ${headY - 2 * k} L${p.x + headR - 3 * k} ${headY - 5 * k} L${p.x - headR + 3 * k} ${headY - 5 * k}Z" fill="${hc}" ${S} stroke-width="${sw}"/>`,
+      `<g fill="${hc}" stroke="${INK}" stroke-width="${thin}"><ellipse cx="${p.x - headR - 3 * k}" cy="${headY + 5 * k}" rx="${4.5 * k}" ry="${7.5 * k}"/><ellipse cx="${p.x + headR + 3 * k}" cy="${headY + 5 * k}" rx="${4.5 * k}" ry="${7.5 * k}"/></g>` +
+      `<path d="M${p.x - headR - 1 * k} ${headY + 3 * k} C${p.x - headR - 2 * k} ${top - 5 * k} ${p.x + headR + 2 * k} ${top - 5 * k} ${p.x + headR + 1 * k} ${headY + 3 * k} C${p.x + 9 * k} ${headY - 7 * k} ${p.x - 9 * k} ${headY - 7 * k} ${p.x - headR - 1 * k} ${headY + 3 * k}Z" fill="${hc}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>` +
+      `<g fill="#e2705d" stroke="${INK}" stroke-width="${thin * 0.8}"><circle cx="${p.x - headR}" cy="${headY - 2 * k}" r="${2.6 * k}"/><circle cx="${p.x + headR}" cy="${headY - 2 * k}" r="${2.6 * k}"/></g>`,
+    grey:
+      `<circle cx="${p.x}" cy="${top - 1 * k}" r="${5.5 * k}" fill="#dcdde6" stroke="${INK}" stroke-width="${thin}"/>` +
+      `<path d="M${p.x - headR} ${headY} C${p.x - headR} ${top - 2 * k} ${p.x + headR} ${top - 2 * k} ${p.x + headR} ${headY} C${p.x + 6 * k} ${headY - 6 * k} ${p.x - 6 * k} ${headY - 6 * k} ${p.x - headR} ${headY}Z" fill="#dcdde6" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>`,
+    man: `<path d="M${p.x - headR} ${headY - 1 * k} C${p.x - headR + 1 * k} ${top - 3 * k} ${p.x + headR - 1 * k} ${top - 3 * k} ${p.x + headR} ${headY - 1 * k} C${p.x + 8 * k} ${headY - 5 * k} ${p.x - 2 * k} ${headY - 7 * k} ${p.x - headR} ${headY - 1 * k}Z" fill="${hc}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>`,
     none: '',
   };
   const ex = (p.look ?? 0) * 2 * k;
-  const eyeY = headY + 1 * k;
+  const eyeY = headY + 2 * k;
+  const eye = (cx: number) => `<ellipse cx="${cx}" cy="${eyeY}" rx="${2 * k}" ry="${2.6 * k}" fill="${INK}"/><circle cx="${cx + 0.8 * k}" cy="${eyeY - 1 * k}" r="${0.8 * k}" fill="#fff"/>`;
+  const my = headY + 8 * k;
   const mouths: Record<Mood, string> = {
-    happy: `<path d="M${p.x - 4 * k} ${headY + 6 * k} q${4 * k} ${4 * k} ${8 * k} 0" fill="none" ${S} stroke-width="${sw * 0.7}"/>`,
-    calm: `<path d="M${p.x - 3 * k} ${headY + 7 * k} h${6 * k}" fill="none" ${S} stroke-width="${sw * 0.7}"/>`,
-    oops: `<ellipse cx="${p.x}" cy="${headY + 7.5 * k}" rx="${2.5 * k}" ry="${3 * k}" fill="${INK}"/>`,
-    sad: `<path d="M${p.x - 4 * k} ${headY + 9 * k} q${4 * k} ${-4 * k} ${8 * k} 0" fill="none" ${S} stroke-width="${sw * 0.7}"/>`,
-    cry: `<path d="M${p.x - 4 * k} ${headY + 9 * k} q${4 * k} ${-4 * k} ${8 * k} 0" fill="none" ${S} stroke-width="${sw * 0.7}"/><path d="M${p.x - 6 * k + ex} ${eyeY + 3 * k} q${-1 * k} ${4 * k} 0 ${6 * k}" stroke="#6ea4d4" stroke-width="${2.2 * k}" fill="none"/>`,
+    happy: `<path d="M${p.x - 3.5 * k} ${my} q${3.5 * k} ${3.5 * k} ${7 * k} 0" fill="none" stroke="${INK}" stroke-width="${thin}" stroke-linecap="round"/>`,
+    calm: `<path d="M${p.x - 2.5 * k} ${my + 1 * k} q${2.5 * k} ${1 * k} ${5 * k} 0" fill="none" stroke="${INK}" stroke-width="${thin}" stroke-linecap="round"/>`,
+    oops: `<ellipse cx="${p.x}" cy="${my + 1 * k}" rx="${2.4 * k}" ry="${2.8 * k}" fill="#8a3c3c" stroke="${INK}" stroke-width="${thin * 0.8}"/>`,
+    sad: `<path d="M${p.x - 3.5 * k} ${my + 2.5 * k} q${3.5 * k} ${-3 * k} ${7 * k} 0" fill="none" stroke="${INK}" stroke-width="${thin}" stroke-linecap="round"/>`,
+    cry: `<path d="M${p.x - 3.5 * k} ${my + 2.5 * k} q${3.5 * k} ${-3 * k} ${7 * k} 0" fill="none" stroke="${INK}" stroke-width="${thin}" stroke-linecap="round"/><path d="M${p.x - 5.5 * k + ex} ${eyeY + 3 * k} q${-1.5 * k} ${4 * k} 0 ${6 * k}" stroke="#6ea4d4" stroke-width="${2.4 * k}" fill="none" stroke-linecap="round"/>`,
   };
   const face =
-    `<circle cx="${p.x}" cy="${headY}" r="${headR}" fill="${SKIN}" ${S} stroke-width="${sw}"/>` +
+    `<ellipse cx="${p.x}" cy="${headY}" rx="${headR}" ry="${headR * 0.95}" fill="${SKIN}" stroke="${INK}" stroke-width="${sw}"/>` +
+    `<path d="M${p.x + headR * 0.2} ${headY + headR * 0.9} C${p.x + headR * 0.9} ${headY + headR * 0.7} ${p.x + headR} ${headY + headR * 0.1} ${p.x + headR * 0.95} ${headY - headR * 0.2} C${p.x + headR * 0.7} ${headY + headR * 0.5} ${p.x + headR * 0.5} ${headY + headR * 0.75} ${p.x + headR * 0.2} ${headY + headR * 0.9}Z" fill="${INK}" opacity=".08"/>` +
     hair[p.hair ?? 'boy'] +
-    `<g fill="${INK}"><circle cx="${p.x - 4.5 * k + ex}" cy="${eyeY}" r="${1.7 * k}"/><circle cx="${p.x + 4.5 * k + ex}" cy="${eyeY}" r="${1.7 * k}"/></g>` +
-    `<g fill="#edb8c0" stroke="none" opacity=".8"><ellipse cx="${p.x - 7.5 * k}" cy="${headY + 5 * k}" rx="${2.4 * k}" ry="${1.5 * k}"/><ellipse cx="${p.x + 7.5 * k}" cy="${headY + 5 * k}" rx="${2.4 * k}" ry="${1.5 * k}"/></g>` +
+    eye(p.x - 5 * k + ex) + eye(p.x + 5 * k + ex) +
+    `<g fill="#f0a8a0" opacity=".55"><ellipse cx="${p.x - 8.5 * k}" cy="${headY + 6 * k}" rx="${3 * k}" ry="${1.8 * k}"/><ellipse cx="${p.x + 8.5 * k}" cy="${headY + 6 * k}" rx="${3 * k}" ry="${1.8 * k}"/></g>` +
     mouths[p.mood ?? 'happy'];
-  return `<g>${legs}${body}${apron}${arms}${stick}${face}</g>`;
+  return `<g>${legs}${arms.split('<g fill')[0]}${body}${apron}<g fill${arms.split('<g fill')[1]}${stick}${face}</g>`;
 }
 
 const ground = (y: number, fill: string) => `<path d="M0 ${y} H360 V270 H0Z" fill="${fill}"/><path d="M0 ${y} H360" stroke="${INK}" stroke-width="2" stroke-opacity=".35"/>`;
