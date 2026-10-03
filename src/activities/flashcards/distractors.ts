@@ -76,9 +76,12 @@ export function pickCharacterDistractors(target: Word, pool: Word[], rng: Rng, n
   return picked;
 }
 
+/** Readings 一 and 不 take before other tones (一个 yí, 一天 yì, 不是 bú) — dictionaries list only yī and bù. */
+const TONE_CHANGE: Record<string, string[]> = { 一: ['yí', 'yì'], 不: ['bú'] };
+
 export function pickPinyinDistractors(target: Word, pool: Word[], rng: Rng, n = 3): string[] {
   // A polyphonic character's other readings are right too — never offer them as wrong.
-  const readings = Array.from(target.text).length === 1 ? pinyin(target.text, { multiple: true, type: 'array' }) : [];
+  const readings = Array.from(target.text).length === 1 ? [...pinyin(target.text, { multiple: true, type: 'array' }), ...(TONE_CHANGE[target.text] ?? [])] : [];
   const used = new Set([target.pinyin, ...readings]);
   const out: string[] = [];
   const add = (p: string) => {

@@ -61,4 +61,9 @@ describe('pinyin options are never a real reading', () => {
       for (let seed = 1; seed <= 30; seed++) expect(pickPinyinDistractors(w(ch), all, mulberry32(seed))).not.toContain(other);
     }
   });
+  it('skips the tone-change readings of 一 (yí 一个, yì 一天) and 不 (bú 不是)', () => {
+    for (const [ch, other] of [['一', 'yí'], ['一', 'yì'], ['不', 'bú']] as const) {
+      for (let seed = 1; seed <= 30; seed++) expect(pickPinyinDistractors(w(ch), all, mulberry32(seed))).not.toContain(other);
+    }
+  });
 });
