@@ -197,3 +197,46 @@ Branch `redesign/truffle`; 271 tests passing; each plan had a fresh whole-branch
 - the journey save builds from the context kid without re-reading the db — could overwrite a just-saved kid if Home mounts before a Wardrobe refresh lands and a new world is due
 - with a null kid, Home's journey effect would save DEFAULT_KID (unreachable: firstRoute sends a kid-less app to pet setup)
 - restoring a pre-plan-6 backup shows the arrival card once more
+
+## Plan 8 — 朗读 coach + exam-etiquette warm-up
+
+### Rulings
+- Pre-flight: Ruling: plan ships the ASR spike as a parent-run test (Task 8), not auto-hints — the spike can only be judged on the iPad with the child's voice; spec §16's hints wait for the parent's result (told to parent at handoff) — cost if wrong: hints come one follow-up later
+- Task 1: Ruling: backup test uses the real exportBackup/readBackup/applyBackup names; RecordingsPanel describe() gained the intro kind now (planned for Task 4) because the union widened — cost if wrong: none
+- Task 2: Ruling: brief's cycle test fixture R0 needed a ReadingState annotation for tsc (caught after the task commit; fixed in the next commit) — cost if wrong: none
+- Task 4: Ruling: Label gained `pinyinFor`; hidden-pinyin Han cells keep their slot (`zh` flag) so punctuation never merges into them and data-py omits them — cost if wrong: none
+- Task 4: Ruling: session test lives in its own file (src/app/langduSession.test.tsx) so its recorder mock can't touch the other session tests; "same day doesn't raise days" is covered by the cycle unit test (a daily session can't run twice) — cost if wrong: none
+- Task 4: Ruling: the bonus-star session test was written after the wiring (coverage add; never watched it fail) — the earnsBonus rule itself was TDD'd in Task 2 — cost if wrong: weaker evidence for the wiring
+- Task 4: Ruling: the session saves the kid by re-reading it from the db before writing (reading + warmups + bonusStars) so it can't clobber a concurrent save — cost if wrong: none
+- Task 4: Ruling: HELPER_QUESTIONS and the .speak-step/.helpers CSS are kept for the picture story builder (next plan); SpeakingStep + chooseSpeakingPrompt deleted — cost if wrong: a little unused CSS until then
+- Task 4: Ruling: the bonus star shows as a star sound + burst at screen centre (no new toast text) — cost if wrong: he may not know why the extra star came
+- Task 5: Ruling: test lives in src/app/langduExtra.test.tsx (recorder mock isolation); LangduScreen shows the world strip like lessons and returns Home if there is nothing to read — cost if wrong: none
+- Task 6: Ruling: the activity toggle label is now '朗读 reading aloud' and the parent area has 9 tabs; two parentB tests updated to match — cost if wrong: none
+- Task 6: Ruling: oral fields save as typed through a ref of the latest details — the first version merged into a stale render's copy and lost earlier fields when typing quickly (caught by the new test) — cost if wrong: none
+- Task 6: Ruling: tests in src/parent/langdu.test.tsx; preview text shows hello+body+'…… '+thanks — cost if wrong: none
+- Task 7: Ruling: marking is per character value (tapping one 大 marks every 大 in the text) — a misread character is a character to practise, not a position — cost if wrong: the parent can't mark only one occurrence
+- Task 7: Ruling: misread marking sits behind a 'Mark misreads' toggle per passage recording (keeps the list compact); a deleted text lists as '📖 (deleted text)' with nothing to mark; test stubs URL.createObjectURL (fake-indexeddb returns blobs as plain objects) — cost if wrong: none
+- Task 8: Ruling: the ASR test lives under an 'Advanced' disclosure in Settings, shows the Apple notice before Start, and on error hints that iPad needs Siri & Dictation — cost if wrong: none
+- Task 9: Ruling: the recorder's AudioContext is created during the tap, before the mic prompt (iPad Safari only starts audio in a gesture), and the meter/大声一点 appear only after a real level (>0.002) arrives, so a suspended meter never nags (tests RED→GREEN) — cost if wrong: a working-but-silent mic shows no meter until he speaks
+- Task 9: Ruling: the lesson path calls the step 朗读 (was 说一说), and the Home extra-round button is 多读一遍 (two identical 朗读 buttons on one screen would confuse him; spec §16 said "a 朗读 button") — cost if wrong: a label
+- Task 9: Ruling: browser-pane limits meant MediaRecorder and the mic had to be stubbed for the meter check; LOUD_ENOUGH (0.05) still needs tuning on the real iPad — cost if wrong: the green/quiet threshold is off until tuned
+- Final: Ruling: TTS after mic use on iPad (declined: device-dependent) — needs the parent's iPad check — cost if wrong: quiet or earpiece TTS after recording
+- Final: Ruling: no blocked/versionchange handler for the db upgrade (declined) — home-screen apps have separate storage from Safari tabs — cost if wrong: an upgrade waits while another tab of the site is open
+- Final: Ruling: a session finished after midnight counts the cycle day on the finishing date (declined: unspecified) — cost if wrong: none for a child who stops before bedtime
+- Final: Ruling: misreads marked after today's session started come up tomorrow (declined) — consistent with daily plans — cost if wrong: one day's delay
+- Final: Ruling: a re-record after the mic is later refused discards the first recording (declined: edge case) — cost if wrong: one lost reading
+
+### Fixed in the final review
+- double tap on 开始录音 starting two recordings with one left hot (and unmount while the mic opens) — LangduStep 'a double tap on 开始录音 starts one recording…' RED→GREEN, suite 389/389
+- bonus star for stopping straight away — stars 'stopping straight away is not "quicker"…' RED→GREEN (a read must last ≥ half the previous one), suite 389/389
+- misreads not jumping ahead of school lists — misreads 'a misread character with no card jumps ahead…' RED→GREEN (listedAt = −now), suite 389/389
+- stop() hanging after iOS ended the recording — recorder 'if iOS already ended the recording…' RED→GREEN, suite 389/389
+
+### Deferred minors
+- the 'Saved: N characters' message counts characters that had no built-in word to update
+- saving misreads again on the same recording adds another extra day (capped at 2); unmarking doesn't undo priority
+- a double tap on 完成 in an extra round saves the recording twice
+- PassagesPanel uses crypto.randomUUID directly (fails on plain-http dev hosts; the live site is https)
+- if new MediaRecorder()/start() throws, the stream and meter context aren't released
+- an older oral-field save resolving late can briefly revert a just-typed character
+- leaving Settings mid speech-recognition test doesn't stop recognition (it times out)
