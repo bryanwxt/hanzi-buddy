@@ -1,4 +1,5 @@
 import { WORLDS, worldById } from '../fun/worlds';
+import { normalizeFinds } from '../fun/finds';
 import { migrateAccessory } from '../fun/accessories';
 import { DEFAULT_KID, DEFAULT_READING, DEFAULT_SETTINGS, type CardRecord, type ParentPassage, type ReadingState, type KidState, type PicturePrompt, type Recording, type ReviewLog, type RewardGoal, type SessionRecord, type Settings, type Word } from '../types';
 import type { AppDb } from './db';
@@ -34,6 +35,7 @@ export function normalizeKid(raw: Partial<KidState> | null | undefined): KidStat
   return { ...kid, ownedAccessories: owned, wearing: migrateAccessory(typeof kid.wearing === 'string' ? kid.wearing : null), worldsSeen, world, reading: normalizeReading(kid.reading),
     speakingLast: kid.speakingLast === 'langdu' || kid.speakingLast === 'story' ? kid.speakingLast : null,
     story: normalizeStory(kid.story),
+    finds: normalizeFinds(kid.finds),
   };
 }
 

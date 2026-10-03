@@ -134,3 +134,12 @@ describe('plan 9 data', () => {
     expect(normalizeKid({ speakingLast: 'story', story: { next: 3, told: -1 } } as never)).toMatchObject({ speakingLast: 'story', story: { next: 3, told: 0 } });
   });
 });
+
+describe('plan 7 data', () => {
+  it('fills and cleans world finds', () => {
+    const empty = { animals: [], gems: 0, eggTapped: false, dinoHatched: false, lastAnimalDate: null, lastGemDate: null, lastDigDate: null };
+    expect(normalizeKid({ petName: '松露' } as never)?.finds).toEqual(empty);
+    expect(normalizeKid({ finds: 'x' } as never)?.finds).toEqual(empty);
+    expect(normalizeKid({ finds: { animals: ['rat', 'unicorn', 'rat', 'ox'], gems: -2, eggTapped: 'yes', lastGemDate: '2026-10-06' } } as never)?.finds).toEqual({ ...empty, animals: ['rat', 'ox'], lastGemDate: '2026-10-06' });
+  });
+});

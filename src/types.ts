@@ -1,3 +1,4 @@
+import { DEFAULT_FINDS, type Finds } from './fun/finds';
 import type { ZodiacId } from './fun/costumes';
 import type { Card as FsrsCard, Grade } from 'ts-fsrs';
 
@@ -211,6 +212,7 @@ export interface KidState {
   reading: ReadingState;
   speakingLast: 'langdu' | 'story' | null; // which activity the speaking step ran last (they alternate)
   story: { next: number; told: number }; // 看图说话: next scene, stories told (drives starter fading)
+  finds: Finds; // tap fun in the journey worlds
 }
 
 export const DEFAULT_KID: KidState = {
@@ -231,6 +233,7 @@ export const DEFAULT_KID: KidState = {
   reading: DEFAULT_READING,
   speakingLast: null,
   story: { next: 0, told: 0 },
+  finds: DEFAULT_FINDS,
 };
 
 export interface RewardGoal {
