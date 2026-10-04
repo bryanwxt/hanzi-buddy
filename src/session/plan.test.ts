@@ -54,7 +54,7 @@ describe('buildSessionPlan', () => {
     ];
     expect(buildSessionPlan({ cards, words: ws, settings: settings(), now }).writeCandidates).toEqual([
       { wordId: 'b:0', isNew: false },
-      { wordId: 'b:1', isNew: true },
+      { wordId: 'b:3', isNew: true }, // placed characters near his level first, going down
       { wordId: 'b:2', isNew: true },
     ]);
   });
@@ -84,6 +84,19 @@ describe('new writing words', () => {
     const ws = [makeWord('甲', { id: 'b:a', rank: 1, writeable: true, writeSkippedAt: now.getTime() }), makeWord('乙', { id: 'b:b', rank: 2, writeable: true }), makeWord('丙', { id: 'b:c', rank: 3, writeable: true })];
     const cards = ws.map((w) => makeCard(w.id, 'recognise', new Date(2026, 9, 20), true));
     const plan = buildSessionPlan({ cards, words: ws, settings: settings(), now });
-    expect(plan.writeCandidates.map((c) => c.wordId)).toEqual(['b:b', 'b:c']);
+    expect(plan.writeCandidates.map((c) => c.wordId)).toEqual(['b:c', 'b:b']);
+  });
+});
+
+describe('写一写 after placement', () => {
+  const known = (ws: ReturnType<typeof words>) => ws.map((w) => makeCard(w.id, 'recognise', new Date(2026, 9, 20), true));
+  it('with no lesson words yet, starts near his level (the hardest character he recognises), not at the first characters', () => {
+    const ws = words(10);
+    expect(buildSessionPlan({ cards: known(ws), words: ws, settings: settings(), now }).writeCandidates.map((c) => c.wordId)).toEqual(['b:9', 'b:8']);
+  });
+  it('practises words from his lessons first, newest first, before placed characters', () => {
+    const ws = words(10);
+    const practised = new Map([['b:1', now.getTime() - 86_400_000], ['b:2', now.getTime() - 3_600_000]]);
+    expect(buildSessionPlan({ cards: known(ws), words: ws, settings: settings(), now, practised }).writeCandidates.map((c) => c.wordId)).toEqual(['b:2', 'b:1']);
   });
 });

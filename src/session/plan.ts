@@ -21,9 +21,10 @@ export interface PlanInput {
   words: Word[];
   settings: Settings;
   now: Date;
+  practised?: ReadonlyMap<string, number>; // words answered in lessons → when last; placement guesses aren't here
 }
 
-export function buildSessionPlan({ cards, words, settings, now }: PlanInput): SessionPlan {
+export function buildSessionPlan({ cards, words, settings, now, practised = new Map() }: PlanInput): SessionPlan {
   const active = words.filter((w) => !w.paused);
   const activeIds = new Set(active.map((w) => w.id));
   const cutoff = endOfLocalDay(now).getTime();
@@ -51,7 +52,13 @@ export function buildSessionPlan({ cards, words, settings, now }: PlanInput): Se
       ...dueOf(write).map((c) => ({ wordId: c.wordId, isNew: false })),
       ...active
         .filter((w) => w.writeable && knownIds.has(w.id) && !hasWrite.has(w.id))
-        .sort((a, b) => (a.writeSkippedAt ?? 0) - (b.writeSkippedAt ?? 0) || newWordOrder(a, b))
+        .sort(
+          (a, b) =>
+            (a.writeSkippedAt ?? 0) - (b.writeSkippedAt ?? 0) || // strokes that failed to load go last
+            (practised.get(b.id) ?? -1) - (practised.get(a.id) ?? -1) || // words from his lessons first, newest first
+            (b.rank ?? -1) - (a.rank ?? -1) || // then placed characters near his level, going down
+            newWordOrder(a, b),
+        )
         .slice(0, MAX_NEW_WRITE)
         .map((w) => ({ wordId: w.id, isNew: true })),
     ],

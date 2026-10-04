@@ -91,6 +91,18 @@ export async function addReviewLog(db: AppDb, log: ReviewLog): Promise<void> {
   await db.add('reviewLogs', rest as ReviewLog);
 }
 
+export async function deleteCards(db: AppDb, ids: string[]): Promise<void> {
+  const tx = db.transaction('cards', 'readwrite');
+  await Promise.all([...ids.map((id) => tx.store.delete(id)), tx.done]);
+}
+
+/** Words he has actually answered in a lesson (any review logged), with when he last did. Placement guesses have none. */
+export async function practisedWords(db: AppDb): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  for (const l of await db.getAll('reviewLogs')) out.set(l.wordId, Math.max(out.get(l.wordId) ?? 0, l.at));
+  return out;
+}
+
 export const logsSince = (db: AppDb, sinceMs: number) =>
   db.getAllFromIndex('reviewLogs', 'byAt', IDBKeyRange.lowerBound(sinceMs));
 

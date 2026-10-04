@@ -1,7 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { Rating } from 'ts-fsrs';
-import { allCards, allWords, getSession, logsSince, putWords, saveSession, updateSettings } from '../store/repo';
+import { addReviewLog, allCards, allWords, getSession, logsSince, putCards, putWords, saveSession, updateSettings } from '../store/repo';
+import { seededKnownCard } from '../srs/scheduler';
 import { DEFAULT_SETTINGS } from '../types';
 import { freshDb, makeWord } from '../test/fixtures';
 import { markWriteSkipped, recordRecognition, recordWriting, startOrResumeSession } from './record';
@@ -66,5 +67,17 @@ describe('markWriteSkipped', () => {
     await putWords(db, [makeWord('龘')]);
     await markWriteSkipped(db, 'b:龘', now);
     expect((await allWords(db))[0]?.writeSkippedAt).toBe(now.getTime());
+  });
+});
+
+describe("today's plan knows what he has practised", () => {
+  it('写一写 starts with a word from his lessons, not the hardest placed character', async () => {
+    const db = await freshDb();
+    const ws = Array.from({ length: 6 }, (_, i) => makeWord(`字${i}`, { id: `b:${i}`, rank: i, writeable: true }));
+    await putWords(db, ws);
+    await putCards(db, ws.map((w) => ({ id: `${w.id}:recognise`, wordId: w.id, kind: 'recognise' as const, fsrs: seededKnownCard(now, 20) })));
+    await addReviewLog(db, { cardId: 'b:1:recognise', wordId: 'b:1', kind: 'recognise', at: now.getTime() - 3_600_000, rating: Rating.Good, correct: true });
+    const rec = await startOrResumeSession(db, now);
+    expect(rec.plan.writeCandidates.map((c) => c.wordId)).toEqual(['b:1', 'b:5']);
   });
 });

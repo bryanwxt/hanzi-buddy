@@ -1,7 +1,7 @@
 import { localDateKey } from '../lib/date';
 import { newCard, review, toRating } from '../srs/scheduler';
 import type { AppDb } from '../store/db';
-import { addReviewLog, allCards, allWords, getCard, getSession, getSettings, getWord, putCards, putWords, saveSession } from '../store/repo';
+import { addReviewLog, allCards, allWords, getCard, getSession, getSettings, getWord, putCards, putWords, saveSession, practisedWords } from '../store/repo';
 import type { CardKind, CardRecord, Grade, SessionRecord } from '../types';
 import { buildSessionPlan } from './plan';
 import { createSessionRecord } from './runner';
@@ -43,8 +43,8 @@ export async function startOrResumeSession(db: AppDb, now: Date): Promise<Sessio
   if (existing && (existing.completed || existing.activeMs > 0 || existing.stepIndex > 0 || existing.flashIndex > 0 || existing.writeIndex > 0)) {
     return existing;
   }
-  const [cards, words, settings] = await Promise.all([allCards(db), allWords(db), getSettings(db)]);
-  const rec = createSessionRecord(buildSessionPlan({ cards, words, settings, now }), date, now.getTime());
+  const [cards, words, settings, practised] = await Promise.all([allCards(db), allWords(db), getSettings(db), practisedWords(db)]);
+  const rec = createSessionRecord(buildSessionPlan({ cards, words, settings, now, practised }), date, now.getTime());
   await saveSession(db, rec);
   return rec;
 }
